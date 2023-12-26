@@ -23,7 +23,6 @@ jobs:
           node-version: 18
 
       - name: Run Tests
-        working-directory: integration_tests
         run: |
           yarn install
           yarn test
@@ -40,7 +39,7 @@ jobs:
             fail-on-error: 'true'
             reporter: 'mocha-json'
             path: |
-             integration_tests/results.json
+             results.json
 
 
       - name: Echo 'test-reporter' outputs
