@@ -27,7 +27,7 @@ jobs:
           yarn install
           yarn test
 
-      - name: Publish to Action
+      - name: Publish Results
         uses: dorny/test-reporter@v1
         id: test-reporter
         if: success() || failure()    # run this step even if previous step failed
@@ -42,7 +42,8 @@ jobs:
              results.json
 
 
-      - name: Echo 'test-reporter' outputs
+        # TODO: Add PR Comment
+      - name: Add PR Comment
         run: |
           echo ${{steps.test-reporter.outputs.url_html}}
           
