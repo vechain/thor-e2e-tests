@@ -1,0 +1,49 @@
+name: Integration Tests
+
+on: [push, pull_request]
+
+permissions:
+  checks: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Run Tests
+        working-directory: integration_tests
+        run: |
+          yarn install
+          yarn test
+
+      - name: Publish to Action
+        uses: dorny/test-reporter@v1
+        id: test-reporter
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+            name: Integration Tests
+            only-summary: 'false'
+            list-suites: 'all'
+            list-tests: 'all'
+            fail-on-error: 'true'
+            reporter: 'mocha-json'
+            path: |
+             integration_tests/results.json
+
+
+      - name: Echo 'test-reporter' outputs
+        run: |
+          echo ${{steps.test-reporter.outputs.url_html}}
+          
