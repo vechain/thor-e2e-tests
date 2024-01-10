@@ -25,9 +25,7 @@ jobs:
       - name: Run Tests
         run: |
           yarn install
-          yarn docker:up
-          yarn test:fast --reporter json > results.json
-          yarn docker:down
+          yarn test:report
 
       - name: Publish Results
         uses: dorny/test-reporter@v1
