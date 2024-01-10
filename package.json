@@ -13,7 +13,7 @@
     "docker:restart": "yarn docker:down && yarn docker:up",
     "test": "yarn docker:restart && yarn mocha --exit; yarn docker:down",
     "test:fast": "yarn mocha --exit",
-    "test:report": "yarn docker:restart && yarn mocha --reporter json --output results.json; yarn docker:down",
+    "test:report": "yarn docker:restart && yarn mocha --reporter json --reporter-option output=results.json; yarn docker:down",
     "generate:accounts": "ts-node scripts/generate-account.ts",
     "generate:openapi": "yarn openapi-typescript -o ./src/open-api-types.ts"
   },
