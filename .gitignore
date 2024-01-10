@@ -16,3 +16,4 @@ node_modules
 results.json
 
 .vscode
+.idea

@@ -8,9 +8,6 @@ services:
       - type: bind
         source: ./config
         target: /node/config
-      - type: bind
-        source: ./keys
-        target: /node/keys
     healthcheck:
       test: ["CMD", "/node/config/health_check.sh"]
       interval: 1s

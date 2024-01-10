@@ -30,20 +30,18 @@ jobs:
       - name: Publish Results
         uses: dorny/test-reporter@v1
         id: test-reporter
-        if: success() || failure()    # run this step even if previous step failed
+        if: success() || failure() # run this step even if previous step failed
         with:
-            name: Integration Tests
-            only-summary: 'false'
-            list-suites: 'all'
-            list-tests: 'all'
-            fail-on-error: 'true'
-            reporter: 'mocha-json'
-            path: |
-             results.json
-
+          name: Integration Tests
+          only-summary: "false"
+          list-suites: "all"
+          list-tests: "all"
+          fail-on-error: "true"
+          reporter: "mocha-json"
+          path: |
+            results.json
 
         # TODO: Add PR Comment
       - name: Add PR Comment
         run: |
           echo ${{steps.test-reporter.outputs.url_html}}
-          

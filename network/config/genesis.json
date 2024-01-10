@@ -13,11 +13,6 @@
       }
     },
     {
-      "address": "0xf077b491b355e64048ce21e3a6fc4751eeea77fa",
-      "balance": "0x14ADF4B7320334B9000000",
-      "energy": "0x14ADF4B7320334B9000000"
-    },
-    {
       "address": "0x435933c8064b4ae76be665428e0307ef2ccfbd68",
       "balance": "0x14ADF4B7320334B9000000",
       "energy": "0x14ADF4B7320334B9000000"
@@ -39,16 +34,6 @@
     },
     {
       "address": "0x61e7d0c2b25706be3485980f39a3a994a8207acf",
-      "balance": "0x14ADF4B7320334B9000000",
-      "energy": "0x14ADF4B7320334B9000000"
-    },
-    {
-      "address": "0x361277d1b27504f36a3b33d3a52d1f8270331b8c",
-      "balance": "0x14ADF4B7320334B9000000",
-      "energy": "0x14ADF4B7320334B9000000"
-    },
-    {
-      "address": "0xd7f75a0a1287ab2916848909c8531a0ea9412800",
       "balance": "0x14ADF4B7320334B9000000",
       "energy": "0x14ADF4B7320334B9000000"
     }

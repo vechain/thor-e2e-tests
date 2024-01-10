@@ -1,10 +1,11 @@
 #!/bin/sh
 
-if [[ -n $MASTER_KEY_ADDRESS ]]; then
-    echo "Starting node with master key address $MASTER_KEY_ADDRESS"
-
-    cp /node/keys/$MASTER_KEY_ADDRESS/master.key /tmp
+if [ -z "$MASTER_KEY" ]; then
+  echo "MASTER_KEY is not set"
+  exit 1
 fi
+
+echo "$MASTER_KEY" > /tmp/master.key
 
 BOOTNODE_IP=$(ping -c 1 thor-disco | awk -F'[()]' '/PING/{print $2}')
 

@@ -12,7 +12,9 @@
     "docker:down": "docker compose -f network/docker-compose.yaml down",
     "docker:restart": "yarn docker:down && yarn docker:up",
     "test": "yarn docker:restart && yarn mocha --exit; yarn docker:down",
-    "generate:accounts": "ts-node scripts/generate-account.ts"
+    "test:fast": "yarn mocha --exit",
+    "generate:accounts": "ts-node scripts/generate-account.ts",
+    "generate:openapi": "yarn openapi-typescript -o ./src/open-api-types.ts https://darrenvechain.github.io/thor-docs/thor.yaml"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
@@ -27,6 +29,7 @@
     "@types/chai": "^4.2.0",
     "@types/mocha": ">=9.1.0",
     "@types/node": ">=16.0.0",
+    "@types/ws": "^8.5.10",
     "@vechain/connex": "^2.1.0",
     "@vechain/hardhat-ethers": "^0.1.6",
     "@vechain/hardhat-vechain": "^0.1.7",
@@ -35,6 +38,8 @@
     "ethers": "^6.4.0",
     "hardhat": "^2.14.0",
     "hardhat-gas-reporter": "^1.0.8",
+    "openapi-typescript": "^6.7.3",
+    "prettier": "^3.1.1",
     "solidity-coverage": "^0.8.0",
     "thor-devkit": "^2.0.9",
     "ts-node": ">=8.0.0",
@@ -43,6 +48,8 @@
     "yarn": "^1.22.21"
   },
   "dependencies": {
-    "mocha-junit-reporter": "^2.2.1"
+    "axios": "^1.6.5",
+    "mocha-junit-reporter": "^2.2.1",
+    "ws": "^8.16.0"
   }
 }
