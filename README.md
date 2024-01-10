@@ -51,5 +51,6 @@ yarn generate:openapi https://darrenvechain.github.io/thor-docs/thor.yaml
   easily access their addresses and private keys.
 
 ```bash
-yarn generate:accounts
+yarn generate:accounts 
 ```
+
