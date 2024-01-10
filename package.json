@@ -14,7 +14,7 @@
     "test": "yarn docker:restart && yarn mocha --exit; yarn docker:down",
     "test:fast": "yarn mocha --exit",
     "generate:accounts": "ts-node scripts/generate-account.ts",
-    "generate:openapi": "yarn openapi-typescript -o ./src/open-api-types.ts https://darrenvechain.github.io/thor-docs/thor.yaml"
+    "generate:openapi": "yarn openapi-typescript -o ./src/open-api-types.ts"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
