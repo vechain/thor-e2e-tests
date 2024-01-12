@@ -1,4 +1,4 @@
-# VechainThor Integration Tests
+# VechainThor E2E Tests
 
 ## Prerequisites
 
