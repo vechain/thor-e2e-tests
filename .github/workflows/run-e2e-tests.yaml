@@ -40,7 +40,7 @@ jobs:
           fail-on-error: "true"
           reporter: "jest-junit"
           path: |
-            junit.iml
+            junit.xml
 
         # TODO: Add PR Comment
       - name: Add PR Comment
