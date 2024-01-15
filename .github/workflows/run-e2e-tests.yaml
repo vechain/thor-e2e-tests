@@ -1,6 +1,12 @@
 name: Integration Tests
 
-on: [pull_request]
+on:
+  pull_request:
+    branches:
+      - main
+  public:
+    branches:
+      - main
 
 permissions:
   checks: write
