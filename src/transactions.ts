@@ -41,9 +41,9 @@ export const sendVthoTransaction = async <T extends boolean>(
 
   const clauses = [
     {
-      to: contractAddresses.VTHO,
+      to: contractAddresses.energy,
       value: "0x0",
-      data: interfaces.VIP180.encodeFunctionData("transfer", [to.address, 1]),
+      data: interfaces.energy.encodeFunctionData("transfer", [to.address, 1]),
     },
   ];
 
@@ -68,15 +68,15 @@ export const sendClauses = async <T extends boolean>(
     raw: `0x${encoded}`,
   });
 
-  if (!res.id) {
+  if (!res.success) {
     throw new Error("Failed to send transaction");
   }
 
   if (!waitForReceipt) {
-    return res as T extends true ? GetTxReceiptResponse : TXID;
+    return res.body as T extends true ? GetTxReceiptResponse : TXID;
   }
 
-  const receipt = await pollReceipt(res.id, node);
+  const receipt = await pollReceipt(res.body.id, node);
 
   if (!receipt) {
     throw new Error("Failed to get receipt");
@@ -98,19 +98,19 @@ export const buildTransaction = async (
   const bestBlock = await client.getBlock("best");
   const genesisBlock = await client.getBlock("0");
 
-  if (!bestBlock || !genesisBlock) {
+  if (!bestBlock.success || !genesisBlock.success || !bestBlock.body?.id || !genesisBlock.body?.id) {
     throw new Error("Could not get best block");
   }
 
   return new Transaction({
-    blockRef: bestBlock.id.slice(0, 18),
+    blockRef: bestBlock.body.id.slice(0, 18),
     expiration: 1000,
     clauses: clauses,
     gasPriceCoef: 0,
     gas: 1_000_000,
     dependsOn: null,
     nonce: generateNonce(),
-    chainTag: parseInt(genesisBlock.id.slice(-2), 16),
+    chainTag: parseInt(genesisBlock.body.id.slice(-2), 16),
   });
 };
 
@@ -135,8 +135,8 @@ export const pollReceipt = async (
     setInterval(async () => {
       const receipt = await client.getTransactionReceipt(txId);
 
-      if (receipt) {
-        resolve(receipt);
+      if (receipt.success && receipt.body?.meta.txID === txId){
+        resolve(receipt.body);
       }
     }, 1000);
 
@@ -177,7 +177,11 @@ const warnIfSimulationFails = async (
     caller,
   });
 
-  const revertedClause = simulation.find((result) => result.reverted);
+  if (!simulation.success) {
+    return
+  }
+
+  const revertedClause = simulation.body.find((result) => result.reverted);
 
   if (revertedClause) {
     console.warn(
@@ -197,9 +201,9 @@ const warnTxReverted = async (
 
   const block = await client.getBlock(receipt.meta.blockNumber, true);
 
-  if (!block) return;
+  if (!block.success || !block.body) return;
 
-  const txIndex = block.transactions.findIndex(
+  const txIndex = block.body.transactions.findIndex(
     (tx: components["schemas"]["Tx"]) => tx.id === receipt.meta.txID,
   );
   const clauseIndex = receipt.outputs.length;

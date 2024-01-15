@@ -1,6 +1,7 @@
 import { sendVetTransaction } from "../../src/transactions";
 import { Node1Client } from "../../src/thor-client";
-import { expect } from "chai";
+import assert from "node:assert"
+
 
 describe("GET /transactions/{id}", function () {
   it("should get a transaction", async function () {
@@ -8,6 +9,8 @@ describe("GET /transactions/{id}", function () {
 
     const tx = await Node1Client.getTransaction(res.id, { pending: true });
 
-    expect(tx?.id).to.equal(res.id);
+    assert(tx.success, "Failed to get transaction");
+
+    expect(tx?.body?.id).toEqual(res.id);
   });
 });

@@ -1,6 +1,6 @@
 import wallet from "../../src/wallet";
 import { Node1Client } from "../../src/thor-client";
-import { expect } from "chai";
+import assert from "node:assert"
 
 describe("POST /accounts/*", function () {
   it("should execute code", async function () {
@@ -19,6 +19,8 @@ describe("POST /accounts/*", function () {
       caller: from.address,
     });
 
-    expect(res[0].reverted).to.equal(false);
+    assert(res.success, "Failed to execute code");
+
+    expect(res.body[0].reverted).toEqual(false);
   });
 });

@@ -1,13 +1,13 @@
 name: Integration Tests
 
-on: [push, pull_request]
+on: [pull_request]
 
 permissions:
   checks: write
   pull-requests: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-run-e2e-tests
   cancel-in-progress: true
 
 jobs:
@@ -22,10 +22,11 @@ jobs:
         with:
           node-version: 18
 
+      - name: Install Node Modules
+        run: yarn install
+
       - name: Run Tests
-        run: |
-          yarn install
-          yarn test:report
+        run: yarn test
 
       - name: Publish Results
         uses: dorny/test-reporter@v1
@@ -37,9 +38,9 @@ jobs:
           list-suites: "all"
           list-tests: "all"
           fail-on-error: "true"
-          reporter: "mocha-json"
+          reporter: "jest-junit"
           path: |
-            results.json
+            junit.xml
 
         # TODO: Add PR Comment
       - name: Add PR Comment
