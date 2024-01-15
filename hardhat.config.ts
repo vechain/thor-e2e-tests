@@ -4,15 +4,12 @@ import "@nomicfoundation/hardhat-toolbox";
 import "@nomiclabs/hardhat-truffle5";
 import "@vechain/hardhat-vechain";
 import "@vechain/hardhat-ethers";
+import "hardhat-jest";
 
-// use mocha config from .mocharc.json so we have common config between hardhat and mocha
-const mochaConfig = require("./.mocharc.json");
-delete mochaConfig.require;
 
 const config: HardhatUserConfig = {
   defaultNetwork: "vechain",
-  solidity: "0.8.19",
-  mocha: mochaConfig,
+  solidity: "0.8.20",
   networks: {
     hardhat: {},
     vechain: {

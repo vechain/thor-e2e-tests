@@ -1,6 +1,7 @@
 import { sendVetTransaction } from "../../src/transactions";
 import { Node1Client } from "../../src/thor-client";
-import { expect } from "chai";
+import assert from "node:assert"
+
 
 describe("GET /transactions/{id}/receipt", function () {
   it("should get transaction receipt", async function () {
@@ -12,6 +13,8 @@ describe("GET /transactions/{id}/receipt", function () {
 
     const tx = await Node1Client.getTransactionReceipt(txReceipt.meta.txID);
 
-    expect(tx?.meta.txID).to.equal(txReceipt.meta.txID);
+    assert(tx.success, "Failed to get transaction receipt");
+    expect(tx.body?.meta.txID).toEqual(txReceipt.meta.txID);
+    expect(tx.httpCode).toEqual(200);
   });
 });

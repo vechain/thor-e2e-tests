@@ -1,5 +1,5 @@
-import axios, { AxiosError, AxiosRequestConfig } from "axios";
-import { components } from "./open-api-types";
+import axios, {AxiosError, AxiosRequestConfig, AxiosResponse} from "axios";
+import {components} from "./open-api-types";
 import {
   Block,
   EventLogsResponse,
@@ -17,28 +17,57 @@ import {
   SubscriptionEventResponse,
   SubscriptionTransferResponse,
   TransferLogsResponse,
-  TXID,
+  TXID
 } from "./open-api-types-padded";
 
 import WebSocket from "ws";
 
+type BaseResponse = {
+  httpCode?: number;
+  httpMessage?: string;
+}
+
+export type ErrorResponse<T>  =  BaseResponse & {
+  error: AxiosError;
+  success: false;
+  body?: Partial<T>
+}
+
+export type SuccessResponse<T> = BaseResponse & {
+  success: true;
+  body: T
+}
+
+type Response<T> = ErrorResponse<T> | SuccessResponse<T>;
+
 class ThorClient {
   constructor(public readonly baseUrl: string) {}
+
+  private async performRequest<T>(
+    request: () => Promise<AxiosResponse<T>>
+  ): Promise<Response<T>> {
+    try {
+      const res = await request()
+      return {body: res.data, success: true, httpCode: res.status}
+    } catch (e) {
+      const a = e as AxiosError
+      return {error: a, success: false, httpMessage: a.message, httpCode: a.response?.status}
+    }
+  }
 
   // GET /accounts/{address}
   public async getAccount(
     address: string,
     revision?: string,
     options?: AxiosRequestConfig,
-  ): Promise<GetAccountResponse> {
+  ): Promise<Response<GetAccountResponse>> {
     let url: string = `${this.baseUrl}/accounts/${address}`;
 
     if (revision) {
       url = `${url}?revision=${revision}`;
     }
 
-    const res = await axios.get(url, options);
-    return res.data;
+    return this.performRequest<GetAccountResponse>(() => axios.get(url, options))
   }
 
   // POST /accounts/{address}
@@ -46,16 +75,14 @@ class ThorClient {
     request: components["schemas"]["ExecuteCodesRequest"],
     revision?: string,
     options?: AxiosRequestConfig,
-  ): Promise<ExecuteCodesResponse> {
+  ): Promise<Response<ExecuteCodesResponse>> {
     let url: string = `${this.baseUrl}/accounts/*`;
 
     if (revision) {
       url = `${url}?revision=${revision}`;
     }
 
-    let res = await axios.post(url, request, options);
-
-    return res.data;
+    return this.performRequest<ExecuteCodesResponse>(() => axios.post(url, request, options))
   }
 
   // GET /accounts/{address}/code
@@ -63,15 +90,14 @@ class ThorClient {
     address: string,
     revision?: string,
     options?: AxiosRequestConfig,
-  ): Promise<GetAccountCodeResponse> {
+  ): Promise<Response<GetAccountCodeResponse>> {
     let url: string = `${this.baseUrl}/accounts/${address}/code`;
 
     if (revision) {
       url = `${url}?revision=${revision}`;
     }
 
-    const res = await axios.get(url, options);
-    return res.data;
+    return this.performRequest<GetAccountCodeResponse>(() => axios.get(url, options))
   }
 
   // GET /accounts/{address}/storage
@@ -80,16 +106,14 @@ class ThorClient {
     key: string,
     revision?: string,
     options?: AxiosRequestConfig,
-  ): Promise<GetStorageResponse> {
+  ): Promise<Response<GetStorageResponse>> {
     let url: string = `${this.baseUrl}/accounts/${address}/storage/${key}`;
 
     if (revision) {
       url = `${url}?revision=${revision}`;
     }
 
-    const res = await axios.get(url, options);
-
-    return res.data;
+    return this.performRequest<GetStorageResponse>(() => axios.get(url, options))
   }
 
   // GET /transactions/{id}
@@ -101,7 +125,7 @@ class ThorClient {
       pending?: boolean;
     },
     options?: AxiosRequestConfig,
-  ): Promise<GetTxResponse | null> {
+  ): Promise<Response<GetTxResponse | null>> {
     let url: string = `${this.baseUrl}/transactions/${id}`;
 
     if (!!queryParams?.raw) {
@@ -116,9 +140,7 @@ class ThorClient {
       url = `${url}?pending=${queryParams.pending}`;
     }
 
-    const res = await axios.get(url, options);
-
-    return res.data;
+    return this.performRequest<GetTxResponse>(() => axios.get(url, options))
   }
 
   // GET /transactions/{id}/receipt
@@ -126,40 +148,22 @@ class ThorClient {
     id: string,
     head?: string,
     options?: AxiosRequestConfig,
-  ): Promise<GetTxReceiptResponse | null> {
+  ): Promise<Response<GetTxReceiptResponse | null>> {
     let url: string = `${this.baseUrl}/transactions/${id}/receipt`;
 
     if (head) {
       url = `${url}?head=${head}`;
     }
 
-    const res = await axios.get(url, options);
-
-    return res.data;
+    return this.performRequest<GetTxReceiptResponse>(() => axios.get(url, options))
   }
 
   // POST /transactions
   public async sendTransaction(
     request: components["schemas"]["RawTx"],
     options?: AxiosRequestConfig,
-  ): Promise<TXID> {
-    try {
-      const res = await axios.post(
-        `${this.baseUrl}/transactions`,
-        request,
-        options,
-      );
-
-      return res.data;
-    } catch (e) {
-      if (e instanceof AxiosError) {
-        console.error(
-          `Failed to send transaction (${e.response?.status}): ${e.response?.data?.error}`,
-          e.response?.data,
-        );
-      }
-      throw e;
-    }
+  ): Promise<Response<TXID>> {
+    return this.performRequest<TXID>(() => axios.post(`${this.baseUrl}/transactions`, request, options))
   }
 
   // GET /blocks
@@ -167,73 +171,48 @@ class ThorClient {
     revision: string | number,
     expanded?: boolean,
     options?: AxiosRequestConfig,
-  ): Promise<Block | null> {
+  ): Promise<Response<Block | null>> {
     let url: string = `${this.baseUrl}/blocks/${revision}`;
 
     if (expanded) {
       url = `${url}?expanded=${expanded}`;
     }
 
-    const res = await axios.get(url, options);
-
-    return res.data;
+    return this.performRequest<Block>(() => axios.get(url, options))
   }
 
   // POST /logs/event
   public async queryEventLogs(
     request: components["schemas"]["EventLogFilterRequest"],
     options?: AxiosRequestConfig,
-  ): Promise<EventLogsResponse> {
-    try {
-      const res = await axios.post(
-        `${this.baseUrl}/logs/event`,
-        request,
-        options,
-      );
-
-      return res.data;
-    } catch (e) {
-      if (e instanceof AxiosError) {
-        console.error(
-          `Failed to query event logs (${e.response?.status}): ${e.response?.data?.error}`,
-          e.response?.data,
-        );
-      }
-      throw e;
-    }
+  ): Promise<Response<EventLogsResponse>> {
+    return this.performRequest(() => axios.post(
+      `${this.baseUrl}/logs/event`,
+      request,
+      options,
+    ))
   }
 
   // POST /logs/transfer
   public async queryTransferLogs(
     request: components["schemas"]["TransferLogFilterRequest"],
     options?: AxiosRequestConfig,
-  ): Promise<TransferLogsResponse> {
-    try {
-      const res = await axios.post(
-        `${this.baseUrl}/logs/transfer`,
-        request,
-        options,
-      );
-
-      return res.data;
-    } catch (e) {
-      if (e instanceof AxiosError) {
-        console.error(
-          `Failed to query transfer logs (${e.response?.status}): ${e.response?.data?.error}`,
-          e.response?.data,
-        );
-      }
-      throw e;
-    }
+  ): Promise<Response<TransferLogsResponse>> {
+    return this.performRequest(() => axios.post(
+      `${this.baseUrl}/logs/transfer`,
+      request,
+      options,
+    ))
   }
 
   // GET /node/network/peers
   public async getPeers(
     options?: AxiosRequestConfig,
-  ): Promise<GetPeersResponse> {
-    const res = await axios.get(`${this.baseUrl}/node/network/peers`, options);
-
-    return res.data;
+  ): Promise<Response<GetPeersResponse>> {
+    return this.performRequest(() => axios.get(
+      `${this.baseUrl}/node/network/peers`,
+      options,
+    ))
   }
 
   // WS /subscriptions/block
@@ -423,42 +402,36 @@ class ThorClient {
   public async traceClause(
     request: components["schemas"]["PostDebugTracerRequest"],
     options?: AxiosRequestConfig,
-  ): Promise<any> {
-    const res = await axios.post(
+  ): Promise<Response<any>> {
+    return this.performRequest(() => axios.post(
       `${this.baseUrl}/debug/tracers`,
       request,
       options,
-    );
-
-    return res.data;
+    ))
   }
 
   // POST /debug/tracers/call
   public async traceContractCall(
     request: components["schemas"]["PostDebugTracerCallRequest"],
     options?: AxiosRequestConfig,
-  ): Promise<any> {
-    const res = await axios.post(
+  ): Promise<Response<any>> {
+    return this.performRequest(() => axios.post(
       `${this.baseUrl}/debug/tracers/call`,
       request,
       options,
-    );
-
-    return res.data;
+    ))
   }
 
   // POST /debug/storage-range
   public async retrieveStorageRange(
     request: components["schemas"]["StorageRangeOption"],
     options?: AxiosRequestConfig,
-  ): Promise<StorageRange> {
-    const res = await axios.post(
+  ): Promise<Response<StorageRange>> {
+    return this.performRequest(() => axios.post(
       `${this.baseUrl}/debug/storage-range`,
       request,
       options,
-    );
-
-    return res.data;
+    ))
   }
 }
 

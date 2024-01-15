@@ -1,8 +1,8 @@
 import { Node1Client } from "../../src/thor-client";
 import { sendVthoTransaction } from "../../src/transactions";
 import { contractAddresses } from "../../src/contracts/addresses";
-import { interfaces } from "../../src/contracts/hardhat";
-import { expect } from "chai";
+import assert from "node:assert"
+
 
 describe("POST /logs/event", () => {
   it("should find an event log", async () => {
@@ -20,16 +20,21 @@ describe("POST /logs/event", () => {
       },
       criteriaSet: [
         {
-          address: contractAddresses.VTHO,
+          address: contractAddresses.energy,
         },
       ],
     });
 
-    const relevantLog = eventLogs.find((log) => {
+
+    assert(eventLogs.success, "eventLogs.success is false")
+
+    expect(eventLogs.httpCode).toEqual(200);
+
+    const relevantLog = eventLogs.body.find((log) => {
       return log.meta?.txID === receipt.meta.txID;
     });
 
-    expect(relevantLog).not.to.be.undefined;
-    expect(relevantLog?.meta?.txOrigin).to.equal(receipt.meta.txOrigin);
+    expect(relevantLog).not.toBeUndefined()
+    expect(relevantLog?.meta?.txOrigin).toEqual(receipt.meta.txOrigin);
   });
 });

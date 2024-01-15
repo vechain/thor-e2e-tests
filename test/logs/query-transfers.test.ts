@@ -1,6 +1,7 @@
 import { Node1Client } from "../../src/thor-client";
 import { sendVetTransaction } from "../../src/transactions";
-import { expect } from "chai";
+import assert from "node:assert"
+
 
 describe("POST /logs/transfers", () => {
   it("should find an event log", async () => {
@@ -23,11 +24,13 @@ describe("POST /logs/transfers", () => {
       ],
     });
 
-    const relevantLog = eventLogs.find((log) => {
+    assert(eventLogs.success, "eventLogs.success is false")
+
+    const relevantLog = eventLogs.body.find((log) => {
       return log.meta?.txID === receipt.meta.txID;
     });
 
-    expect(relevantLog).not.to.be.undefined;
-    expect(relevantLog?.meta?.txOrigin).to.equal(receipt.meta.txOrigin);
+    expect(relevantLog).not.toBeUndefined()
+    expect(relevantLog?.meta?.txOrigin).toEqual(receipt.meta.txOrigin);
   });
 });
