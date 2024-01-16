@@ -1,5 +1,5 @@
-import { Node1Client } from "../../src/thor-client";
-import { SubscriptionBlockResponse } from "../../src/open-api-types-padded";
+import { Node1Client } from "../../../src/thor-client";
+import { SubscriptionBlockResponse } from "../../../src/open-api-types-padded";
 
 describe("GET /blocks/{revision}", function () {
   it("should be mining", async function () {

@@ -1,6 +1,6 @@
-import { Node1Client } from "../../src/thor-client";
-import { sendVthoTransaction } from "../../src/transactions";
-import { contractAddresses } from "../../src/contracts/addresses";
+import { Node1Client } from "../../../src/thor-client";
+import { sendVthoTransaction } from "../../../src/transactions";
+import { contractAddresses } from "../../../src/contracts/addresses";
 import assert from "node:assert"
 
 

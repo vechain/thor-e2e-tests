@@ -1,5 +1,5 @@
-import { Node1Client } from "../../src/thor-client";
-import { sendVetTransaction } from "../../src/transactions";
+import { Node1Client } from "../../../src/thor-client";
+import { sendVetTransaction } from "../../../src/transactions";
 import assert from "node:assert"
 
 

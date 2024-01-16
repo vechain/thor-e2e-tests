@@ -1,5 +1,5 @@
-import { Node1Client } from "../../src/thor-client";
-import { contractAddresses } from "../../src/contracts/addresses";
+import { Node1Client } from "../../../src/thor-client";
+import { contractAddresses } from "../../../src/contracts/addresses";
 import assert from "node:assert"
 
 describe("GET /accounts/{address}/code", function () {

@@ -1,5 +1,5 @@
-import { wallet } from "../../src/wallet";
-import { Node1Client } from "../../src/thor-client";
+import { wallet } from "../../../src/wallet";
+import { Node1Client } from "../../../src/thor-client";
 import assert from "node:assert"
 
 describe("POST /accounts/*", function () {

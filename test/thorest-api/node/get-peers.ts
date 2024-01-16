@@ -1,4 +1,4 @@
-import { Node1Client } from "../../src/thor-client";
+import { Node1Client } from "../../../src/thor-client";
 
 
 describe("GET /node/network/peers", () => {
