@@ -13,7 +13,6 @@
     "docker:restart": "yarn docker:down && yarn docker:up",
     "test": "yarn docker:restart && yarn jest; yarn docker:down",
     "test:fast": "yarn jest",
-    "generate:accounts": "ts-node scripts/generate-account.ts",
     "generate:openapi": "yarn openapi-typescript -o ./src/open-api-types.ts"
   },
   "devDependencies": {

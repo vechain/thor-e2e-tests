@@ -45,12 +45,9 @@ yarn generate:openapi https://darrenvechain.github.io/thor-docs/thor.yaml
 
 ---
 
-### Generate test accounts
+### Test accounts
 
-- This command will add 5 new accounts to the genesis with balances, and add the details to `./src/wallet.ts` so you can
-  easily access their addresses and private keys.
+Tests are executed using a custom private thor blockchain. The genesis of this blockchain is defined in `genesis.json`. This file contains accounts that are created with defined VET/VTHO balance for testing purposes. These accounts are then modelled in `wallet.ts`. To add a new account firstly add it to `genesis.json` and then to `wallet.ts`. 
 
-```bash
-yarn generate:accounts 
-```
+
 
