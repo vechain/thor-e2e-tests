@@ -1,17 +1,17 @@
 import { Node1Client } from "../../src/thor-client";
 import {AxiosError} from "axios"
 import assert from "node:assert"
+import { wallet } from "../../src/wallet";
 
 describe("GET /accounts/{address}", function () {
   it("should return the account", async function () {
-    const res = await Node1Client.getAccount(
-      "0x7567d83b7b8d80addcb281a71d54fc7b3364ffed",
-    );
+    const acc = wallet("account0");
+    const res = await Node1Client.getAccount(acc.address,);
 
     assert(res.success, "Failed to get account")
 
     expect(res.httpCode).toEqual(200);
-    expect(res.body.balance).toEqual("0x14adf4b7320334b9000000");
+    expect(res.body.balance.toUpperCase()).toEqual(acc.balance?.toUpperCase());
   });
 
 

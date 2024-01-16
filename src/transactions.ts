@@ -5,7 +5,7 @@ import {
   GetTxResponse,
   TXID,
 } from "./open-api-types-padded";
-import wallet from "./wallet";
+import { wallet } from "./wallet";
 import { interfaces } from "./contracts/hardhat";
 import { contractAddresses } from "./contracts/addresses";
 import { components } from "./open-api-types";
@@ -18,8 +18,8 @@ export const sendVetTransaction = async <T extends boolean>(
   waitForReceipt: T,
   node?: NodeKey,
 ): Promise<T extends true ? GetTxReceiptResponse : TXID> => {
-  const to = wallet["0x435933c8064b4ae76be665428e0307ef2ccfbd68"];
-  const from = wallet["0x61e7d0c2b25706be3485980f39a3a994a8207acf"];
+  const to = wallet("account1");
+  const from = wallet("account5")
 
   const clauses = [
     {
@@ -36,8 +36,8 @@ export const sendVthoTransaction = async <T extends boolean>(
   waitForReceipt: T,
   node?: NodeKey,
 ): Promise<T extends true ? GetTxReceiptResponse : TXID> => {
-  const to = wallet["0x435933c8064b4ae76be665428e0307ef2ccfbd68"];
-  const from = wallet["0x61e7d0c2b25706be3485980f39a3a994a8207acf"];
+  const to = wallet("account1");
+  const from = wallet("account5")
 
   const clauses = [
     {
