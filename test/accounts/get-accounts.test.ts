@@ -11,7 +11,7 @@ describe("GET /accounts/{address}", function () {
     assert(res.success, "Failed to get account")
 
     expect(res.httpCode).toEqual(200);
-    expect(res.body.balance.toUpperCase).toEqual(acc.balance?.toUpperCase);
+    expect(res.body.balance.toUpperCase()).toEqual(acc.balance?.toUpperCase());
   });
 
 
