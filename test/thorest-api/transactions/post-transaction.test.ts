@@ -1,4 +1,4 @@
-import { sendVetTransaction } from "../../src/transactions";
+import { sendVetTransaction } from "../../../src/transactions";
 
 
 describe("POST /transactions", function () {

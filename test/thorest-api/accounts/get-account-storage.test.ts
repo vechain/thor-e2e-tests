@@ -1,5 +1,5 @@
-import { Node1Client } from "../../src/thor-client";
-import { contractAddresses } from "../../src/contracts/addresses";
+import { Node1Client } from "../../../src/thor-client";
+import { contractAddresses } from "../../../src/contracts/addresses";
 
 describe("GET /accounts/{address}/storage", function () {
   it("should return the storage value", async function () {
