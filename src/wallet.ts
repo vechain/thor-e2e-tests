@@ -1,12 +1,11 @@
-type Account = {
+type Wallet = {
   privateKey: string;
   address: string;
   comment: string;
   balance?: string;
 };
 
-// from genesis.json
-const accounts: { [key: string]: Account } = {
+const wallets = {
   "account0": {
     privateKey: "",
     address: "0x7567d83b7b8d80addcb281a71d54fc7b3364ffed",
@@ -45,6 +44,6 @@ const accounts: { [key: string]: Account } = {
   },
 };
 
-type WalletKey = keyof typeof accounts
+type WalletKey = keyof typeof wallets
 
-export const wallet = (name: WalletKey) => { return accounts[name] }
+export const wallet = (name: WalletKey): Wallet => { return wallets[name] }
