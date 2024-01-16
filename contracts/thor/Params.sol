@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity 0.8.20;
 
 /// @title Params stores the governance params of Vechainthor.

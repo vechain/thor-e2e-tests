@@ -7,8 +7,7 @@ const config: Config = {
   reporters: ["default", "jest-junit"],
   // ms to wait before throwing a timeout error
   testTimeout: 35_000,
-  json: true,
-  outputFile: "results.json",
+  json: true
 };
 
 export default config;

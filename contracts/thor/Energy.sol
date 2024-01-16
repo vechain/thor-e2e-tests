@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity 0.8.20;
 
 /// @title Energy represents the sub-token in VechainThor which conforms VIP180(ERC20) standard.

@@ -1,9 +1,8 @@
 {
-  "name": "integration_tests",
+  "name": "thore_e2e_tests",
   "version": "1.0.0",
-  "description": "Integration tests for VechainThor protocol",
+  "description": "E2E tests for VechainThor protocol",
   "repository": "https://github.com/vechain/thor",
-  "author": "Darren Kelly",
   "license": "MIT",
   "private": false,
   "scripts": {
