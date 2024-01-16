@@ -5,6 +5,7 @@ type Wallet = {
   balance?: string;
 };
 
+// from genesis.json
 const wallets = {
   "account0": {
     privateKey: "",
