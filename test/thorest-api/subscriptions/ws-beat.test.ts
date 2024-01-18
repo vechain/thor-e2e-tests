@@ -16,7 +16,7 @@ describe('WS /subscriptions/beat', () => {
         const sender = receipt.outputs?.[0].transfers?.[0].sender
 
         //sleep for 1 sec to ensure the beat is received
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 3_000))
 
         const relevantBeat = beats.find((beat) => {
             return beat.id === receipt.meta.blockID
