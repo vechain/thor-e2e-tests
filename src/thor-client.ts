@@ -338,8 +338,6 @@ class ThorClient {
             url.searchParams.append('txOrigin', queryParameters.txOrigin)
         }
 
-        console.log(url.toString())
-
         const ws = new WebSocket(url.toString())
 
         ws.onmessage = (event: any) => {

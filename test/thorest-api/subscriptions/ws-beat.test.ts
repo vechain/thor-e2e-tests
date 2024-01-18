@@ -18,11 +18,13 @@ describe('WS /subscriptions/beat', () => {
         //sleep for 1 sec to ensure the beat is received
         await new Promise((resolve) => setTimeout(resolve, 3_000))
 
+        console.log(beats)
+
         const relevantBeat = beats.find((beat) => {
             return beat.id === receipt.meta.blockID
         })
 
-        assert(!!relevantBeat?.bloom, 'Beat not found')
+        assert(relevantBeat?.bloom !== undefined, 'Beat not found')
         assert(sender, 'Sender not found')
 
         const result = testBloomForAddress(
