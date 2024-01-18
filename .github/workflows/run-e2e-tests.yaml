@@ -1,54 +1,54 @@
 name: E2E Tests
 
 on:
-  pull_request:
-    branches:
-      - main
-  push:
-    branches:
-      - main
+    pull_request:
+        branches:
+            - main
+    push:
+        branches:
+            - main
 
 permissions:
-  checks: write
-  pull-requests: write
+    checks: write
+    pull-requests: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-run-e2e-tests
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.ref }}-run-e2e-tests
+    cancel-in-progress: true
 
 jobs:
-  e2e_tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    e2e_tests:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
 
-      - name: Setup Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+            - name: Setup Node
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 18
 
-      - name: Install Node Modules
-        run: yarn install
+            - name: Install Node Modules
+              run: yarn install
 
-      - name: Run Tests
-        run: yarn test
+            - name: Run Tests
+              run: yarn test
 
-      - name: Publish Results
-        uses: dorny/test-reporter@v1
-        id: test-reporter
-        if: success() || failure() # run this step even if previous step failed
-        with:
-          name: Integration Tests
-          only-summary: "false"
-          list-suites: "all"
-          list-tests: "all"
-          fail-on-error: "true"
-          reporter: "jest-junit"
-          path: |
-            junit.xml
+            - name: Publish Results
+              uses: dorny/test-reporter@v1
+              id: test-reporter
+              if: success() || failure() # run this step even if previous step failed
+              with:
+                  name: Integration Tests
+                  only-summary: 'false'
+                  list-suites: 'all'
+                  list-tests: 'all'
+                  fail-on-error: 'true'
+                  reporter: 'jest-junit'
+                  path: |
+                      junit.xml
 
-        # TODO: Add PR Comment
-      - name: Add PR Comment
-        run: |
-          echo ${{steps.test-reporter.outputs.url_html}}
+              # TODO: Add PR Comment
+            - name: Add PR Comment
+              run: |
+                  echo ${{steps.test-reporter.outputs.url_html}}

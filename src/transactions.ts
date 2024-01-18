@@ -1,216 +1,179 @@
-import { Transaction, secp256k1, address } from "thor-devkit";
-import { NodeKey, Nodes } from "./thor-client";
-import {
-  GetTxReceiptResponse,
-  GetTxResponse,
-  TXID,
-} from "./open-api-types-padded";
-import { wallet } from "./wallet";
-import { interfaces } from "./contracts/hardhat";
-import { contractAddresses } from "./contracts/addresses";
-import { components } from "./open-api-types";
+import { address, secp256k1, Transaction } from 'thor-devkit'
+import { NodeKey, Nodes } from './thor-client'
+import { GetTxReceiptResponse, TXID } from './open-api-types-padded'
+import { components } from './open-api-types'
 
 export const generateNonce = (): number => {
-  return Math.floor(Math.random() * 1_000_000_000);
-};
-
-export const sendVetTransaction = async <T extends boolean>(
-  waitForReceipt: T,
-  node?: NodeKey,
-): Promise<T extends true ? GetTxReceiptResponse : TXID> => {
-  const to = wallet("account1");
-  const from = wallet("account5")
-
-  const clauses = [
-    {
-      to: to.address,
-      value: "0x1",
-      data: "0x",
-    },
-  ];
-
-  return await sendClauses(clauses, from.privateKey, waitForReceipt, node);
-};
-
-export const sendVthoTransaction = async <T extends boolean>(
-  waitForReceipt: T,
-  node?: NodeKey,
-): Promise<T extends true ? GetTxReceiptResponse : TXID> => {
-  const to = wallet("account1");
-  const from = wallet("account5")
-
-  const clauses = [
-    {
-      to: contractAddresses.energy,
-      value: "0x0",
-      data: interfaces.energy.encodeFunctionData("transfer", [to.address, 1]),
-    },
-  ];
-
-  return await sendClauses(clauses, from.privateKey, waitForReceipt, node);
-};
+    return Math.floor(Math.random() * 1_000_000_000)
+}
 
 export const sendClauses = async <T extends boolean>(
-  clauses: Transaction.Clause[],
-  privateKey: string,
-  waitForReceipt: T,
-  node?: NodeKey,
+    clauses: Transaction.Clause[],
+    privateKey: string,
+    waitForReceipt: T,
+    node?: NodeKey,
 ): Promise<T extends true ? GetTxReceiptResponse : TXID> => {
-  const client = Nodes[node ?? 1];
+    const client = Nodes[node ?? 1]
 
-  await warnIfSimulationFails(clauses, privateKey, node);
+    const transaction = await buildTransaction(clauses, privateKey, node)
 
-  const transaction = await buildTransaction(clauses, node);
+    const encoded = signTransaction(transaction, privateKey)
 
-  const encoded = signTransaction(transaction, privateKey);
+    const res = await client.sendTransaction({
+        raw: `0x${encoded}`,
+    })
 
-  const res = await client.sendTransaction({
-    raw: `0x${encoded}`,
-  });
-
-  if (!res.success) {
-    throw new Error("Failed to send transaction");
-  }
-
-  if (!waitForReceipt) {
-    return res.body as T extends true ? GetTxReceiptResponse : TXID;
-  }
-
-  const receipt = await pollReceipt(res.body.id, node);
-
-  if (!receipt) {
-    throw new Error("Failed to get receipt");
-  }
-
-  if (receipt.reverted) {
-    await warnTxReverted(receipt, node);
-  }
-
-  return receipt as T extends true ? GetTxReceiptResponse : TXID;
-};
-
-export const buildTransaction = async (
-  clauses: Transaction.Clause[],
-  node?: NodeKey,
-): Promise<Transaction> => {
-  const client = Nodes[node ?? 1];
-
-  const bestBlock = await client.getBlock("best");
-  const genesisBlock = await client.getBlock("0");
-
-  if (!bestBlock.success || !genesisBlock.success || !bestBlock.body?.id || !genesisBlock.body?.id) {
-    throw new Error("Could not get best block");
-  }
-
-  return new Transaction({
-    blockRef: bestBlock.body.id.slice(0, 18),
-    expiration: 1000,
-    clauses: clauses,
-    gasPriceCoef: 0,
-    gas: 1_000_000,
-    dependsOn: null,
-    nonce: generateNonce(),
-    chainTag: parseInt(genesisBlock.body.id.slice(-2), 16),
-  });
-};
-
-export const signTransaction = (
-  transaction: Transaction,
-  privateKey: string,
-): string => {
-  const pk = Buffer.from(privateKey, "hex");
-
-  transaction.signature = secp256k1.sign(transaction.signingHash(), pk);
-
-  return transaction.encode().toString("hex");
-};
-
-export const pollReceipt = async (
-  txId: string,
-  node?: NodeKey,
-): Promise<GetTxReceiptResponse> => {
-  const client = Nodes[node ?? 1];
-
-  return new Promise<GetTxReceiptResponse>((resolve, reject) => {
-    setInterval(async () => {
-      const receipt = await client.getTransactionReceipt(txId);
-
-      if (receipt.success && receipt.body?.meta.txID === txId){
-        resolve(receipt.body);
-      }
-    }, 1000);
-
-    setTimeout(() => {
-      reject("Timed out waiting for transaction to be mined");
-    }, 30000);
-  });
-};
-
-const warnIfSimulationFails = async (
-  clauses: Transaction.Clause[],
-  privateKey: string,
-  node?: NodeKey,
-) => {
-  const client = Nodes[node ?? 1];
-
-  const pubKey = secp256k1.derivePublicKey(Buffer.from(privateKey, "hex"));
-  const caller = address.fromPublicKey(pubKey);
-
-  const _clauses = clauses.map((clause) => {
-    let value: string;
-
-    if (typeof clause.value === "number") {
-      value = clause.value.toString();
-    } else {
-      value = clause.value;
+    if (!res.success) {
+        throw new Error(
+            JSON.stringify({
+                httpCode: res.httpCode,
+                message: res.httpMessage ?? 'Unknown Error sending transaction',
+            }),
+        )
     }
 
-    return {
-      to: clause.to ?? undefined,
-      value: value,
-      data: clause.data,
-    };
-  });
+    if (!waitForReceipt) {
+        return res.body as T extends true ? GetTxReceiptResponse : TXID
+    }
 
-  const simulation = await client.executeAccountBatch({
-    clauses: _clauses,
-    caller,
-  });
+    const receipt = await pollReceipt(res.body.id, node)
 
-  if (!simulation.success) {
-    return
-  }
+    if (receipt.reverted) {
+        await warnTxReverted(receipt, node)
+    }
 
-  const revertedClause = simulation.body.find((result) => result.reverted);
+    return receipt as T extends true ? GetTxReceiptResponse : TXID
+}
 
-  if (revertedClause) {
-    console.warn(
-      `TX Clause may revert (${revertedClause.vmError})`,
-      revertedClause,
-    );
-  }
-};
+export const buildTransaction = async (
+    clauses: Transaction.Clause[],
+    privateKey: string,
+    node?: NodeKey,
+): Promise<Transaction> => {
+    const client = Nodes[node ?? 1]
 
-const warnTxReverted = async (
-  receipt: GetTxReceiptResponse,
-  nodeKey?: NodeKey,
+    await warnIfSimulationFails(clauses, privateKey)
+
+    const bestBlock = await client.getBlock('best')
+    const genesisBlock = await client.getBlock('0')
+
+    if (
+        !bestBlock.success ||
+        !genesisBlock.success ||
+        !bestBlock.body?.id ||
+        !genesisBlock.body?.id
+    ) {
+        throw new Error('Could not get best block')
+    }
+
+    return new Transaction({
+        blockRef: bestBlock.body.id.slice(0, 18),
+        expiration: 1000,
+        clauses: clauses,
+        gasPriceCoef: 0,
+        gas: 1_000_000,
+        dependsOn: null,
+        nonce: generateNonce(),
+        chainTag: parseInt(genesisBlock.body.id.slice(-2), 16),
+    })
+}
+
+export const signTransaction = (
+    transaction: Transaction,
+    privateKey: string,
+): string => {
+    const pk = Buffer.from(privateKey, 'hex')
+
+    transaction.signature = secp256k1.sign(transaction.signingHash(), pk)
+
+    return transaction.encode().toString('hex')
+}
+
+export const pollReceipt = async (
+    txId: string,
+    node?: NodeKey,
+): Promise<GetTxReceiptResponse> => {
+    const client = Nodes[node ?? 1]
+
+    return new Promise<GetTxReceiptResponse>((resolve, reject) => {
+        setInterval(async () => {
+            const receipt = await client.getTransactionReceipt(txId)
+
+            if (receipt.success && receipt.body?.meta.txID === txId) {
+                resolve(receipt.body)
+            }
+        }, 1000)
+
+        setTimeout(() => {
+            reject('Timed out waiting for transaction to be mined')
+        }, 30000)
+    })
+}
+
+const warnIfSimulationFails = async (
+    clauses: Transaction.Clause[],
+    privateKey: string,
+    node?: NodeKey,
 ) => {
-  if (!receipt.meta.blockNumber) return;
+    const client = Nodes[node ?? 1]
 
-  const client = Nodes[nodeKey ?? 1];
+    const pubKey = secp256k1.derivePublicKey(Buffer.from(privateKey, 'hex'))
+    const caller = address.fromPublicKey(pubKey)
 
-  const block = await client.getBlock(receipt.meta.blockNumber, true);
+    const _clauses = clauses.map((clause) => {
+        let value: string
 
-  if (!block.success || !block.body) return;
+        if (typeof clause.value === 'number') {
+            value = clause.value.toString()
+        } else {
+            value = clause.value
+        }
 
-  const txIndex = block.body.transactions.findIndex(
-    (tx: components["schemas"]["Tx"]) => tx.id === receipt.meta.txID,
-  );
-  const clauseIndex = receipt.outputs.length;
+        return {
+            to: clause.to ?? undefined,
+            value: value,
+            data: clause.data,
+        }
+    })
 
-  const debugged = await client.traceClause({
-    target: `${receipt.meta.blockID}/${txIndex}/${clauseIndex}`,
-  });
+    const simulation = await client.executeAccountBatch({
+        clauses: _clauses,
+        caller,
+    })
 
-  console.warn("Transaction Failed", debugged);
-};
+    if (!simulation.success) {
+        return
+    }
+
+    const revertedClause = simulation.body.find((result) => result.reverted)
+
+    if (revertedClause) {
+        console.warn(
+            `TX Clause may revert (${revertedClause.vmError})`,
+            revertedClause,
+        )
+    }
+}
+const warnTxReverted = async (
+    receipt: GetTxReceiptResponse,
+    nodeKey?: NodeKey,
+) => {
+    if (!receipt.meta.blockNumber) return
+
+    const client = Nodes[nodeKey ?? 1]
+
+    const block = await client.getBlock(receipt.meta.blockNumber, true)
+
+    if (!block.success || !block.body) return
+
+    const txIndex = block.body.transactions.findIndex(
+        (tx: components['schemas']['Tx']) => tx.id === receipt.meta.txID,
+    )
+    const clauseIndex = receipt.outputs.length
+
+    const debugged = await client.traceClause({
+        target: `${receipt.meta.blockID}/${txIndex}/${clauseIndex}`,
+    })
+
+    console.warn('Transaction Failed', debugged)
+}

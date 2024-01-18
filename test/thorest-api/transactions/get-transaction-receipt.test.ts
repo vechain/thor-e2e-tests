@@ -1,20 +1,19 @@
-import { sendVetTransaction } from "../../../src/transactions";
-import { Node1Client } from "../../../src/thor-client";
-import assert from "node:assert"
+import { Node1Client } from '../../../src/thor-client'
+import assert from 'node:assert'
+import { generateWalletWithFunds } from '../../../src/wallet'
 
+describe('GET /transactions/{id}/receipt', function () {
+    it('should get transaction receipt', async function () {
+        const { receipt } = await generateWalletWithFunds()
 
-describe("GET /transactions/{id}/receipt", function () {
-  it("should get transaction receipt", async function () {
-    const txReceipt = await sendVetTransaction(true);
+        assert(receipt.meta.txID, 'Failed to get transaction receipt')
 
-    if (!txReceipt.meta.txID) {
-      throw new Error("Failed to get txID");
-    }
+        const tx = await Node1Client.getTransactionReceipt(receipt.meta.txID)
 
-    const tx = await Node1Client.getTransactionReceipt(txReceipt.meta.txID);
+        assert(tx.success, 'Failed to get transaction receipt')
+        assert(tx.body != null, 'Failed to get transaction receipt body')
 
-    assert(tx.success, "Failed to get transaction receipt");
-    expect(tx.body?.meta.txID).toEqual(txReceipt.meta.txID);
-    expect(tx.httpCode).toEqual(200);
-  });
-});
+        expect(tx.body.meta.txID).toEqual(receipt.meta.txID)
+        expect(tx.httpCode).toEqual(200)
+    })
+})

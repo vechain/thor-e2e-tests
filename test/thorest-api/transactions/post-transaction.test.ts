@@ -1,10 +1,9 @@
-import { sendVetTransaction } from "../../../src/transactions";
+import { generateWalletWithFunds } from '../../../src/wallet'
 
+describe('POST /transactions', function () {
+    it('should send a transaction', async function () {
+        const { receipt } = await generateWalletWithFunds()
 
-describe("POST /transactions", function () {
-  it("should send a transaction", async function () {
-    const txReceipt = await sendVetTransaction(true);
-
-    expect(txReceipt.reverted).toEqual(false);
-  });
-});
+        expect(receipt.reverted).toEqual(false)
+    })
+})

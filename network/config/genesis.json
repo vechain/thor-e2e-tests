@@ -5,7 +5,7 @@
   "accounts": [
     {
       "address": "0x7567d83b7b8d80addcb281a71d54fc7b3364ffed",
-      "balance": "0x14ADF4B7320334B9000000",
+      "balance": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "energy": 0,
       "code": "0x6060604052600256",
       "storage": {
@@ -13,29 +13,54 @@
       }
     },
     {
-      "address": "0x435933c8064b4ae76be665428e0307ef2ccfbd68",
-      "balance": "0x14ADF4B7320334B9000000",
-      "energy": "0x14ADF4B7320334B9000000"
+      "address": "0x98f939235e4d31e072e0a0ca47984124a94f4c55",
+      "balance": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "energy": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     },
     {
-      "address": "0x0f872421dc479f3c11edd89512731814d0598db5",
-      "balance": "0x14ADF4B7320334B9000000",
-      "energy": "0x14ADF4B7320334B9000000"
+      "address": "0xb4fc0e858a5ac5510ed59e4d927fa3976f109e1a",
+      "balance": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "energy": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     },
     {
-      "address": "0xf370940abdbd2583bc80bfc19d19bc216c88ccf0",
-      "balance": "0x14ADF4B7320334B9000000",
-      "energy": "0x14ADF4B7320334B9000000"
+      "address": "0x205e4e58f69180b6e10acdd08dfc8c73281e57cf",
+      "balance": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "energy": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     },
     {
-      "address": "0x99602e4bbc0503b8ff4432bb1857f916c3653b85",
-      "balance": "0x14ADF4B7320334B9000000",
-      "energy": "0x14ADF4B7320334B9000000"
+      "address": "0x961e4c32f9ce93739cdd7efa90ac94763962ff18",
+      "balance": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "energy": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     },
     {
-      "address": "0x61e7d0c2b25706be3485980f39a3a994a8207acf",
-      "balance": "0x14ADF4B7320334B9000000",
-      "energy": "0x14ADF4B7320334B9000000"
+      "address": "0x1550146a44ccbf720e6a17485eae9f8c136517c5",
+      "balance": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "energy": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "address": "0xad365f30b543318b33208dd843d80c78d1e50b0d",
+      "balance": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "energy": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "address": "0x2d50ef10018a8395614e773ff5b3906ed4f09602",
+      "balance": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "energy": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "address": "0x80e29b7ef2b0b3adcbf0311647e30473a82951bf",
+      "balance": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "energy": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "address": "0x334fe4086ed960d106b40e849d37ba1edde9e9cb",
+      "balance": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "energy": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "address": "0x8e8aa6561dd091c7e08ae07ae7e43fe0f0fd8e7e",
+      "balance": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "energy": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     }
   ],
   "authority": [
@@ -58,7 +83,7 @@
   "params": {
     "rewardRatio": 300000000000000000,
     "baseGasPrice": 1000000000000000,
-    "proposerEndorsement": "0x14ADF4B7320334B9000000",
+    "proposerEndorsement": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
     "executorAddress": "0x0000000000000000000000004578656375746f72"
   },
   "executor": {

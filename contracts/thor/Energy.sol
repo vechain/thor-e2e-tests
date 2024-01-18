@@ -23,7 +23,7 @@ interface Energy {
     function totalSupply() external view returns (uint256);
 
     /// @return total amount of burned VeThor
-    function totalBurned() external view returns(uint256);
+    function totalBurned() external view returns (uint256);
 
     /// @return balance - amount of VeThor in account '_owner'.
     function balanceOf(address _owner) external view returns (uint256 balance);
@@ -38,12 +38,16 @@ interface Energy {
     function move(address _from, address _to, uint256 _amount) external returns (bool success);
 
     /// @notice It's a VIP180(ERC20)'s standard method.
-    function transferFrom(address _from, address _to, uint256 _amount) external returns(bool success);
+    function transferFrom(address _from, address _to, uint256 _amount) external returns (bool success);
 
     /// @notice It's a VIP180(ERC20)'s standard method.
     /// @return remaining - remaining amount of VeThor that the '_spender' is able to withdraw from '_owner'.
-    function allowance(address _owner, address _spender)  external view returns (uint256 remaining);
+    function allowance(address _owner, address _spender) external view returns (uint256 remaining);
 
     /// @notice It's a VIP180(ERC20)'s standard method which means approving a '_value' to be transferred to _spender from msg sender.
     function approve(address _spender, uint256 _value) external returns (bool success);
+
+    event Transfer(address indexed _from, address indexed _to, uint256 _value);
+
+    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 }
