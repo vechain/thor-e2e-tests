@@ -357,7 +357,7 @@ class ThorClient {
         callback: (data: SubscriptionBeatResponse) => void,
         pos?: string,
     ): { unsubscribe: () => void } {
-        let url: string = `${this.baseWsUrl}/subscriptions/beats`
+        let url: string = `${this.baseWsUrl}/subscriptions/beat`
 
         if (pos) {
             url = `${url}?pos=${pos}`
