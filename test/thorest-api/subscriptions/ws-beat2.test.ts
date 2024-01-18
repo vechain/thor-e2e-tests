@@ -22,7 +22,7 @@ describe('WS /subscriptions/beat2', () => {
             return beat.id === receipt.meta.blockID
         })
 
-        assert(relevantBeat?.bloom, 'Beat not found')
+        assert(!!relevantBeat?.bloom, 'Beat not found')
         assert(sender, 'Sender not found')
 
         const result = testBloomForAddress(
