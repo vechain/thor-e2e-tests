@@ -1,11 +1,13 @@
 import type { Config } from 'jest'
 
+const IS_GH_ACTIONS = process.env.GITHUB_ACTIONS === 'true'
+
 const config: Config = {
     verbose: true,
     // seconds to be considered slow
     slowTestThreshold: 25,
     reporters: [
-        'default',
+        IS_GH_ACTIONS ? ['github-actions', { silent: false }] : 'default',
         [
             'jest-junit',
             {
@@ -13,11 +15,10 @@ const config: Config = {
                 output: './junit.xml',
                 classNameTemplate: '{classname}',
                 titleTemplate: '{title}',
-                ancestorSeparator: ' :: ',
-                suiteNameTemplate: '{filename}',
+                ancestorSeparator: ' =>> ',
+                suiteNameTemplate: '{filepath}',
             },
         ],
-        ['github-actions', { silent: false }],
         'summary',
     ],
     // ms to wait before throwing a timeout error
