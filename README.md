@@ -30,7 +30,6 @@ yarn test:fast
 
 - These scripts will output the Open API Spec to `./src/open-api-types.ts`
 
-
 #### **Option 1** - By local file:
 
 ```bash
@@ -47,9 +46,13 @@ yarn generate:openapi https://darrenvechain.github.io/thor-docs/thor.yaml
 
 ### Test accounts
 
-Tests are executed using a custom private thor blockchain. The genesis of this blockchain is defined in `genesis.json`. This file contains accounts that are created with defined VET/VTHO balance for testing purposes. These accounts are then modelled in `wallet.ts`. To add a new account firstly add it to `genesis.json` and then to `wallet.ts`. 
+Tests are executed using a custom private thor blockchain. The genesis of this blockchain is defined in `genesis.json`.
+This file contains accounts that are created with defined VET/VTHO balance for testing purposes. These accounts are used
+as a faucet. Please refer to:
+
+- `./src/wallet.ts` to generate new accounts/ private keys
+- `./src/account-faucet.ts` to fund your accounts with VET/VTHO
 
 ### Types of tests
 
 - thorest-api --> Tests that validate the swagger contract definition of the Thorest api
-
