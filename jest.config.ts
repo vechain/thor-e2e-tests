@@ -4,7 +4,22 @@ const config: Config = {
     verbose: true,
     // seconds to be considered slow
     slowTestThreshold: 25,
-    reporters: [['github-actions', { silent: false }], 'summary'],
+    reporters: [
+        'default',
+        [
+            'jest-junit',
+            {
+                suiteName: 'E2E Tests',
+                output: './junit.xml',
+                classNameTemplate: '{classname}',
+                titleTemplate: '{title}',
+                ancestorSeparator: ' :: ',
+                suiteNameTemplate: '{filename}',
+            },
+        ],
+        ['github-actions', { silent: false }],
+        'summary',
+    ],
     // ms to wait before throwing a timeout error
     testTimeout: 35_000,
     json: true,
