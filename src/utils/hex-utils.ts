@@ -1,6 +1,6 @@
 const PREFIX = '0x'
 const PREFIX_REGEX = /^0[xX]/
-const HEX_REGEX = /^(0[xX])?[a-fA-F0-9]+$/
+export const HEX_REGEX = /^(0[xX])?[a-fA-F0-9]+$/
 
 /**
  * Returns the provied hex string with the hex prefix removed.

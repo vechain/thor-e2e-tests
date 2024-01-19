@@ -6,6 +6,7 @@ import {
     generateWalletWithFunds,
     Wallet,
 } from '../../../src/wallet'
+import { HEX_REGEX } from '../../../src/utils/hex-utils'
 
 describe('GET /accounts/{address}', function () {
     const invalidAddresses = [
@@ -47,22 +48,36 @@ describe('GET /accounts/{address}', function () {
         const toAccountBalance = await Node1Client.getAccount(toAccount.address)
 
         expect(toAccountBalance.success).toBeTruthy()
-        expect(toAccountBalance.body?.balance).toEqual(sendAmount)
         expect(toAccountBalance.httpCode).toEqual(200)
+        expect(toAccountBalance.body).toEqual({
+            balance: sendAmount,
+            energy: expect.stringMatching(HEX_REGEX),
+            hasCode: false,
+        })
     })
 
     it('contract account hasCode', async function () {
         const addr = contractAddresses.energy
         const res = await Node1Client.getAccount(addr)
+
         expect(res.success).toBeTruthy()
         expect(res.httpCode).toEqual(200)
-        expect(res.body?.hasCode).toEqual(true)
+        expect(res.body).toEqual({
+            balance: expect.stringMatching(HEX_REGEX),
+            energy: expect.stringMatching(HEX_REGEX),
+            hasCode: true,
+        })
     })
 
     it.each(validRevisions)('valid revision %s', async function (revision) {
         const res = await Node1Client.getAccount(wallet.address, revision)
         expect(res.success).toBeTruthy()
         expect(res.httpCode).toEqual(200)
+        expect(res.body).toEqual({
+            balance: expect.stringMatching(HEX_REGEX),
+            energy: expect.stringMatching(HEX_REGEX),
+            hasCode: false,
+        })
     })
 
     it.each(invalidAddresses)('invalid address: %s', async (a) => {

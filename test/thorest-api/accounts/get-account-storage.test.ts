@@ -56,7 +56,9 @@ describe('GET /accounts/{address}/storage', function () {
 
             expect(res.success).toEqual(true)
             expect(res.httpCode).toEqual(200)
-            expect(res.body?.value).toEqual(addUintPadding(amount))
+            expect(res.body).toEqual({
+                value: addUintPadding(amount),
+            })
         },
     )
 })

@@ -1,6 +1,6 @@
 import { Node1Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
-import HexUtils from '../../../src/utils/hex-utils'
+import { HEX_REGEX } from '../../../src/utils/hex-utils'
 import { generateEmptyWallet } from '../../../src/wallet'
 
 describe('GET /accounts/{address}/code', function () {
@@ -18,7 +18,9 @@ describe('GET /accounts/{address}/code', function () {
 
             expect(res.success).toBeTruthy()
             expect(res.httpCode).toEqual(200)
-            expect(res.body?.code).toEqual('0x')
+            expect(res.body).toEqual({
+                code: '0x',
+            })
         },
     )
 
@@ -33,8 +35,10 @@ describe('GET /accounts/{address}/code', function () {
 
             expect(res.success).toEqual(true)
             expect(res.httpCode).toEqual(200)
+            expect(res.body).toEqual({
+                code: expect.stringMatching(HEX_REGEX),
+            })
             expect(res.body?.code?.length).toBeGreaterThan(2)
-            expect(HexUtils.isValid(res.body?.code)).toEqual(true)
         },
     )
 
