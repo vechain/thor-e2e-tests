@@ -4,7 +4,7 @@ import { generateEmptyWallet } from '../../../src/wallet'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { interfaces } from '../../../src/contracts/hardhat'
 import { fundAccount } from '../../../src/account-faucet'
-import { addAddressPadding } from '../../../src/utils/topic-utils'
+import { addAddressPadding } from '../../../src/utils/padding-utils'
 
 describe('WS /subscriptions/event', () => {
     it('should be able to subscribe', async () => {

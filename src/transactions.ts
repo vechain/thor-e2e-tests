@@ -2,6 +2,8 @@ import { address, secp256k1, Transaction } from 'thor-devkit'
 import { NodeKey, Nodes } from './thor-client'
 import { GetTxReceiptResponse, TXID } from './open-api-types-padded'
 import { components } from './open-api-types'
+import { getBlockRef } from './utils/block-utils'
+import { delegateTx } from './account-faucet'
 
 export const generateNonce = (): number => {
     return Math.floor(Math.random() * 1_000_000_000)
@@ -11,13 +13,27 @@ export const sendClauses = async <T extends boolean>(
     clauses: Transaction.Clause[],
     privateKey: string,
     waitForReceipt: T,
+    delegate?: boolean,
     node?: NodeKey,
 ): Promise<T extends true ? GetTxReceiptResponse : TXID> => {
     const client = Nodes[node ?? 1]
 
-    const transaction = await buildTransaction(clauses, privateKey, node)
+    const pubKey = secp256k1.derivePublicKey(Buffer.from(privateKey, 'hex'))
+    const caller = address.fromPublicKey(pubKey)
 
-    const encoded = signTransaction(transaction, privateKey)
+    let transaction = await buildTransaction(clauses, privateKey, node)
+    let encoded: string
+
+    if (delegate) {
+        const delegated = delegateTx(transaction, caller)
+        encoded = signTransaction(
+            delegated.transaction,
+            privateKey,
+            delegated.signature,
+        )
+    } else {
+        encoded = signTransaction(transaction, privateKey)
+    }
 
     const res = await client.sendTransaction({
         raw: `0x${encoded}`,
@@ -54,20 +70,15 @@ export const buildTransaction = async (
 
     await warnIfSimulationFails(clauses, privateKey)
 
-    const bestBlock = await client.getBlock('best')
+    const bestBlockRef = await getBlockRef('best')
     const genesisBlock = await client.getBlock('0')
 
-    if (
-        !bestBlock.success ||
-        !genesisBlock.success ||
-        !bestBlock.body?.id ||
-        !genesisBlock.body?.id
-    ) {
+    if (!genesisBlock.success || !genesisBlock.body?.id) {
         throw new Error('Could not get best block')
     }
 
     return new Transaction({
-        blockRef: bestBlock.body.id.slice(0, 18),
+        blockRef: bestBlockRef,
         expiration: 1000,
         clauses: clauses,
         gasPriceCoef: 0,
@@ -81,10 +92,17 @@ export const buildTransaction = async (
 export const signTransaction = (
     transaction: Transaction,
     privateKey: string,
+    delegationSignature?: Buffer,
 ): string => {
     const pk = Buffer.from(privateKey, 'hex')
+    const signingHash = transaction.signingHash()
+    const signature = secp256k1.sign(signingHash, pk)
 
-    transaction.signature = secp256k1.sign(transaction.signingHash(), pk)
+    if (delegationSignature) {
+        transaction.signature = Buffer.concat([signature, delegationSignature])
+    } else {
+        transaction.signature = signature
+    }
 
     return transaction.encode().toString('hex')
 }

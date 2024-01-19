@@ -1,5 +1,4 @@
 import { Node1Client } from '../../../src/thor-client'
-import assert from 'node:assert'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { sendClauses } from '../../../src/transactions'
 import {
@@ -9,9 +8,18 @@ import {
 } from '../../../src/wallet'
 
 describe('GET /accounts/{address}', function () {
-    const invalidAddresses = ['0x00000000', 'zzzzzzz']
+    const invalidAddresses = [
+        '0x00000000',
+        'zzzzzzz',
+        '0x7567d83b7b8d80addcb281a71d54fc7b3364ffeZ',
+        '0x7567d83b7b8d80addcb281a71d54fc7b3364ffe',
+    ]
 
-    const validRevisions = ['best', '1']
+    const validRevisions = [
+        'best',
+        '1',
+        '0x00000000b4d1257f314d7b3f6720f99853bef846fa0a3d4873a2e1f5f869b42d',
+    ]
 
     let wallet: Wallet
 
@@ -38,8 +46,7 @@ describe('GET /accounts/{address}', function () {
 
         const toAccountBalance = await Node1Client.getAccount(toAccount.address)
 
-        assert(toAccountBalance.success, 'Failed to get account details')
-
+        expect(toAccountBalance.success).toBeTruthy()
         expect(toAccountBalance.body?.balance).toEqual(sendAmount)
         expect(toAccountBalance.httpCode).toEqual(200)
     })
@@ -47,20 +54,20 @@ describe('GET /accounts/{address}', function () {
     it('contract account hasCode', async function () {
         const addr = contractAddresses.energy
         const res = await Node1Client.getAccount(addr)
-        assert(res.success, 'Failed to get account')
+        expect(res.success).toBeTruthy()
         expect(res.httpCode).toEqual(200)
-        expect(res.body.hasCode).toEqual(true)
+        expect(res.body?.hasCode).toEqual(true)
     })
 
     it.each(validRevisions)('valid revision %s', async function (revision) {
         const res = await Node1Client.getAccount(wallet.address, revision)
-        assert(res.success, 'Failed to get account')
+        expect(res.success).toBeTruthy()
         expect(res.httpCode).toEqual(200)
     })
 
     it.each(invalidAddresses)('invalid address: %s', async (a) => {
         const res = await Node1Client.getAccount(a as string)
-        assert(!res.success, 'Should not be successful')
+        expect(res.success).toBeTruthy()
         expect(res.httpCode).toEqual(400)
     })
 })
