@@ -67,7 +67,7 @@ describe('GET /accounts/{address}', function () {
 
     it.each(invalidAddresses)('invalid address: %s', async (a) => {
         const res = await Node1Client.getAccount(a as string)
-        expect(res.success).toBeTruthy()
+        expect(res.success).toBeFalsy()
         expect(res.httpCode).toEqual(400)
     })
 })
