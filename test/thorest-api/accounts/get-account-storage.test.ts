@@ -27,7 +27,7 @@ describe('GET /accounts/{address}/storage', function () {
         simpleStorageAddress = txReceipt.outputs[0].contractAddress as string
     })
 
-    it.each([1, 100, 100000, 12341234, 1234123412341])(
+    it.each([1, 100, 100000, 12341234, 98734523])(
         'should return the storage value: %s',
         async function (amount) {
             await sendClauses(

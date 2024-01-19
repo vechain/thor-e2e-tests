@@ -35,21 +35,21 @@ jobs:
       - name: Run Tests
         run: yarn test
 
-      - name: Publish Results
-        uses: dorny/test-reporter@v1
-        id: test-reporter
-        if: success() || failure() # run this step even if previous step failed
-        with:
-          name: E2E Test Report
-          only-summary: 'false'
-          list-suites: 'all'
-          list-tests: 'all'
-          fail-on-error: 'true'
-          reporter: 'jest-junit'
-          path: |
-            junit.xml
-
-        # TODO: Add PR Comment
-      - name: Add PR Comment
-        run: |
-          echo ${{steps.test-reporter.outputs.url_html}}
+#      - name: Publish Results
+#        uses: dorny/test-reporter@v1
+#        id: test-reporter
+#        if: success() || failure() # run this step even if previous step failed
+#        with:
+#          name: E2E Test Report
+#          only-summary: 'false'
+#          list-suites: 'all'
+#          list-tests: 'all'
+#          fail-on-error: 'true'
+#          reporter: 'jest-junit'
+#          path: |
+#            junit.xml
+#
+#        # TODO: Add PR Comment
+#      - name: Add PR Comment
+#        run: |
+#          echo ${{steps.test-reporter.outputs.url_html}}

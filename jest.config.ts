@@ -4,7 +4,7 @@ const config: Config = {
     verbose: true,
     // seconds to be considered slow
     slowTestThreshold: 25,
-    reporters: ['default', 'jest-junit'],
+    reporters: [['github-actions', { silent: false }], 'summary'],
     // ms to wait before throwing a timeout error
     testTimeout: 35_000,
     json: true,
