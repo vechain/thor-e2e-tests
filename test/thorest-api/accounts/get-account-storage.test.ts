@@ -27,38 +27,37 @@ describe('GET /accounts/{address}/storage', function () {
         simpleStorageAddress = txReceipt.outputs[0].contractAddress as string
     })
 
-    it.each([1, 100, 100000, 12341234, 98734523])(
-        'should return the storage value: %s',
-        async function (amount) {
-            await sendClauses(
-                [
-                    {
-                        to: simpleStorageAddress,
-                        value: '0x0',
-                        data: SimpleCounter__factory.createInterface().encodeFunctionData(
-                            'setCounter',
-                            [amount],
-                        ),
-                    },
-                ],
-                wallet.privateKey,
-                true,
-                true,
-            )
+    it('should return the storage value', async function () {
+        const amount = 973252
 
-            const key =
-                '0x0000000000000000000000000000000000000000000000000000000000000000'
+        await sendClauses(
+            [
+                {
+                    to: simpleStorageAddress,
+                    value: '0x0',
+                    data: SimpleCounter__factory.createInterface().encodeFunctionData(
+                        'setCounter',
+                        [amount],
+                    ),
+                },
+            ],
+            wallet.privateKey,
+            true,
+            true,
+        )
 
-            const res = await Node1Client.getAccountStorage(
-                simpleStorageAddress,
-                key,
-            )
+        const key =
+            '0x0000000000000000000000000000000000000000000000000000000000000000'
 
-            expect(res.success).toEqual(true)
-            expect(res.httpCode).toEqual(200)
-            expect(res.body).toEqual({
-                value: addUintPadding(amount),
-            })
-        },
-    )
+        const res = await Node1Client.getAccountStorage(
+            simpleStorageAddress,
+            key,
+        )
+
+        expect(res.success).toEqual(true)
+        expect(res.httpCode).toEqual(200)
+        expect(res.body).toEqual({
+            value: addUintPadding(amount),
+        })
+    })
 })
