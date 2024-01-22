@@ -7,6 +7,7 @@ import {
     Wallet,
 } from '../../../src/wallet'
 import { HEX_REGEX } from '../../../src/utils/hex-utils'
+import { revisions } from '../../../src/constants'
 
 describe('GET /accounts/{address}', function () {
     const invalidAddresses = [
@@ -14,12 +15,6 @@ describe('GET /accounts/{address}', function () {
         'zzzzzzz',
         '0x7567d83b7b8d80addcb281a71d54fc7b3364ffeZ',
         '0x7567d83b7b8d80addcb281a71d54fc7b3364ffe',
-    ]
-
-    const validRevisions = [
-        'best',
-        '1',
-        '0x00000000b4d1257f314d7b3f6720f99853bef846fa0a3d4873a2e1f5f869b42d',
     ]
 
     let wallet: Wallet
@@ -69,7 +64,7 @@ describe('GET /accounts/{address}', function () {
         })
     })
 
-    it.each(validRevisions)('valid revision %s', async function (revision) {
+    it.each(revisions.valid())('valid revision %s', async function (revision) {
         const res = await Node1Client.getAccount(wallet.address, revision)
         expect(res.success).toBeTruthy()
         expect(res.httpCode).toEqual(200)
@@ -82,6 +77,12 @@ describe('GET /accounts/{address}', function () {
 
     it.each(invalidAddresses)('invalid address: %s', async (a) => {
         const res = await Node1Client.getAccount(a as string)
+        expect(res.success).toBeFalsy()
+        expect(res.httpCode).toEqual(400)
+    })
+
+    it.each(revisions.invalid)('invalid revision: %s', async (r) => {
+        const res = await Node1Client.getAccount(wallet.address, r)
         expect(res.success).toBeFalsy()
         expect(res.httpCode).toEqual(400)
     })

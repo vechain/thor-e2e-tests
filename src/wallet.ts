@@ -22,10 +22,10 @@ export const generateEmptyWallet = () => {
 
 export const generateWalletWithFunds = async () => {
     const wallet = generateEmptyWallet()
-    const res = await fundAccount(wallet.address)
+    const receipt = await fundAccount(wallet.address)
 
     return {
         ...wallet,
-        ...res,
+        ...receipt,
     }
 }
