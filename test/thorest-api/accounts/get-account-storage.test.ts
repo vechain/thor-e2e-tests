@@ -91,6 +91,7 @@ describe('GET /accounts/{address}/storage', function () {
             SIMPLE_STORAGE_KEY,
         )
 
+        // Check the storage position after the transaction
         expect(res.success).toEqual(true)
         expect(res.httpCode).toEqual(200)
         expect(res.body).toEqual({
@@ -98,15 +99,15 @@ describe('GET /accounts/{address}/storage', function () {
         })
 
         // Check the storage position before the transaction
-        const historicAmount = await Node1Client.getAccountStorage(
+        const historic = await Node1Client.getAccountStorage(
             simpleStorageAddress,
             SIMPLE_STORAGE_KEY,
             `${(tx.meta.blockNumber ?? 1) - 1}`,
         )
 
-        expect(historicAmount.success).toEqual(true)
-        expect(historicAmount.httpCode).toEqual(200)
-        expect(historicAmount.body).toEqual({
+        expect(historic.success).toEqual(true)
+        expect(historic.httpCode).toEqual(200)
+        expect(historic.body).toEqual({
             value: addUintPadding(startAmount),
         })
     })
