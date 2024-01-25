@@ -25,6 +25,7 @@ const config: Config = {
     testTimeout: 35_000,
     json: true,
     maxWorkers: 3,
+    setupFilesAfterEnv: ['./jest.setup.ts'],
 }
 
 export default config

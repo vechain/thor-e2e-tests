@@ -8,9 +8,20 @@ import {
 } from '../../../src/wallet'
 import { interfaces } from '../../../src/contracts/hardhat'
 import { getBlockRef } from '../../../src/utils/block-utils'
+import { revisions } from '../../../src/constants'
 
 const CALLER_ADDR = '0x435933c8064b4Ae76bE665428e0307eF2cCFBD68'
 const GAS_PAYER = '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed'
+
+const SEND_VTHO_AMOUNT = '0x100000'
+const SEND_VTHO_CLAUSE = {
+    to: contractAddresses.energy,
+    value: '0x0',
+    data: interfaces.energy.encodeFunctionData('transfer', [
+        generateEmptyWallet().address,
+        SEND_VTHO_AMOUNT,
+    ]),
+}
 
 describe('POST /accounts/*', function () {
     let wallet: Wallet
@@ -60,7 +71,7 @@ describe('POST /accounts/*', function () {
                     {
                         sender: wallet.address,
                         recipient: to.address,
-                        amount: '0x100000',
+                        amount: tokenAmount,
                     },
                 ],
                 gasUsed: expect.any(Number),
@@ -103,6 +114,62 @@ describe('POST /accounts/*', function () {
             },
         ])
     })
+
+    it('should be able to query historic revisions', async () => {
+        const request = {
+            clauses: [SEND_VTHO_CLAUSE],
+            caller: wallet.address,
+        }
+
+        // generated wallet had no funds configured in genesis, so this should be reverted
+        const historicCall = await Node1Client.executeAccountBatch(request, '0')
+
+        expect(historicCall.success).toEqual(true)
+        expect(historicCall.httpCode).toEqual(200)
+        expect(historicCall.body?.[0]?.reverted).toEqual(true)
+
+        // generated wallet was funded, so this should be successful
+        const currentCall = await Node1Client.executeAccountBatch(
+            request,
+            'best',
+        )
+
+        expect(currentCall.success).toEqual(true)
+        expect(currentCall.httpCode).toEqual(200)
+        expect(currentCall.body?.[0]?.reverted).toEqual(false)
+    })
+
+    it.each(revisions.valid())(
+        'should be able execute clauses for valid revision: %s',
+        async (revision) => {
+            const res = await Node1Client.executeAccountBatch(
+                {
+                    clauses: [SEND_VTHO_CLAUSE],
+                    caller: wallet.address,
+                },
+                revision,
+            )
+
+            expect(res.success).toEqual(true)
+            expect(res.httpCode).toEqual(200)
+        },
+    )
+
+    it.each(revisions.validNotFound)(
+        'valid revisions not found: %s',
+        async function (revision) {
+            const res = await Node1Client.executeAccountBatch(
+                {
+                    clauses: [SEND_VTHO_CLAUSE],
+                    caller: wallet.address,
+                },
+                revision,
+            )
+
+            expect(res.success).toEqual(false)
+            expect(res.httpCode).toEqual(400)
+        },
+    )
 
     describe('execute with evm fields', () => {
         it('should return the correct block ref', async () => {

@@ -5,9 +5,7 @@ pragma solidity 0.8.20;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract MyERC20 is ERC20 {
-    constructor() ERC20("MyERC20", "MYERC20") {
-        _mint(msg.sender, 1000000000000000000000000000);
-    }
+    constructor() ERC20("MyERC20", "MYERC20") {}
 
     function faucet(uint256 amount) external {
         _mint(msg.sender, amount);
