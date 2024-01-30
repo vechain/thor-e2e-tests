@@ -1,11 +1,11 @@
 import { Node1Client } from '../../../src/thor-client'
 import assert from 'node:assert'
-import { generateWalletWithFunds } from '../../../src/wallet'
+import { readPopulatedData } from '../../../src/populated-data'
 
 describe('POST /logs/transfers', () => {
     it('should find an event log', async () => {
-        // triggers a VET transfer event
-        const { receipt } = await generateWalletWithFunds()
+        const chainData = readPopulatedData()
+        const receipt = chainData.transfers[0].receipt
 
         const eventLogs = await Node1Client.queryTransferLogs({
             range: {

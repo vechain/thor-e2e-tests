@@ -1,5 +1,5 @@
 import { Node1Client } from '../../../src/thor-client'
-import { generateWalletWithFunds, Wallet } from '../../../src/wallet'
+import { FundedAccount, generateWalletWithFunds } from '../../../src/wallet'
 import { sendClauses } from '../../../src/transactions'
 import { SimpleCounter__factory } from '../../../typechain-types'
 import { addUintPadding } from '../../../src/utils/padding-utils'
@@ -31,7 +31,7 @@ const setSimpleStorage = async (
 }
 
 describe('GET /accounts/{address}/storage', function () {
-    let wallet: Wallet
+    let wallet: FundedAccount
     let simpleStorageAddress: string
 
     beforeAll(async () => {

@@ -5,6 +5,7 @@ import '@nomiclabs/hardhat-truffle5'
 import '@vechain/hardhat-vechain'
 import '@vechain/hardhat-ethers'
 import 'hardhat-jest'
+import { faucetAccounts, faucetMnemonic } from './src/constants'
 
 const config: HardhatUserConfig = {
     defaultNetwork: 'vechain',
@@ -14,9 +15,8 @@ const config: HardhatUserConfig = {
         vechain: {
             url: 'http://127.0.0.1:8669',
             accounts: {
-                mnemonic:
-                    'denial kitchen pet squirrel other broom bar gas better priority spoil cross',
-                count: 100,
+                mnemonic: faucetMnemonic.join(' '),
+                count: faucetAccounts.length,
             },
             gas: 10000000,
         },

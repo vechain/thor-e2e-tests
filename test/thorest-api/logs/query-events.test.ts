@@ -1,12 +1,12 @@
 import { Node1Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import assert from 'node:assert'
-import { generateWalletWithFunds } from '../../../src/wallet'
+import { readPopulatedData } from '../../../src/populated-data'
 
 describe('POST /logs/event', () => {
     it('should find an event log', async () => {
-        // triggers a VTHO transfer event
-        const { receipt } = await generateWalletWithFunds()
+        const chainData = readPopulatedData()
+        const receipt = chainData.transfers[0].receipt
 
         const eventLogs = await Node1Client.queryEventLogs({
             range: {
@@ -16,7 +16,7 @@ describe('POST /logs/event', () => {
             },
             options: {
                 offset: 0,
-                limit: 100,
+                limit: 10_000,
             },
             criteriaSet: [
                 {

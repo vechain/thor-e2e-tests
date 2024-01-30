@@ -20,3 +20,4 @@ results.json
 .DS_Store
 
 junit.xml
+.chain-data.json

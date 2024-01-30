@@ -1,28 +1,8 @@
 import { sendClauses } from './transactions'
 import { contractAddresses } from './contracts/addresses'
 import { interfaces } from './contracts/hardhat'
-import { HDNode, secp256k1, Transaction } from 'thor-devkit'
-
-type AccountFaucet = {
-    address: string
-    privateKey: string
-}
-export const faucetMnemonic =
-    'denial kitchen pet squirrel other broom bar gas better priority spoil cross'.split(
-        ' ',
-    )
-
-const faucetAccounts: AccountFaucet[] = []
-
-const hdNode = HDNode.fromMnemonic(faucetMnemonic)
-
-for (let i = 0; i < 100; i++) {
-    const node = hdNode.derive(i)
-    faucetAccounts.push({
-        address: node.address,
-        privateKey: node.privateKey!.toString('hex'),
-    })
-}
+import { secp256k1, Transaction } from 'thor-devkit'
+import { faucetAccounts } from './constants'
 
 const FAUCET_AMOUNT = '0x65536000000000000000000'
 
@@ -72,4 +52,4 @@ export const delegateTx = (transaction: Transaction, senderAddress: string) => {
     }
 }
 
-export { faucetAccounts, fundAccount, FAUCET_AMOUNT }
+export { fundAccount, FAUCET_AMOUNT }

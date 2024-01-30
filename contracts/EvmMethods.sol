@@ -22,7 +22,7 @@ contract EvmMethods {
     function getBlockDifficulty() public view returns (uint) {
         return block.difficulty;
     }
-
+    
     function getGasLimit() public view returns (uint) {
         return block.gaslimit;
     }
@@ -43,7 +43,7 @@ contract EvmMethods {
         return gasleft();
     }
 
-    function getMsgData() public view returns (bytes memory) {
+    function getMsgData() public pure returns (bytes memory) {
         return msg.data;
     }
 
@@ -51,7 +51,7 @@ contract EvmMethods {
         return msg.sender;
     }
 
-    function getMsgSig() public view returns (bytes4) {
+    function getMsgSig() public pure returns (bytes4) {
         return msg.sig;
     }
 
@@ -83,7 +83,7 @@ contract EvmMethods {
         require(condition, message);
     }
 
-    function assertCondition(bool condition, string memory message) public pure {
+    function assertCondition(bool condition) public pure {
         assert(condition);
     }
 

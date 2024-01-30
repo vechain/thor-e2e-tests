@@ -2,9 +2,9 @@ import { Node1Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { HEX_AT_LEAST_1 } from '../../../src/utils/hex-utils'
 import {
+    FundedAccount,
     generateEmptyWallet,
     generateWalletWithFunds,
-    Wallet,
 } from '../../../src/wallet'
 import { sendClauses } from '../../../src/transactions'
 import { SimpleCounter__factory } from '../../../typechain-types'
@@ -18,7 +18,7 @@ describe('GET /accounts/{address}/code', function () {
         generateEmptyWallet(),
     ].map((w) => w.address)
 
-    let wallet: Wallet
+    let wallet: FundedAccount
 
     beforeAll(async () => {
         wallet = await generateWalletWithFunds()

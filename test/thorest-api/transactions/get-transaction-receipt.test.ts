@@ -1,10 +1,11 @@
 import { Node1Client } from '../../../src/thor-client'
 import assert from 'node:assert'
-import { generateWalletWithFunds } from '../../../src/wallet'
+import { readPopulatedData } from '../../../src/populated-data'
 
 describe('GET /transactions/{id}/receipt', function () {
     it('should get transaction receipt', async function () {
-        const { receipt } = await generateWalletWithFunds()
+        const chainData = readPopulatedData()
+        const receipt = chainData.transfers[0].receipt
 
         assert(receipt.meta.txID, 'Failed to get transaction receipt')
 

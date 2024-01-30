@@ -14,6 +14,7 @@ describe('WS /subscriptions/beat2', () => {
 
         const { receipt } = await generateWalletWithFunds()
         const sender = receipt.outputs?.[0].transfers?.[0].sender
+        const recipient = receipt.outputs?.[0].transfers?.[0].recipient
 
         //sleep for 1 sec to ensure the beat is received
         await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -24,13 +25,22 @@ describe('WS /subscriptions/beat2', () => {
 
         assert(!!relevantBeat?.bloom, 'Beat not found')
         assert(sender, 'Sender not found')
+        assert(recipient, 'Recipient not found')
 
-        const result = testBloomForAddress(
+        const hasSender = testBloomForAddress(
             relevantBeat.bloom,
             relevantBeat.k,
             sender,
         )
 
-        expect(result).toEqual(true)
+        expect(hasSender).toEqual(true)
+
+        const hasRecipient = testBloomForAddress(
+            relevantBeat.bloom,
+            relevantBeat.k,
+            recipient,
+        )
+
+        expect(hasRecipient).toEqual(true)
     })
 })
