@@ -1,13 +1,10 @@
 import { address, secp256k1 } from 'thor-devkit'
 import { fundAccount } from './account-faucet'
-
-export type Wallet = {
-    privateKey: string
-    address: string
-}
+import { ethers } from 'hardhat'
 
 export type EmptyAccount = ReturnType<typeof generateEmptyWallet>
 export type FundedAccount = Awaited<ReturnType<typeof generateWalletWithFunds>>
+export type EthersSigner = Awaited<ReturnType<typeof ethers.getSigner>>
 
 export const generateEmptyWallet = () => {
     const privateKey = secp256k1.generatePrivateKey()
@@ -28,4 +25,12 @@ export const generateWalletWithFunds = async () => {
         ...wallet,
         ...receipt,
     }
+}
+
+export const randomEthersSigner = async (): Promise<EthersSigner> => {
+    const wallet = await ethers.getSigners()
+
+    const randomIndex = Math.floor(Math.random() * wallet.length)
+
+    return wallet[randomIndex]
 }

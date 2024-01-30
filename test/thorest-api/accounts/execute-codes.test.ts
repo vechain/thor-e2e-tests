@@ -2,9 +2,9 @@ import { Node1Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { MyERC20__factory } from '../../../typechain-types'
 import {
+    FundedAccount,
     generateEmptyWallet,
     generateWalletWithFunds,
-    Wallet,
 } from '../../../src/wallet'
 import { interfaces } from '../../../src/contracts/hardhat'
 import { getBlockRef } from '../../../src/utils/block-utils'
@@ -24,7 +24,7 @@ const SEND_VTHO_CLAUSE = {
 }
 
 describe('POST /accounts/*', function () {
-    let wallet: Wallet
+    let wallet: FundedAccount
 
     beforeAll(async () => {
         wallet = await generateWalletWithFunds()

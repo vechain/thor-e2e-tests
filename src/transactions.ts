@@ -1,6 +1,5 @@
 import { address, secp256k1, Transaction } from 'thor-devkit'
 import { NodeKey, Nodes } from './thor-client'
-import { GetTxReceiptResponse, TXID } from './open-api-types-padded'
 import { components } from './open-api-types'
 import { getBlockRef } from './utils/block-utils'
 import { delegateTx } from './account-faucet'
@@ -8,6 +7,9 @@ import { delegateTx } from './account-faucet'
 export const generateNonce = (): number => {
     return Math.floor(Math.random() * 1_000_000_000)
 }
+
+type GetTxReceiptResponse = components['schemas']['GetTxReceiptResponse']
+type TXID = components['schemas']['TXID']
 
 export const sendClauses = async <T extends boolean>(
     clauses: Transaction.Clause[],
@@ -52,7 +54,7 @@ export const sendClauses = async <T extends boolean>(
         return res.body as T extends true ? GetTxReceiptResponse : TXID
     }
 
-    const receipt = await pollReceipt(res.body.id, node)
+    const receipt = await pollReceipt(res.body?.id ?? '', node)
 
     if (receipt.reverted) {
         await warnTxReverted(receipt, node)
@@ -117,7 +119,7 @@ export const pollReceipt = async (
         setInterval(async () => {
             const receipt = await client.getTransactionReceipt(txId)
 
-            if (receipt.success && receipt.body?.meta.txID === txId) {
+            if (receipt.success && receipt.body?.meta?.txID === txId) {
                 resolve(receipt.body)
             }
         }, 1000)
@@ -176,18 +178,20 @@ const warnTxReverted = async (
     receipt: GetTxReceiptResponse,
     nodeKey?: NodeKey,
 ) => {
-    if (!receipt.meta.blockNumber) return
+    if (!receipt.meta?.blockNumber) return
 
     const client = Nodes[nodeKey ?? 1]
 
-    const block = await client.getBlock(receipt.meta.blockNumber, true)
+    const res = await client.getBlock(receipt.meta.blockNumber, true)
 
-    if (!block.success || !block.body) return
+    if (!res.success || !res.body) return
 
-    const txIndex = block.body.transactions.findIndex(
-        (tx: components['schemas']['Tx']) => tx.id === receipt.meta.txID,
+    const block = res.body as components['schemas']['GetBlockResponse']
+
+    const txIndex = block.transactions?.findIndex(
+        (tx: components['schemas']['Tx']) => tx.id === receipt.meta?.txID,
     )
-    const clauseIndex = receipt.outputs.length
+    const clauseIndex = receipt.outputs?.length
 
     const debugged = await client.traceClause({
         target: `${receipt.meta.blockID}/${txIndex}/${clauseIndex}`,

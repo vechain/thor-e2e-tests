@@ -1,16 +1,15 @@
 import { Node1Client } from '../../../src/thor-client'
 import assert from 'node:assert'
-import { generateWalletWithFunds } from '../../../src/wallet'
+import { readRandomTransfer } from '../../../src/populated-data'
 
 describe('POST /logs/transfers', () => {
     it('should find an event log', async () => {
-        // triggers a VET transfer event
-        const { receipt } = await generateWalletWithFunds()
+        const transfer = readRandomTransfer()
 
         const eventLogs = await Node1Client.queryTransferLogs({
             range: {
-                to: receipt.meta.blockNumber,
-                from: receipt.meta.blockNumber,
+                to: transfer.meta.blockNumber,
+                from: transfer.meta.blockNumber,
                 unit: 'block',
             },
             options: {
@@ -19,7 +18,7 @@ describe('POST /logs/transfers', () => {
             },
             criteriaSet: [
                 {
-                    txOrigin: receipt.meta.txOrigin,
+                    txOrigin: transfer.meta?.txOrigin,
                 },
             ],
         })
@@ -27,10 +26,10 @@ describe('POST /logs/transfers', () => {
         assert(eventLogs.success, 'eventLogs.success is false')
 
         const relevantLog = eventLogs.body.find((log) => {
-            return log.meta?.txID === receipt.meta.txID
+            return log.meta?.txID === transfer.meta?.txID
         })
 
         expect(relevantLog).not.toBeUndefined()
-        expect(relevantLog?.meta?.txOrigin).toEqual(receipt.meta.txOrigin)
+        expect(relevantLog?.meta?.txOrigin).toEqual(transfer.meta?.txOrigin)
     })
 })

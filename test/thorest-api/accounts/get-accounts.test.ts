@@ -1,13 +1,9 @@
 import { Node1Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
-import { sendClauses } from '../../../src/transactions'
-import {
-    generateEmptyWallet,
-    generateWalletWithFunds,
-    Wallet,
-} from '../../../src/wallet'
 import { HEX_REGEX } from '../../../src/utils/hex-utils'
 import { revisions } from '../../../src/constants'
+import { readRandomTransfer, Transfer } from '../../../src/populated-data'
+import { FAUCET_AMOUNT } from '../../../src/account-faucet'
 
 describe('GET /accounts/{address}', function () {
     const invalidAddresses = [
@@ -17,35 +13,19 @@ describe('GET /accounts/{address}', function () {
         '0x7567d83b7b8d80addcb281a71d54fc7b3364ffe',
     ]
 
-    let wallet: Wallet
+    let transfer: Transfer
 
-    beforeAll(async () => {
-        wallet = await generateWalletWithFunds()
+    beforeAll(() => {
+        transfer = readRandomTransfer()
     })
 
     it('correct balance', async function () {
-        const toAccount = generateEmptyWallet()
+        const res = await Node1Client.getAccount(transfer.vet.recipient)
 
-        const sendAmount = '0x100'
-
-        await sendClauses(
-            [
-                {
-                    to: toAccount.address,
-                    value: sendAmount,
-                    data: '0x',
-                },
-            ],
-            wallet.privateKey,
-            true,
-        )
-
-        const toAccountBalance = await Node1Client.getAccount(toAccount.address)
-
-        expect(toAccountBalance.success).toBeTruthy()
-        expect(toAccountBalance.httpCode).toEqual(200)
-        expect(toAccountBalance.body).toEqual({
-            balance: sendAmount,
+        expect(res.success).toBeTruthy()
+        expect(res.httpCode).toEqual(200)
+        expect(res.body).toEqual({
+            balance: FAUCET_AMOUNT,
             energy: expect.stringMatching(HEX_REGEX),
             hasCode: false,
         })
@@ -65,7 +45,10 @@ describe('GET /accounts/{address}', function () {
     })
 
     it.each(revisions.valid())('valid revision %s', async function (revision) {
-        const res = await Node1Client.getAccount(wallet.address, revision)
+        const res = await Node1Client.getAccount(
+            transfer.vet.recipient,
+            revision,
+        )
         expect(res.success).toBeTruthy()
         expect(res.httpCode).toEqual(200)
         expect(res.body).toEqual({
@@ -82,7 +65,7 @@ describe('GET /accounts/{address}', function () {
     })
 
     it.each(revisions.invalid)('invalid revision: %s', async (r) => {
-        const res = await Node1Client.getAccount(wallet.address, r)
+        const res = await Node1Client.getAccount(transfer.vet.recipient, r)
         expect(res.success).toBeFalsy()
         expect(res.httpCode).toEqual(400)
     })

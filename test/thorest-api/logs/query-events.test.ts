@@ -1,17 +1,16 @@
 import { Node1Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import assert from 'node:assert'
-import { generateWalletWithFunds } from '../../../src/wallet'
+import { readRandomTransfer } from '../../../src/populated-data'
 
 describe('POST /logs/event', () => {
     it('should find an event log', async () => {
-        // triggers a VTHO transfer event
-        const { receipt } = await generateWalletWithFunds()
+        const transfer = readRandomTransfer()
 
         const eventLogs = await Node1Client.queryEventLogs({
             range: {
-                to: receipt.meta.blockNumber,
-                from: receipt.meta.blockNumber,
+                to: transfer.meta.blockNumber,
+                from: transfer.meta.blockNumber,
                 unit: 'block',
             },
             options: {
@@ -30,10 +29,10 @@ describe('POST /logs/event', () => {
         expect(eventLogs.httpCode).toEqual(200)
 
         const relevantLog = eventLogs.body.find((log) => {
-            return log.meta?.txID === receipt.meta.txID
+            return log.meta?.txID === transfer.meta.txID
         })
 
         expect(relevantLog).not.toBeUndefined()
-        expect(relevantLog?.meta?.txOrigin).toEqual(receipt.meta.txOrigin)
+        expect(relevantLog?.meta?.txOrigin).toEqual(transfer.meta.txOrigin)
     })
 })

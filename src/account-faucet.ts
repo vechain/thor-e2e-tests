@@ -1,31 +1,15 @@
 import { sendClauses } from './transactions'
 import { contractAddresses } from './contracts/addresses'
 import { interfaces } from './contracts/hardhat'
-import { HDNode, secp256k1, Transaction } from 'thor-devkit'
-
-type AccountFaucet = {
-    address: string
-    privateKey: string
-}
-export const faucetMnemonic =
-    'denial kitchen pet squirrel other broom bar gas better priority spoil cross'.split(
-        ' ',
-    )
-
-const faucetAccounts: AccountFaucet[] = []
-
-const hdNode = HDNode.fromMnemonic(faucetMnemonic)
-
-for (let i = 0; i < 100; i++) {
-    const node = hdNode.derive(i)
-    faucetAccounts.push({
-        address: node.address,
-        privateKey: node.privateKey!.toString('hex'),
-    })
-}
+import { secp256k1, Transaction } from 'thor-devkit' // import { faucetAccounts } from './constants'
+import faucetAccounts from './faucet-accounts.json'
 
 const FAUCET_AMOUNT = '0x65536000000000000000000'
 
+/**
+ * Fund an account using the faucet. VET and VTHO will be sent to the account
+ * @param account
+ */
 const fundAccount = async (account: string) => {
     const randomIndex = Math.floor(Math.random() * faucetAccounts.length)
     const fundingAccount = faucetAccounts[randomIndex]
@@ -53,6 +37,13 @@ const fundAccount = async (account: string) => {
     return { receipt, amount: FAUCET_AMOUNT }
 }
 
+/**
+ * Delegate a transaction using the faucet
+ * @param transaction - The transaction to delegate
+ * @param senderAddress - The address of the sender
+ *
+ * @returns {Transaction, Buffer} - The updated transaction and the delegate signature
+ */
 export const delegateTx = (transaction: Transaction, senderAddress: string) => {
     transaction.body.reserved = { features: 1 }
 
@@ -72,4 +63,4 @@ export const delegateTx = (transaction: Transaction, senderAddress: string) => {
     }
 }
 
-export { faucetAccounts, fundAccount, FAUCET_AMOUNT }
+export { fundAccount, FAUCET_AMOUNT }

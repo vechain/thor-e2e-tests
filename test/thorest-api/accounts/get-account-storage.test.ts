@@ -1,5 +1,5 @@
 import { Node1Client } from '../../../src/thor-client'
-import { generateWalletWithFunds, Wallet } from '../../../src/wallet'
+import { FundedAccount, generateWalletWithFunds } from '../../../src/wallet'
 import { sendClauses } from '../../../src/transactions'
 import { SimpleCounter__factory } from '../../../typechain-types'
 import { addUintPadding } from '../../../src/utils/padding-utils'
@@ -31,7 +31,7 @@ const setSimpleStorage = async (
 }
 
 describe('GET /accounts/{address}/storage', function () {
-    let wallet: Wallet
+    let wallet: FundedAccount
     let simpleStorageAddress: string
 
     beforeAll(async () => {
@@ -49,8 +49,8 @@ describe('GET /accounts/{address}/storage', function () {
             true,
         )
 
-        expect(txReceipt.outputs[0].contractAddress).toBeTruthy()
-        simpleStorageAddress = txReceipt.outputs[0].contractAddress as string
+        expect(txReceipt.outputs?.[0].contractAddress).toBeTruthy()
+        simpleStorageAddress = txReceipt.outputs?.[0].contractAddress as string
     })
 
     it('should return the storage value', async function () {
@@ -102,7 +102,7 @@ describe('GET /accounts/{address}/storage', function () {
         const historic = await Node1Client.getAccountStorage(
             simpleStorageAddress,
             SIMPLE_STORAGE_KEY,
-            `${(tx.meta.blockNumber ?? 1) - 1}`,
+            `${(tx.meta?.blockNumber ?? 1) - 1}`,
         )
 
         expect(historic.success).toEqual(true)

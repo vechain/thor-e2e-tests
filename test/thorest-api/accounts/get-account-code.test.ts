@@ -1,11 +1,7 @@
 import { Node1Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { HEX_AT_LEAST_1 } from '../../../src/utils/hex-utils'
-import {
-    generateEmptyWallet,
-    generateWalletWithFunds,
-    Wallet,
-} from '../../../src/wallet'
+import { generateEmptyWallet } from '../../../src/wallet'
 import { sendClauses } from '../../../src/transactions'
 import { SimpleCounter__factory } from '../../../typechain-types'
 import { revisions } from '../../../src/constants'
@@ -17,12 +13,6 @@ describe('GET /accounts/{address}/code', function () {
         generateEmptyWallet(),
         generateEmptyWallet(),
     ].map((w) => w.address)
-
-    let wallet: Wallet
-
-    beforeAll(async () => {
-        wallet = await generateWalletWithFunds()
-    })
 
     it.each(accountAddress)(
         'should return no code for newly created address: %s',
@@ -67,6 +57,8 @@ describe('GET /accounts/{address}/code', function () {
     })
 
     it('should be able to query historic revisions', async () => {
+        const wallet = generateEmptyWallet()
+
         const txReceipt = await sendClauses(
             [
                 {
@@ -77,9 +69,10 @@ describe('GET /accounts/{address}/code', function () {
             ],
             wallet.privateKey,
             true,
+            true,
         )
 
-        const address = txReceipt.outputs[0].contractAddress as string
+        const address = txReceipt.outputs?.[0].contractAddress as string
 
         expect(address).toBeTruthy()
 
@@ -92,7 +85,7 @@ describe('GET /accounts/{address}/code', function () {
 
         const codeForRevision = await Node1Client.getAccountCode(
             address,
-            `${(txReceipt.meta.blockNumber ?? 1) - 1}`,
+            `${(txReceipt.meta?.blockNumber ?? 1) - 1}`,
         )
 
         // Check the bytecode is equal to 0x for the previous revision
