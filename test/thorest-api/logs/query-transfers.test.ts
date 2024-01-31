@@ -219,8 +219,6 @@ describe('POST /logs/transfers', () => {
 
             const queriedTxIds = new Set<string>()
 
-            let offset = 0
-
             while (queriedTxIds.size < transferCount) {
                 const transferLogs = await Node1Client.queryTransferLogs({
                     range: {
@@ -229,7 +227,7 @@ describe('POST /logs/transfers', () => {
                         unit: 'block',
                     },
                     options: {
-                        offset: offset++,
+                        offset: queriedTxIds.size,
                         limit: 10,
                     },
                     criteriaSet: [],
@@ -238,16 +236,20 @@ describe('POST /logs/transfers', () => {
                 expect(transferLogs.success).toEqual(true)
                 expect(transferLogs.httpCode).toEqual(200)
 
-                if (transferLogs.body?.length === 0) {
+                if (!transferLogs.body) {
                     break
                 }
 
-                const txId = transferLogs.body?.[0]?.meta?.txID
+                const txIds = transferLogs.body
+                    ?.map((log) => log?.meta?.txID)
+                    .filter((txId) => txId !== undefined) as string[]
 
-                expect(txId).toBeTruthy()
+                for (const txId of txIds) {
+                    expect(queriedTxIds.has(txId)).toEqual(false)
 
-                if (requiredTxIds.has(txId as string)) {
-                    queriedTxIds.add(txId as string)
+                    if (requiredTxIds.has(txId)) {
+                        queriedTxIds.add(txId)
+                    }
                 }
             }
 

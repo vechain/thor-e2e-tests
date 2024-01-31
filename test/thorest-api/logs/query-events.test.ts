@@ -40,7 +40,7 @@ describe('POST /logs/event', () => {
     let wallet: ThorWallet
 
     beforeAll(async () => {
-        wallet = await ThorWallet.new(true).then((r) => r.wallet)
+        wallet = await ThorWallet.new(false).then((r) => r.wallet)
     })
 
     it('event log should be included in query', async () => {
@@ -277,9 +277,11 @@ describe('POST /logs/event', () => {
 
             const queriedTxIds = new Set<string>()
 
-            let offset = 0
+            let iteration = 0
 
             while (queriedTxIds.size < transferCount) {
+                iteration++
+
                 const eventLogs = await Node1Client.queryEventLogs({
                     range: {
                         from: firstBlock,
@@ -287,7 +289,7 @@ describe('POST /logs/event', () => {
                         unit: 'block',
                     },
                     options: {
-                        offset: offset++,
+                        offset: queriedTxIds.size,
                         limit: 10,
                     },
                     criteriaSet: [
@@ -300,18 +302,24 @@ describe('POST /logs/event', () => {
                 expect(eventLogs.success).toEqual(true)
                 expect(eventLogs.httpCode).toEqual(200)
 
-                if (eventLogs.body?.length === 0) {
+                if (!eventLogs.body) {
                     break
                 }
 
-                const txId = eventLogs.body?.[0]?.meta?.txID
+                const txIds = eventLogs.body
+                    ?.map((log) => log?.meta?.txID)
+                    .filter((txId) => txId !== undefined) as string[]
 
-                expect(txId).toBeTruthy()
+                for (const txId of txIds) {
+                    expect(queriedTxIds.has(txId)).toEqual(false)
 
-                if (requiredTxIds.has(txId as string)) {
-                    queriedTxIds.add(txId as string)
+                    if (requiredTxIds.has(txId)) {
+                        queriedTxIds.add(txId)
+                    }
                 }
             }
+
+            console.error('Iterations: ' + iteration)
 
             expect(queriedTxIds.size).toEqual(transferCount)
             expect(queriedTxIds).toEqual(requiredTxIds)

@@ -70,6 +70,7 @@ const populate = async () => {
     const alreadyPopulated = await checkIfPopulated()
 
     if (alreadyPopulated) {
+        console.log('\nChain is already populated - skipping\n')
         return
     }
 
