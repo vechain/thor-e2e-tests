@@ -4,7 +4,6 @@ import '@nomicfoundation/hardhat-toolbox'
 import '@nomiclabs/hardhat-truffle5'
 import '@vechain/hardhat-vechain'
 import '@vechain/hardhat-ethers'
-import 'hardhat-jest'
 import { faucetAccountLength, faucetMnemonic } from './src/constants'
 
 const config: HardhatUserConfig = {
@@ -18,7 +17,7 @@ const config: HardhatUserConfig = {
                 mnemonic: faucetMnemonic.join(' '),
                 count: faucetAccountLength,
             },
-            gas: 10000000,
+            gas: 10_000_000,
         },
     },
 }

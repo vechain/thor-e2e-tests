@@ -65,6 +65,7 @@
     "async-mutex": "^0.4.0",
     "axios": "^1.6.5",
     "bignumber.js": "^9.1.2",
+    "jest-extended": "^4.0.2",
     "mocha-junit-reporter": "^2.2.1",
     "proper-lockfile": "^4.1.2",
     "ws": "^8.16.0"

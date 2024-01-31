@@ -1,17 +1,17 @@
 const PREFIX = '0x'
-const PREFIX_REGEX = /^0[xX]/
-export const HEX_REGEX = /^(0[xX])?[a-fA-F0-9]+$/
+const PREFIX_REGEX = /^0x/
+export const HEX_REGEX = /^(0x)?[a-fA-F0-9]*$/
 
-export const HEX_AT_LEAST_1 = /^(0[xX])?[a-fA-F0-9]+$/
+export const HEX_AT_LEAST_1 = /^(0x)?[a-fA-F0-9]+$/
 
 // Can be used to match a 16 character hex string with or without the hex prefix, eg. Block Ref
-export const HEX_REGEX_16 = /^(0[xX])?[a-fA-F0-9]{16}$/
+export const HEX_REGEX_16 = /^(0x)?[a-fA-F0-9]{16}$/
 
 // Can be used to match a 40 character hex string with or without the hex prefix, eg. Account Address
-export const HEX_REGEX_40 = /^(0[xX])?[a-fA-F0-9]{40}$/
+export const HEX_REGEX_40 = /^(0x)?[a-fA-F0-9]{40}$/
 
 // Can be used to match a 64 character hex string with or without the hex prefix, eg. Block ID
-export const HEX_REGEX_64 = /^(0[xX])?[a-fA-F0-9]{64}$/
+export const HEX_REGEX_64 = /^(0x)?[a-fA-F0-9]{64}$/
 
 /**
  * Returns the provied hex string with the hex prefix removed.

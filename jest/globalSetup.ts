@@ -1,12 +1,14 @@
-import { generateWalletWithFunds } from '../src/wallet'
+import { generateEmptyWallet, generateWalletWithFunds } from '../src/wallet'
 import { Node1Client } from '../src/thor-client'
 import { ethers } from 'hardhat'
 import { components } from '../src/open-api-types'
+import fs from 'fs'
+import { readRandomTransfer } from '../src/populated-data'
+import { deployContract } from '../src/transactions'
 
 export const POPULATED_DATA_FILENAME = './.chain-data.json'
 
 const ContractKeys = [
-    'EventsContract',
     'EvmMethods',
     'MyERC20',
     'MyERC721',
@@ -15,7 +17,9 @@ const ContractKeys = [
 
 export type ContractKey = (typeof ContractKeys)[number]
 
-type GetTxReceiptResponse = components['schemas']['GetTxReceiptResponse']
+type GetTxReceiptResponse = Required<
+    components['schemas']['GetTxReceiptResponse']
+>
 
 export type PopulatedChainData = {
     transfers: GetTxReceiptResponse[]
@@ -39,14 +43,14 @@ const populateVetAndVtho = async (): Promise<GetTxReceiptResponse[]> => {
             ),
         )
 
-        accounts.push(...res.map((r) => r.receipt))
+        accounts.push(...res.map((r) => r.receipt as GetTxReceiptResponse))
     }
 
     return accounts
 }
 
 const deploySmartContracts = async (): Promise<Record<ContractKey, string>> => {
-    const signers = await ethers.getSigners()
+    const wallet = generateEmptyWallet()
 
     const contracts: Partial<Record<ContractKey, string>> = {}
 
@@ -54,9 +58,11 @@ const deploySmartContracts = async (): Promise<Record<ContractKey, string>> => {
         ContractKeys.map(async (contractName, i) => {
             const factory = await ethers.getContractFactory(contractName)
 
-            const contract = await factory.connect(signers[i]).deploy()
-
-            contracts[contractName] = await contract.getAddress()
+            contracts[contractName] = await deployContract(
+                factory.bytecode,
+                wallet.privateKey,
+                true,
+            )
 
             console.log(
                 'Deployed [' +
@@ -71,22 +77,49 @@ const deploySmartContracts = async (): Promise<Record<ContractKey, string>> => {
     return contracts as Record<ContractKey, string>
 }
 
+/**
+ * Checks if the chain is already populated with data. Checks a random 25 transactions
+ */
+const checkIfPopulated = async (): Promise<boolean> => {
+    if (!fs.existsSync(POPULATED_DATA_FILENAME)) {
+        return false
+    }
+
+    for (let i = 0; i < 25; i++) {
+        const transfer = readRandomTransfer()
+
+        const acc = await Node1Client.getAccount(transfer.vet.recipient)
+
+        if (acc.body?.balance === '0x' || acc.body?.energy === '0x') {
+            return false
+        }
+    }
+
+    return true
+}
+
 const populate = async () => {
-    // if (fs.existsSync(POPULATED_DATA_FILENAME)) {
-    //     fs.unlinkSync(POPULATED_DATA_FILENAME)
-    // }
-    //
-    // const [transfers, contracts] = await Promise.all([
-    //     populateVetAndVtho(),
-    //     deploySmartContracts(),
-    // ])
-    //
-    // const data: PopulatedChainData = {
-    //     transfers,
-    //     contracts,
-    // }
-    //
-    // fs.writeFileSync(POPULATED_DATA_FILENAME, JSON.stringify(data, null, 4))
+    const alreadyPopulated = await checkIfPopulated()
+
+    if (alreadyPopulated) {
+        return
+    }
+
+    if (fs.existsSync(POPULATED_DATA_FILENAME)) {
+        fs.unlinkSync(POPULATED_DATA_FILENAME)
+    }
+
+    const [transfers, contracts] = await Promise.all([
+        populateVetAndVtho(),
+        deploySmartContracts(),
+    ])
+
+    const data: PopulatedChainData = {
+        transfers,
+        contracts,
+    }
+
+    fs.writeFileSync(POPULATED_DATA_FILENAME, JSON.stringify(data, null, 4))
 }
 
 export default populate

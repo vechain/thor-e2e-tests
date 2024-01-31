@@ -11,6 +11,35 @@ export const generateNonce = (): number => {
 type GetTxReceiptResponse = components['schemas']['GetTxReceiptResponse']
 type TXID = components['schemas']['TXID']
 
+export const deployContract = async (
+    bytecode: string,
+    privateKey: string,
+    delegate = false,
+    node?: NodeKey,
+): Promise<string> => {
+    const receipt = await sendClauses(
+        [
+            {
+                to: null,
+                value: 0,
+                data: bytecode,
+            },
+        ],
+        privateKey,
+        true,
+        delegate,
+        node ?? 1,
+    )
+
+    const contractAddress = receipt.outputs?.[0].contractAddress
+
+    if (!contractAddress) {
+        throw new Error('Could not get contract address from receipt')
+    }
+
+    return contractAddress
+}
+
 export const sendClauses = async <T extends boolean>(
     clauses: Transaction.Clause[],
     privateKey: string,

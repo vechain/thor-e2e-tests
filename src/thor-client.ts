@@ -19,9 +19,9 @@ export type SuccessResponse<T> = BaseResponse & {
     body: T
 }
 
-type Response<T> = ErrorResponse<T> | SuccessResponse<T>
+export type Response<T> = ErrorResponse<T> | SuccessResponse<T>
 
-type Schema = components['schemas']
+export type Schema = components['schemas']
 
 class ThorClient {
     private readonly axios

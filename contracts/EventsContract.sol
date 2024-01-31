@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+pragma solidity ^0.8.0;
 
 contract EventsContract {
-    event QuadrupleTopicEvent(address indexed addr1, address indexed addr2, address indexed addr3, address addr4);
 
-    function emitQuadrupleEvent(address addr1, address addr2, address addr3, address addr4) external {
-        emit QuadrupleTopicEvent(addr1, addr2, addr3, addr4);
+    // Define the event with 4 parameters, all addresses
+    event MyEvent(address indexed sender, address indexed value1, address indexed value2);
+
+    function emitQuadEvent(address _address1, address _address2, address _address3) public {
+        emit MyEvent(_address1, _address2, _address3);
     }
 }

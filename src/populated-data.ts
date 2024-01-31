@@ -23,3 +23,22 @@ export const readRandomTransfer = (): Transfer => {
         meta: data.transfers[randomIndex].meta,
     } as Transfer
 }
+
+export const getTransferDetails = () => {
+    const data = readPopulatedData()
+
+    const sortedTransfers = data.transfers.sort((a, b) => {
+        return (a.meta.blockNumber ?? 0) - (b.meta.blockNumber ?? 0)
+    })
+
+    const firstBlock = sortedTransfers[0].meta.blockNumber ?? 0
+    const lastBlock =
+        sortedTransfers[sortedTransfers.length - 1].meta.blockNumber ?? 0
+    const transferCount = sortedTransfers.length
+
+    return {
+        firstBlock,
+        lastBlock,
+        transferCount,
+    }
+}

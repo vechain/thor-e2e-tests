@@ -23,9 +23,8 @@ const config: Config = {
     ],
     // ms to wait before throwing a timeout error
     testTimeout: 60_000,
-    setupFilesAfterEnv: ['./jest/setupAfterEnv.ts'],
+    setupFilesAfterEnv: ['./jest/setupAfterEnv.ts', 'jest-extended/all'],
     globalSetup: './jest/globalSetup.ts',
-    globalTeardown: './jest/globalTeardown.ts',
 }
 
 export default config

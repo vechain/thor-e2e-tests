@@ -6,6 +6,14 @@ export type EmptyAccount = ReturnType<typeof generateEmptyWallet>
 export type FundedAccount = Awaited<ReturnType<typeof generateWalletWithFunds>>
 export type EthersSigner = Awaited<ReturnType<typeof ethers.getSigner>>
 
+export const generateAddress = () => {
+    return generateEmptyWallet().address
+}
+
+export const generateAddresses = (count: number) => {
+    return Array.from({ length: count }, () => generateEmptyWallet().address)
+}
+
 export const generateEmptyWallet = () => {
     const privateKey = secp256k1.generatePrivateKey()
     const publicKey = secp256k1.derivePublicKey(privateKey)
