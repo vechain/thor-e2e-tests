@@ -25,6 +25,7 @@ const config: Config = {
     testTimeout: 60_000,
     setupFilesAfterEnv: ['./jest/setupAfterEnv.ts', 'jest-extended/all'],
     globalSetup: './jest/globalSetup.ts',
+    globalTeardown: './jest/globalTeardown.ts',
 }
 
 export default config

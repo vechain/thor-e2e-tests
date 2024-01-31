@@ -1,10 +1,8 @@
-import { generateEmptyWallet, generateWalletWithFunds } from '../src/wallet'
 import { Node1Client } from '../src/thor-client'
-import { ethers } from 'hardhat'
 import { components } from '../src/open-api-types'
 import fs from 'fs'
 import { readRandomTransfer } from '../src/populated-data'
-import { deployContract } from '../src/transactions'
+import { ThorWallet } from '../src/wallet'
 
 export const POPULATED_DATA_FILENAME = './.chain-data.json'
 
@@ -23,7 +21,6 @@ type GetTxReceiptResponse = Required<
 
 export type PopulatedChainData = {
     transfers: GetTxReceiptResponse[]
-    contracts: Record<ContractKey, string>
 }
 
 const populateVetAndVtho = async (): Promise<GetTxReceiptResponse[]> => {
@@ -37,44 +34,16 @@ const populateVetAndVtho = async (): Promise<GetTxReceiptResponse[]> => {
         console.log('Populating [block=' + block.body?.number + ']')
 
         const res = await Promise.all(
-            Array.from(
-                { length: 40 },
-                async () => await generateWalletWithFunds(),
-            ),
+            Array.from({ length: 40 }, async () => {
+                const wallet = ThorWallet.new(true)
+                return await wallet.waitForFunding()
+            }),
         )
 
-        accounts.push(...res.map((r) => r.receipt as GetTxReceiptResponse))
+        accounts.push(...res.map((r) => r as GetTxReceiptResponse))
     }
 
     return accounts
-}
-
-const deploySmartContracts = async (): Promise<Record<ContractKey, string>> => {
-    const wallet = generateEmptyWallet()
-
-    const contracts: Partial<Record<ContractKey, string>> = {}
-
-    await Promise.all(
-        ContractKeys.map(async (contractName, i) => {
-            const factory = await ethers.getContractFactory(contractName)
-
-            contracts[contractName] = await deployContract(
-                factory.bytecode,
-                wallet.privateKey,
-                true,
-            )
-
-            console.log(
-                'Deployed [' +
-                    contractName +
-                    '] at [' +
-                    contracts[contractName] +
-                    ']',
-            )
-        }),
-    )
-
-    return contracts as Record<ContractKey, string>
 }
 
 /**
@@ -109,14 +78,10 @@ const populate = async () => {
         fs.unlinkSync(POPULATED_DATA_FILENAME)
     }
 
-    const [transfers, contracts] = await Promise.all([
-        populateVetAndVtho(),
-        deploySmartContracts(),
-    ])
+    const transfers = await populateVetAndVtho()
 
     const data: PopulatedChainData = {
         transfers,
-        contracts,
     }
 
     fs.writeFileSync(POPULATED_DATA_FILENAME, JSON.stringify(data, null, 4))

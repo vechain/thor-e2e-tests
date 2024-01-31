@@ -1,9 +1,11 @@
-import { generateWalletWithFunds } from '../../../src/wallet'
+import { ThorWallet } from '../../../src/wallet'
 
 describe('POST /transactions', function () {
     it('should send a transaction', async function () {
-        const { receipt } = await generateWalletWithFunds()
+        const wallet = ThorWallet.new(true)
 
-        expect(receipt.reverted).toEqual(false)
+        const receipt = await wallet.waitForFunding()
+
+        expect(receipt?.reverted).toEqual(false)
     })
 })

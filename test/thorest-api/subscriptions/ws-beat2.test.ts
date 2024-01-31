@@ -1,7 +1,7 @@
 import { Node1Client } from '../../../src/thor-client'
 import { testBloomForAddress } from '../../../src/utils/bloom'
 import assert from 'node:assert'
-import { generateWalletWithFunds } from '../../../src/wallet'
+import { ThorWallet } from '../../../src/wallet'
 import { components } from '../../../src/open-api-types'
 
 describe('WS /subscriptions/beat2', () => {
@@ -12,14 +12,16 @@ describe('WS /subscriptions/beat2', () => {
             beats.push(newBlock)
         })
 
-        const { receipt } = await generateWalletWithFunds()
-        const sender = receipt.outputs?.[0].transfers?.[0].sender
+        const wallet = ThorWallet.new(true)
+
+        const receipt = await wallet.waitForFunding()
+        const sender = receipt?.outputs?.[0].transfers?.[0].sender
 
         //sleep for 1 sec to ensure the beat is received
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
         const relevantBeat = beats.find((beat) => {
-            return beat.id === receipt.meta?.blockID
+            return beat.id === receipt?.meta?.blockID
         })
 
         assert(relevantBeat?.bloom, 'Beat not found')

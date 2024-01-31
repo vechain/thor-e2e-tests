@@ -9,17 +9,9 @@ import {
 } from '../../../src/populated-data'
 import { HEX_REGEX, HEX_REGEX_64 } from '../../../src/utils/hex-utils'
 import { components } from '../../../src/open-api-types'
-import {
-    FundedAccount,
-    generateAddresses,
-    generateWalletWithFunds,
-} from '../../../src/wallet'
-import { deployContract, sendClauses } from '../../../src/transactions'
 import { EventsContract__factory } from '../../../typechain-types'
 import { addAddressPadding } from '../../../src/utils/padding-utils'
-import * as matchers from 'jest-extended'
-
-expect.extend(matchers)
+import { generateAddresses, ThorWallet } from '../../../src/wallet'
 
 const buildRequestFromTransfer = (
     transfer: Transfer,
@@ -45,10 +37,11 @@ const buildRequestFromTransfer = (
 describe('POST /logs/event', () => {
     let transferDetails = getTransferDetails()
 
-    let wallet: FundedAccount
+    let wallet: ThorWallet
 
     beforeAll(async () => {
-        wallet = await generateWalletWithFunds()
+        wallet = ThorWallet.new(true)
+        await wallet.waitForFunding()
     })
 
     it('event log should be included in query', async () => {
@@ -119,6 +112,9 @@ describe('POST /logs/event', () => {
             expect(eventLogs.body?.some((log) => log?.meta?.txID)).toBeTruthy()
         })
 
+        /**
+         * This also checks that the default unit is "block"
+         */
         it('should be omit the "unit" field', async () => {
             const transfer = readRandomTransfer()
 
@@ -149,6 +145,25 @@ describe('POST /logs/event', () => {
                     to: transfer.meta.blockTimestamp + 1000,
                     from: transfer.meta.blockTimestamp - 1000,
                     unit: 'time',
+                },
+            })
+
+            expect(eventLogs.success).toEqual(true)
+            expect(eventLogs.httpCode).toEqual(200)
+            expect(eventLogs.body?.some((log) => log?.meta?.txID)).toBeTruthy()
+        })
+
+        it('should be able query by block', async () => {
+            const transfer = readRandomTransfer()
+
+            const baseRequest = buildRequestFromTransfer(transfer)
+
+            const eventLogs = await Node1Client.queryEventLogs({
+                ...baseRequest,
+                range: {
+                    to: transfer.meta.blockNumber,
+                    from: transfer.meta.blockNumber,
+                    unit: 'block',
                 },
             })
 
@@ -285,8 +300,10 @@ describe('POST /logs/event', () => {
 
                 expect(eventLogs.success).toEqual(true)
                 expect(eventLogs.httpCode).toEqual(200)
-                // This will break the loop if the API returns an empty array, ie the end of the logs
-                expect(eventLogs.body?.length).toBeGreaterThan(0)
+
+                if (eventLogs.body?.length === 0) {
+                    break
+                }
 
                 const txId = eventLogs.body?.[0]?.meta?.txID
 
@@ -311,12 +328,11 @@ describe('POST /logs/event', () => {
         const eventHash = eventsInterface.getEvent('MyEvent').topicHash
 
         beforeAll(async () => {
-            contractAddress = await deployContract(
+            contractAddress = await wallet.deployContract(
                 EventsContract__factory.bytecode,
-                wallet.privateKey,
             )
 
-            txReceipt = await sendClauses(
+            txReceipt = await wallet.sendClauses(
                 [
                     {
                         to: contractAddress,
@@ -327,7 +343,6 @@ describe('POST /logs/event', () => {
                         ),
                     },
                 ],
-                wallet.privateKey,
                 true,
             )
         })

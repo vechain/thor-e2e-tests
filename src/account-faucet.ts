@@ -1,8 +1,8 @@
-import { sendClauses } from './transactions'
 import { contractAddresses } from './contracts/addresses'
 import { interfaces } from './contracts/hardhat'
 import { secp256k1, Transaction } from 'thor-devkit' // import { faucetAccounts } from './constants'
 import faucetAccounts from './faucet-accounts.json'
+import { ThorWallet } from './wallet'
 
 const FAUCET_AMOUNT = '0x65536000000000000000000'
 
@@ -14,7 +14,12 @@ const fundAccount = async (account: string) => {
     const randomIndex = Math.floor(Math.random() * faucetAccounts.length)
     const fundingAccount = faucetAccounts[randomIndex]
 
-    const receipt = await sendClauses(
+    const wallet = new ThorWallet(
+        Buffer.from(fundingAccount.privateKey, 'hex'),
+        false,
+    )
+
+    const receipt = await wallet.sendClauses(
         [
             {
                 to: account,
@@ -30,7 +35,6 @@ const fundAccount = async (account: string) => {
                 ]),
             },
         ],
-        fundingAccount.privateKey,
         true,
     )
 

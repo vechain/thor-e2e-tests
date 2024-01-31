@@ -1,14 +1,10 @@
 import { Node1Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { MyERC20__factory } from '../../../typechain-types'
-import {
-    FundedAccount,
-    generateEmptyWallet,
-    generateWalletWithFunds,
-} from '../../../src/wallet'
 import { interfaces } from '../../../src/contracts/hardhat'
 import { getBlockRef } from '../../../src/utils/block-utils'
 import { revisions } from '../../../src/constants'
+import { generateAddress, ThorWallet } from '../../../src/wallet'
 
 const CALLER_ADDR = '0x435933c8064b4Ae76bE665428e0307eF2cCFBD68'
 const GAS_PAYER = '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed'
@@ -18,20 +14,21 @@ const SEND_VTHO_CLAUSE = {
     to: contractAddresses.energy,
     value: '0x0',
     data: interfaces.energy.encodeFunctionData('transfer', [
-        generateEmptyWallet().address,
+        generateAddress(),
         SEND_VTHO_AMOUNT,
     ]),
 }
 
 describe('POST /accounts/*', function () {
-    let wallet: FundedAccount
+    let wallet: ThorWallet
 
     beforeAll(async () => {
-        wallet = await generateWalletWithFunds()
+        wallet = ThorWallet.new(true)
+        await wallet.waitForFunding()
     })
 
     it('should execute an array of clauses', async function () {
-        const to = generateEmptyWallet()
+        const to = generateAddress()
 
         const tokenAmount = '0x100000'
 
@@ -39,7 +36,7 @@ describe('POST /accounts/*', function () {
             clauses: [
                 // VET Transfer
                 {
-                    to: to.address,
+                    to: to,
                     value: tokenAmount,
                     data: '0x',
                 },
@@ -48,7 +45,7 @@ describe('POST /accounts/*', function () {
                     to: contractAddresses.energy,
                     value: '0x0',
                     data: interfaces.energy.encodeFunctionData('transfer', [
-                        to.address,
+                        to,
                         tokenAmount,
                     ]),
                 },
@@ -70,7 +67,7 @@ describe('POST /accounts/*', function () {
                 transfers: [
                     {
                         sender: wallet.address,
-                        recipient: to.address,
+                        recipient: to,
                         amount: tokenAmount,
                     },
                 ],
@@ -86,7 +83,7 @@ describe('POST /accounts/*', function () {
                         topics: [
                             '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
                             `0x000000000000000000000000${wallet.address.slice(2)}`,
-                            `0x000000000000000000000000${to.address.slice(2)}`,
+                            `0x000000000000000000000000${to.slice(2)}`,
                         ],
                         data: `0x0000000000000000000000000000000000000000000000000000000000${tokenAmount.slice(2)}`,
                     },

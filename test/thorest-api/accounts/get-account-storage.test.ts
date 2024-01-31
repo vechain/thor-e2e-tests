@@ -1,10 +1,9 @@
 import { Node1Client } from '../../../src/thor-client'
-import { FundedAccount, generateWalletWithFunds } from '../../../src/wallet'
-import { sendClauses } from '../../../src/transactions'
 import { SimpleCounter__factory } from '../../../typechain-types'
 import { addUintPadding } from '../../../src/utils/padding-utils'
 import { revisions } from '../../../src/constants'
 import { HEX_REGEX_64 } from '../../../src/utils/hex-utils'
+import { ThorWallet } from '../../../src/wallet'
 
 const SIMPLE_STORAGE_KEY =
     '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -12,9 +11,9 @@ const SIMPLE_STORAGE_KEY =
 const setSimpleStorage = async (
     contractAddress: string,
     amount: number,
-    privateKey: string,
+    wallet: ThorWallet,
 ) => {
-    return await sendClauses(
+    return await wallet.sendClauses(
         [
             {
                 to: contractAddress,
@@ -25,19 +24,18 @@ const setSimpleStorage = async (
                 ),
             },
         ],
-        privateKey,
         true,
     )
 }
 
 describe('GET /accounts/{address}/storage', function () {
-    let wallet: FundedAccount
+    let wallet: ThorWallet
     let simpleStorageAddress: string
 
     beforeAll(async () => {
-        wallet = await generateWalletWithFunds()
+        wallet = ThorWallet.new(true)
 
-        const txReceipt = await sendClauses(
+        const txReceipt = await wallet.sendClauses(
             [
                 {
                     to: null,
@@ -45,7 +43,6 @@ describe('GET /accounts/{address}/storage', function () {
                     data: SimpleCounter__factory.bytecode,
                 },
             ],
-            wallet.privateKey,
             true,
         )
 
@@ -56,7 +53,7 @@ describe('GET /accounts/{address}/storage', function () {
     it('should return the storage value', async function () {
         const amount = 973252
 
-        await setSimpleStorage(simpleStorageAddress, amount, wallet.privateKey)
+        await setSimpleStorage(simpleStorageAddress, amount, wallet)
 
         const res = await Node1Client.getAccountStorage(
             simpleStorageAddress,
@@ -83,7 +80,7 @@ describe('GET /accounts/{address}/storage', function () {
         const tx = await setSimpleStorage(
             simpleStorageAddress,
             newAmount,
-            wallet.privateKey,
+            wallet,
         )
 
         const res = await Node1Client.getAccountStorage(

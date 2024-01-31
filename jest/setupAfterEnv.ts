@@ -1,6 +1,6 @@
 import { Node1Client, Node2Client, Node3Client } from '../src/thor-client'
 
-jest.retryTimes(3, { logErrorsBeforeRetry: false })
+jest.retryTimes(3, { logErrorsBeforeRetry: true })
 
 afterAll(async () => {
     Node1Client.closeAllSubscriptions()

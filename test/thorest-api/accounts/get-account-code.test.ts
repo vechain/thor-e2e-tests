@@ -1,18 +1,12 @@
 import { Node1Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { HEX_AT_LEAST_1 } from '../../../src/utils/hex-utils'
-import { generateEmptyWallet } from '../../../src/wallet'
-import { sendClauses } from '../../../src/transactions'
 import { SimpleCounter__factory } from '../../../typechain-types'
 import { revisions } from '../../../src/constants'
+import { generateAddresses, ThorWallet } from '../../../src/wallet'
 
 describe('GET /accounts/{address}/code', function () {
-    const accountAddress = [
-        generateEmptyWallet(),
-        generateEmptyWallet(),
-        generateEmptyWallet(),
-        generateEmptyWallet(),
-    ].map((w) => w.address)
+    const accountAddress = generateAddresses(4)
 
     it.each(accountAddress)(
         'should return no code for newly created address: %s',
@@ -57,9 +51,9 @@ describe('GET /accounts/{address}/code', function () {
     })
 
     it('should be able to query historic revisions', async () => {
-        const wallet = generateEmptyWallet()
+        const wallet = ThorWallet.new(false)
 
-        const txReceipt = await sendClauses(
+        const txReceipt = await wallet.sendClauses(
             [
                 {
                     to: null,
@@ -67,7 +61,6 @@ describe('GET /accounts/{address}/code', function () {
                     data: SimpleCounter__factory.bytecode,
                 },
             ],
-            wallet.privateKey,
             true,
             true,
         )
