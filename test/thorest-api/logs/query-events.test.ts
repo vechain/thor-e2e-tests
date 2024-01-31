@@ -40,8 +40,7 @@ describe('POST /logs/event', () => {
     let wallet: ThorWallet
 
     beforeAll(async () => {
-        wallet = ThorWallet.new(true)
-        await wallet.waitForFunding()
+        wallet = await ThorWallet.new(true).then((r) => r.wallet)
     })
 
     it('event log should be included in query', async () => {

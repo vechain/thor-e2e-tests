@@ -51,7 +51,7 @@ describe('GET /accounts/{address}/code', function () {
     })
 
     it('should be able to query historic revisions', async () => {
-        const wallet = ThorWallet.new(false)
+        const { wallet } = await ThorWallet.new(true)
 
         const txReceipt = await wallet.sendClauses(
             [

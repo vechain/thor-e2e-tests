@@ -7,7 +7,6 @@ import {
 } from '../../../src/populated-data'
 import { components } from '../../../src/open-api-types'
 import { HEX_REGEX_64 } from '../../../src/utils/hex-utils'
-import { ThorWallet } from '../../../src/wallet'
 
 const buildRequestFromTransfer = (
     transfer: Transfer,
@@ -33,12 +32,6 @@ const buildRequestFromTransfer = (
 
 describe('POST /logs/transfers', () => {
     const transferDetails = getTransferDetails()
-    let wallet: ThorWallet
-
-    beforeAll(async () => {
-        wallet = ThorWallet.new(true)
-        await wallet.waitForFunding()
-    })
 
     it('should find a log with all parameters set', async () => {
         const transfer = readRandomTransfer()

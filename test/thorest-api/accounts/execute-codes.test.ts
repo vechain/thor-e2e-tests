@@ -23,8 +23,7 @@ describe('POST /accounts/*', function () {
     let wallet: ThorWallet
 
     beforeAll(async () => {
-        wallet = ThorWallet.new(true)
-        await wallet.waitForFunding()
+        wallet = await ThorWallet.new(true).then((w) => w.wallet)
     })
 
     it('should execute an array of clauses', async function () {

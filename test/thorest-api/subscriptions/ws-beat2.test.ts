@@ -12,16 +12,15 @@ describe('WS /subscriptions/beat2', () => {
             beats.push(newBlock)
         })
 
-        const wallet = ThorWallet.new(true)
+        const { fundReceipt } = await ThorWallet.new(true)
 
-        const receipt = await wallet.waitForFunding()
-        const sender = receipt?.outputs?.[0].transfers?.[0].sender
+        const sender = fundReceipt?.outputs?.[0].transfers?.[0].sender
 
         //sleep for 1 sec to ensure the beat is received
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
         const relevantBeat = beats.find((beat) => {
-            return beat.id === receipt?.meta?.blockID
+            return beat.id === fundReceipt?.meta?.blockID
         })
 
         assert(relevantBeat?.bloom, 'Beat not found')

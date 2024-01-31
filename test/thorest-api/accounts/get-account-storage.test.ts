@@ -33,7 +33,7 @@ describe('GET /accounts/{address}/storage', function () {
     let simpleStorageAddress: string
 
     beforeAll(async () => {
-        wallet = ThorWallet.new(true)
+        wallet = await ThorWallet.new(true).then((r) => r.wallet)
 
         const txReceipt = await wallet.sendClauses(
             [

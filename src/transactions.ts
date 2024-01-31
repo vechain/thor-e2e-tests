@@ -1,4 +1,4 @@
-import { address, secp256k1, Transaction } from 'thor-devkit'
+import { Transaction } from 'thor-devkit'
 import { NodeKey, Nodes } from './thor-client'
 import { components } from './open-api-types'
 
@@ -33,13 +33,10 @@ export const pollReceipt = async (
 
 export const warnIfSimulationFails = async (
     clauses: Transaction.Clause[],
-    privateKey: string,
+    caller: string,
     node?: NodeKey,
 ) => {
     const client = Nodes[node ?? 1]
-
-    const pubKey = secp256k1.derivePublicKey(Buffer.from(privateKey, 'hex'))
-    const caller = address.fromPublicKey(pubKey)
 
     const _clauses = clauses.map((clause) => {
         let value: string

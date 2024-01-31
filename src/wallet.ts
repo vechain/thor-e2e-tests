@@ -1,7 +1,11 @@
 import { address, secp256k1, Transaction } from 'thor-devkit'
 import { delegateTx, fundAccount } from './account-faucet'
 import { NodeKey, Nodes } from './thor-client'
-import { generateNonce, pollReceipt } from './transactions'
+import {
+    generateNonce,
+    pollReceipt,
+    warnIfSimulationFails,
+} from './transactions'
 import { getBlockRef } from './utils/block-utils'
 import { components } from './open-api-types'
 
@@ -25,11 +29,11 @@ const generateEmptyWallet = () => {
 }
 
 class ThorWallet {
-    public readonly waitForFunding: () => Promise<
-        components['schemas']['GetTxReceiptResponse'] | undefined
-    >
     public readonly address: string
     public readonly privateKey: Buffer
+    private readonly waitForFunding: () => Promise<
+        components['schemas']['GetTxReceiptResponse'] | void
+    >
 
     constructor(privateKey: Buffer, requireFunds: boolean) {
         const publicKey = secp256k1.derivePublicKey(privateKey)
@@ -45,14 +49,21 @@ class ThorWallet {
                 return receipt
             }
         } else {
-            this.waitForFunding = () => Promise.resolve(undefined)
+            this.waitForFunding = () => Promise.resolve()
         }
     }
 
-    public static new(requireFunds: boolean) {
+    public static async new(requireFunds: boolean) {
         const privateKey = secp256k1.generatePrivateKey()
 
-        return new ThorWallet(privateKey, requireFunds)
+        const wallet = new ThorWallet(privateKey, requireFunds)
+
+        const fundReceipt = await wallet.waitForFunding()
+
+        return {
+            wallet,
+            fundReceipt,
+        }
     }
 
     public deployContract = async (
@@ -138,6 +149,8 @@ class ThorWallet {
 
         let transaction = await this.buildTransaction(clauses, node)
         let encoded: string
+
+        await warnIfSimulationFails(clauses, this.address, node)
 
         if (delegate) {
             const delegated = delegateTx(transaction, this.address)
