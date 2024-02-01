@@ -327,6 +327,8 @@ describe('POST /logs/event', () => {
         const eventHash = eventsInterface.getEvent('MyEvent').topicHash
 
         beforeAll(async () => {
+            await wallet.waitForFunding()
+
             contractAddress = await wallet.deployContract(
                 EventsContract__factory.bytecode,
             )
