@@ -8,6 +8,8 @@ import { generateAddresses, ThorWallet } from '../../../src/wallet'
 describe('GET /accounts/{address}/code', function () {
     const accountAddress = generateAddresses(4)
 
+    const wallet = ThorWallet.new(true)
+
     it.each(accountAddress)(
         'should return no code for newly created address: %s',
         async function (addr) {
@@ -51,8 +53,6 @@ describe('GET /accounts/{address}/code', function () {
     })
 
     it('should be able to query historic revisions', async () => {
-        const { wallet } = await ThorWallet.new(true)
-
         const txReceipt = await wallet.sendClauses(
             [
                 {

@@ -29,12 +29,10 @@ const setSimpleStorage = async (
 }
 
 describe('GET /accounts/{address}/storage', function () {
-    let wallet: ThorWallet
+    let wallet = ThorWallet.new(true)
     let simpleStorageAddress: string
 
     beforeAll(async () => {
-        wallet = await ThorWallet.new(true).then((r) => r.wallet)
-
         const txReceipt = await wallet.sendClauses(
             [
                 {

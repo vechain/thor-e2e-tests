@@ -12,7 +12,9 @@ describe('WS /subscriptions/beat2', () => {
             beats.push(newBlock)
         })
 
-        const { fundReceipt } = await ThorWallet.new(true)
+        const wallet = ThorWallet.new(true)
+
+        const fundReceipt = await wallet.waitForFunding()
 
         const sender = fundReceipt?.outputs?.[0].transfers?.[0].sender
 

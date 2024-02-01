@@ -1,7 +1,6 @@
 import { Node1Client, Response, Schema } from '../../../src/thor-client'
 import {
     getTransferDetails,
-    readPopulatedData,
     readRandomTransfer,
     Transfer,
 } from '../../../src/populated-data'
@@ -211,50 +210,52 @@ describe('POST /logs/transfers', () => {
         })
 
         it('should be able paginate requests', async () => {
-            const { firstBlock, lastBlock, transferCount } = transferDetails
+            const { firstBlock, lastBlock } = transferDetails
 
-            const requiredTxIds = new Set<string>(
-                readPopulatedData().transfers.map((t) => t.meta.txID as string),
-            )
+            const pages = 5
+            const amountPerPage = 10
+            const totalTransfers = pages * amountPerPage
 
-            const queriedTxIds = new Set<string>()
-
-            while (queriedTxIds.size < transferCount) {
-                const transferLogs = await Node1Client.queryTransferLogs({
+            const query = async (offset: number, limit: number) =>
+                Node1Client.queryTransferLogs({
                     range: {
                         from: firstBlock,
                         to: lastBlock,
                         unit: 'block',
                     },
                     options: {
-                        offset: queriedTxIds.size,
-                        limit: 10,
+                        offset,
+                        limit,
                     },
                     criteriaSet: [],
                 })
 
-                expect(transferLogs.success).toEqual(true)
-                expect(transferLogs.httpCode).toEqual(200)
+            const allElements = await query(0, totalTransfers)
 
-                if (!transferLogs.body) {
-                    break
-                }
+            expect(allElements.success).toEqual(true)
+            expect(allElements.httpCode).toEqual(200)
+            expect(allElements.body?.length).toEqual(totalTransfers)
 
-                const txIds = transferLogs.body
-                    ?.map((log) => log?.meta?.txID)
-                    .filter((txId) => txId !== undefined) as string[]
+            const paginatedTransfers: components['schemas']['TransferLogsResponse'][] =
+                []
 
-                for (const txId of txIds) {
-                    expect(queriedTxIds.has(txId)).toEqual(false)
+            for (let i = 0; i < pages; i++) {
+                const paginatedResponse = await query(
+                    paginatedTransfers.length,
+                    amountPerPage,
+                )
 
-                    if (requiredTxIds.has(txId)) {
-                        queriedTxIds.add(txId)
-                    }
-                }
+                expect(paginatedResponse.success).toEqual(true)
+                expect(paginatedResponse.httpCode).toEqual(200)
+                expect(paginatedResponse.body?.length).toEqual(amountPerPage)
+
+                const elements =
+                    paginatedResponse.body as components['schemas']['TransferLogsResponse'][]
+
+                paginatedTransfers.push(...elements)
             }
 
-            expect(queriedTxIds.size).toEqual(transferCount)
-            expect(queriedTxIds).toEqual(requiredTxIds)
+            expect(allElements.body).toEqual(paginatedTransfers)
         })
     })
 

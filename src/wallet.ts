@@ -17,6 +17,12 @@ export const generateAddresses = (count: number) => {
     return Array.from({ length: count }, () => generateEmptyWallet().address)
 }
 
+export const addressFromPrivateKey = (privateKey: Buffer) => {
+    const publicKey = secp256k1.derivePublicKey(privateKey)
+
+    return address.fromPublicKey(publicKey)
+}
+
 const generateEmptyWallet = () => {
     const privateKey = secp256k1.generatePrivateKey()
     const publicKey = secp256k1.derivePublicKey(privateKey)
@@ -28,42 +34,37 @@ const generateEmptyWallet = () => {
     }
 }
 
+type WaitForFunding = () => Promise<
+    components['schemas']['GetTxReceiptResponse'] | undefined
+>
+
 class ThorWallet {
     public readonly address: string
     public readonly privateKey: Buffer
-    private readonly waitForFunding: () => Promise<
-        components['schemas']['GetTxReceiptResponse'] | void
-    >
+    public readonly waitForFunding: WaitForFunding
 
-    constructor(privateKey: Buffer, requireFunds: boolean) {
-        const publicKey = secp256k1.derivePublicKey(privateKey)
-
+    constructor(privateKey: Buffer, waitForFunding?: WaitForFunding) {
         this.privateKey = privateKey
-        this.address = address.fromPublicKey(publicKey)
-
-        if (requireFunds) {
-            const funding = fundAccount(this.address)
-
-            this.waitForFunding = async () => {
-                const { receipt } = await funding
-                return receipt
-            }
+        this.address = addressFromPrivateKey(privateKey)
+        if (waitForFunding) {
+            this.waitForFunding = waitForFunding
         } else {
-            this.waitForFunding = () => Promise.resolve()
+            this.waitForFunding = () => Promise.resolve(undefined)
         }
     }
 
-    public static async new(requireFunds: boolean) {
+    public static new(requireFunds: boolean) {
         const privateKey = secp256k1.generatePrivateKey()
 
-        const wallet = new ThorWallet(privateKey, requireFunds)
-
-        const fundReceipt = await wallet.waitForFunding()
-
-        return {
-            wallet,
-            fundReceipt,
+        if (!requireFunds) {
+            return new ThorWallet(privateKey)
         }
+
+        const addr = addressFromPrivateKey(privateKey)
+
+        const receipt = fundAccount(addr).then((res) => res.receipt)
+
+        return new ThorWallet(privateKey, () => receipt)
     }
 
     public deployContract = async (
@@ -96,7 +97,7 @@ class ThorWallet {
     public buildTransaction = async (
         clauses: Transaction.Clause[],
         node?: NodeKey,
-    ): Promise<Transaction> => {
+    ): Promise<Transaction.Body> => {
         const client = Nodes[node ?? 1]
 
         const bestBlockRef = await getBlockRef('best')
@@ -106,7 +107,7 @@ class ThorWallet {
             throw new Error('Could not get best block')
         }
 
-        return new Transaction({
+        return {
             blockRef: bestBlockRef,
             expiration: 1000,
             clauses: clauses,
@@ -115,7 +116,7 @@ class ThorWallet {
             dependsOn: null,
             nonce: generateNonce(),
             chainTag: parseInt(genesisBlock.body.id.slice(-2), 16),
-        })
+        }
     }
 
     public signTransaction = async (
@@ -137,12 +138,16 @@ class ThorWallet {
         return transaction.encode().toString('hex')
     }
 
-    public sendClauses = async (
+    public sendClauses = async <T extends boolean>(
         clauses: Transaction.Clause[],
-        waitForReceipt: boolean,
+        waitForReceipt: T,
         delegate?: boolean,
         node?: NodeKey,
-    ): Promise<components['schemas']['GetTxReceiptResponse']> => {
+    ): Promise<
+        T extends true
+            ? components['schemas']['GetTxReceiptResponse']
+            : components['schemas']['TXID']
+    > => {
         await this.waitForFunding()
 
         const client = Nodes[node ?? 1]
@@ -159,7 +164,9 @@ class ThorWallet {
                 delegated.signature,
             )
         } else {
-            encoded = await this.signTransaction(transaction)
+            const tx = new Transaction(transaction)
+
+            encoded = await this.signTransaction(tx)
         }
 
         const res = await client.sendTransaction({
@@ -177,7 +184,7 @@ class ThorWallet {
         }
 
         if (!waitForReceipt) {
-            return res.body as components['schemas']['GetTxReceiptResponse']
+            return res.body as components['schemas']['TXID'] as any
         }
 
         const receipt = await pollReceipt(res.body?.id ?? '', node)
@@ -189,7 +196,7 @@ class ThorWallet {
             )
         }
 
-        return receipt
+        return receipt as components['schemas']['GetTxReceiptResponse'] as any
     }
 }
 

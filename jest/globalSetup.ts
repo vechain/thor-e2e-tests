@@ -35,7 +35,7 @@ const populateVetAndVtho = async (): Promise<GetTxReceiptResponse[]> => {
 
         const res = await Promise.all(
             Array.from({ length: 40 }, async () => {
-                return await ThorWallet.new(true).then((r) => r.fundReceipt)
+                return ThorWallet.new(true).waitForFunding()
             }),
         )
 

@@ -5,7 +5,7 @@ describe('WS /subscriptions/txpool', () => {
     it('should be able to subscribe', async () => {
         const txs: { id: string }[] = []
 
-        const { wallet } = await ThorWallet.new(true)
+        const wallet = ThorWallet.new(true)
 
         Node1Client.subscribeToTxPool((txId) => {
             txs.push(txId)

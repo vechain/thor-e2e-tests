@@ -14,10 +14,7 @@ const fundAccount = async (account: string) => {
     const randomIndex = Math.floor(Math.random() * faucetAccounts.length)
     const fundingAccount = faucetAccounts[randomIndex]
 
-    const wallet = new ThorWallet(
-        Buffer.from(fundingAccount.privateKey, 'hex'),
-        false,
-    )
+    const wallet = new ThorWallet(Buffer.from(fundingAccount.privateKey, 'hex'))
 
     const receipt = await wallet.sendClauses(
         [
@@ -48,8 +45,10 @@ const fundAccount = async (account: string) => {
  *
  * @returns {Transaction, Buffer} - The updated transaction and the delegate signature
  */
-export const delegateTx = (transaction: Transaction, senderAddress: string) => {
-    transaction.body.reserved = { features: 1 }
+export const delegateTx = (txBody: Transaction.Body, senderAddress: string) => {
+    txBody.reserved = { features: 1 }
+
+    const transaction = new Transaction(txBody)
 
     const randomIndex = Math.floor(Math.random() * faucetAccounts.length)
     const fundingAccount = faucetAccounts[randomIndex]

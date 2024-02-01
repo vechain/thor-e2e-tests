@@ -20,10 +20,10 @@ const SEND_VTHO_CLAUSE = {
 }
 
 describe('POST /accounts/*', function () {
-    let wallet: ThorWallet
+    let wallet = ThorWallet.new(true)
 
     beforeAll(async () => {
-        wallet = await ThorWallet.new(true).then((w) => w.wallet)
+        await wallet.waitForFunding()
     })
 
     it('should execute an array of clauses', async function () {
