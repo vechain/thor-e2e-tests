@@ -20,3 +20,6 @@ results.json
 .DS_Store
 
 junit.xml
+jest-report.html
+/jest-html-reporters-attach
+
