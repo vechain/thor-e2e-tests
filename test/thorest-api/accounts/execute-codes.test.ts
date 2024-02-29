@@ -22,6 +22,25 @@ const SEND_VTHO_CLAUSE = {
         SEND_VTHO_AMOUNT,
     ]),
 }
+const READ_ONLY_REQUEST = (address: string) => {
+    return {
+        clauses: [
+            {
+                to: contractAddresses.energy,
+                value: '0x0',
+                data: interfaces.energy.encodeFunctionData('balanceOf', [
+                    address,
+                ]),
+            },
+            {
+                to: contractAddresses.energy,
+                value: '0x0',
+                data: interfaces.energy.encodeFunctionData('totalSupply'),
+            },
+        ],
+        caller: address,
+    }
+}
 
 describe('POST /accounts/*', function () {
     let wallet: Wallet
@@ -138,6 +157,31 @@ describe('POST /accounts/*', function () {
         expect(currentCall.httpCode).toEqual(200)
         expect(currentCall.body?.[0]?.reverted).toEqual(false)
     })
+
+    it('should be able to call read only contract methods', async () => {
+        const request = READ_ONLY_REQUEST(wallet.address)
+        const historicCall = await Node1Client.executeAccountBatch(request, '0')
+        expect(historicCall.success).toEqual(true)
+        expect(historicCall.httpCode).toEqual(200)
+        expect(historicCall.body?.[0]?.reverted).toEqual(false)
+        expect(historicCall.body?.[1]?.reverted).toEqual(false)
+        const balanceOf = parseInt(historicCall.body?.[0]?.data ?? '-1', 16)
+        const totalSupply = parseInt(historicCall.body?.[1]?.data ?? '-1', 16)
+        expect(balanceOf).toBeGreaterThanOrEqual(0)
+        expect(totalSupply).toBeGreaterThanOrEqual(0)
+    })
+
+    it.each(revisions.valid())(
+        'should be able to call read only contract methods with valid revision: %s',
+        async (revision) => {
+            const request = READ_ONLY_REQUEST(wallet.address)
+            const res = await Node1Client.executeAccountBatch(request, revision)
+            expect(res.success).toEqual(true)
+            expect(res.httpCode).toEqual(200)
+            expect(res.body?.[0]?.reverted).toEqual(false)
+            expect(res.body?.[1]?.reverted).toEqual(false)
+        },
+    )
 
     it.each(revisions.valid())(
         'should be able execute clauses for valid revision: %s',
