@@ -20,9 +20,19 @@ const config: Config = {
             },
         ],
         'summary',
+        [
+            'jest-html-reporters',
+            {
+                filename: 'jest-report.html',
+                openReport: false,
+                pageTitle: 'Thor E2E Tests',
+            },
+        ],
     ],
     // ms to wait before throwing a timeout error
     testTimeout: 60_000,
+    json: true,
+    maxWorkers: 10,
     setupFilesAfterEnv: ['./jest/setupAfterEnv.ts', 'jest-extended/all'],
     globalSetup: './jest/globalSetup.ts',
     globalTeardown: './jest/globalTeardown.ts',
