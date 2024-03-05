@@ -2,7 +2,18 @@ name: E2E Tests
 
 on:
   workflow_dispatch:
+    inputs:
+      maxWorkers:
+        description: 'Max number of jest workers'
+        required: false
+        default: 2
+        type: number
   workflow_call:
+    maxWorkers:
+      description: 'Max number of jest workers'
+      required: false
+      default: 2
+      type: number
   push:
     branches:
       - main
@@ -31,7 +42,7 @@ jobs:
         run: yarn install
 
       - name: Run Tests
-        run: yarn test
+        run: yarn test --maxWorkers ${{ github.event.inputs.maxWorkers || 3 }}
 
       - name: Publish Results
         uses: dorny/test-reporter@v1
