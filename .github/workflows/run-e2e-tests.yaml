@@ -9,11 +9,12 @@ on:
         default: 3
         type: number
   workflow_call:
-    maxWorkers:
-      description: 'Max number of jest workers'
-      required: false
-      default: 3
-      type: number
+    inputs:
+      maxWorkers:
+        description: 'Max number of jest workers'
+        required: false
+        default: 3
+        type: number
   push:
     branches:
       - main
