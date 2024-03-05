@@ -34,7 +34,7 @@ const populateVetAndVtho = async (): Promise<GetTxReceiptResponse[]> => {
         console.log('Populating [block=' + block.body?.number + ']')
 
         const res = await Promise.all(
-            Array.from({ length: 40 }, async () => {
+            Array.from({ length: 40 }, () => {
                 return ThorWallet.new(true).waitForFunding()
             }),
         )

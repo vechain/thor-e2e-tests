@@ -9,8 +9,12 @@ export type Transfer = {
     meta: Required<components['schemas']['ReceiptMeta']>
 }
 
+let populateData: PopulatedChainData | undefined
+
 export const readPopulatedData = (): PopulatedChainData =>
-    JSON.parse(fs.readFileSync(POPULATED_DATA_FILENAME).toString())
+    populateData
+        ? populateData
+        : JSON.parse(fs.readFileSync(POPULATED_DATA_FILENAME).toString())
 
 export const readRandomTransfer = (): Transfer => {
     const data = readPopulatedData()

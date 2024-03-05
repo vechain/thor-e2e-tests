@@ -19,7 +19,7 @@ concurrency:
 jobs:
   e2e_tests:
     name: Run E2E Tests
-    runs-on: ubuntu-latest
+    runs-on: runs-on,cpu=4,ram=16,family=m7a,hdd=100
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
