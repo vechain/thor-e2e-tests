@@ -410,7 +410,7 @@ describe('POST /logs/event', () => {
                         to: contractAddress,
                         value: 0,
                         data: eventsInterface.encodeFunctionData(
-                            'emitQuadEvent',
+                            'emitTripleEvent',
                             [addresses[0], addresses[1], addresses[2]],
                         ),
                     },
