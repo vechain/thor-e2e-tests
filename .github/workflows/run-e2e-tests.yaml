@@ -23,15 +23,15 @@ jobs:
       fail-fast: false
       matrix:
         test-reliability: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ]
-    runs-on: runs-on,cpu=4,ram=16,family=m7a,hdd=100
+    runs-on: runs-on,cpu=4,ram=16,family=m7a,hdd=100,spot=false
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install Node Modules
         run: yarn install
