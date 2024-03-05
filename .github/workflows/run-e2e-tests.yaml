@@ -2,14 +2,21 @@ name: E2E Tests
 
 on:
   workflow_dispatch:
+  workflow_call:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 permissions:
   checks: write
   pull-requests: write
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-run-e2e-tests
-  cancel-in-progress: true
+#concurrency:
+#  group: ${{ github.workflow }}-${{ github.ref }}-run-e2e-tests
+#  cancel-in-progress: true
 
 jobs:
   e2e_tests:
