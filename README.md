@@ -28,7 +28,7 @@ yarn test:fast
 
 ### Generate Open API Specification
 
-- These scripts will vet the Open API Spec to `./src/open-api-types.ts`
+- These scripts will output the Open API Spec to `./src/open-api-types.ts`
 
 #### **Option 1** - By local file:
 
