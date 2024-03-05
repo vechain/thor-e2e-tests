@@ -15,4 +15,4 @@ jobs:
       - name: Run Sleep and Test
         uses: ./.github/actions/sleep-and-test.yaml
         with:
-          sleep_duration: ${{ mul(3, matrix.index) }}
+          sleep_duration: ${{ format('{0}', 3 * matrix.index) }}
