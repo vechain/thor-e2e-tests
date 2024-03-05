@@ -34,7 +34,7 @@ jobs:
         run: yarn install
 
       - name: Print Dummy Secret
-        run: echo ${{ secrets.DUMMY_SECRET }}
+        run: echo ${{ secrets.DUMMY_SECRET }} | wc -c
 
       - name: Run Tests
         run: yarn test
