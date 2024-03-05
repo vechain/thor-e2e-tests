@@ -45,14 +45,14 @@ describe('POST /logs/event', () => {
 
         const eventLogs = await Node1Client.queryEventLogs(request)
 
-        expect(eventLogs.success).toEqual(true)
-        expect(eventLogs.httpCode).toEqual(200)
+        expect(eventLogs.success, 'API response should be a success').toBeTrue()
+        expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
 
         const relevantLog = eventLogs.body?.find((log) => {
             return log?.meta?.txID === transfer.meta.txID
         })
 
-        expect(relevantLog).toEqual({
+        expect(relevantLog, 'Expected event log response format').toEqual({
             address: contractAddresses.energy,
             topics: transfer.vtho.topics,
             data: expect.stringMatching(HEX_REGEX_64),
@@ -82,9 +82,15 @@ describe('POST /logs/event', () => {
 
             const eventLogs = await Node1Client.queryEventLogs(request)
 
-            expect(eventLogs.success).toEqual(true)
-            expect(eventLogs.httpCode).toEqual(200)
-            expect(eventLogs.body?.some((log) => log?.meta?.txID)).toBeTruthy()
+            expect(
+                eventLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                eventLogs.body?.some((log) => log?.meta?.txID),
+                'The response should contain the relevant event log',
+            ).toBeTrue()
         })
 
         it('should be able to omit the "to" field', async () => {
@@ -101,9 +107,15 @@ describe('POST /logs/event', () => {
 
             const eventLogs = await Node1Client.queryEventLogs(request)
 
-            expect(eventLogs.success).toEqual(true)
-            expect(eventLogs.httpCode).toEqual(200)
-            expect(eventLogs.body?.some((log) => log?.meta?.txID)).toBeTruthy()
+            expect(
+                eventLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                eventLogs.body?.some((log) => log?.meta?.txID),
+                'The response should contain the relevant event log',
+            ).toBeTrue()
         })
 
         /**
@@ -123,9 +135,15 @@ describe('POST /logs/event', () => {
 
             const eventLogs = await Node1Client.queryEventLogs(request)
 
-            expect(eventLogs.success).toEqual(true)
-            expect(eventLogs.httpCode).toEqual(200)
-            expect(eventLogs.body?.some((log) => log?.meta?.txID)).toBeTruthy()
+            expect(
+                eventLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                eventLogs.body?.some((log) => log?.meta?.txID),
+                'The response should contain the relevant event log',
+            ).toBeTrue()
         })
 
         it('should be able query by time', async () => {
@@ -142,9 +160,15 @@ describe('POST /logs/event', () => {
                 },
             })
 
-            expect(eventLogs.success).toEqual(true)
-            expect(eventLogs.httpCode).toEqual(200)
-            expect(eventLogs.body?.some((log) => log?.meta?.txID)).toBeTruthy()
+            expect(
+                eventLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                eventLogs.body?.some((log) => log?.meta?.txID),
+                'The response should contain the relevant event log',
+            ).toBeTrue()
         })
 
         it('should be able query by block', async () => {
@@ -161,9 +185,15 @@ describe('POST /logs/event', () => {
                 },
             })
 
-            expect(eventLogs.success).toEqual(true)
-            expect(eventLogs.httpCode).toEqual(200)
-            expect(eventLogs.body?.some((log) => log?.meta?.txID)).toBeTruthy()
+            expect(
+                eventLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                eventLogs.body?.some((log) => log?.meta?.txID),
+                'The response should contain the relevant event log',
+            ).toBeTrue()
         })
     })
 
@@ -189,25 +219,36 @@ describe('POST /logs/event', () => {
                 order: order,
             })
 
-            expect(response.success).toEqual(true)
-            expect(response.httpCode).toEqual(200)
+            expect(
+                response.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 response.body?.some(
                     (log) => log?.meta?.blockNumber === firstBlock,
                 ),
-            ).toBeTruthy()
+                'The response should contain the first block',
+            ).toBeTrue()
             expect(
                 response.body?.some(
                     (log) => log?.meta?.blockNumber === lastBlock,
                 ),
-            ).toBeTruthy()
+                'The response should contain the last block',
+            ).toBeTrue()
 
             const blockNumbers = response.body?.map(
                 (log) => log?.meta?.blockNumber,
             )
 
-            expect(blockNumbers).toBeArray()
-            expect(blockNumbers).toEqual(
+            expect(
+                blockNumbers,
+                'Should be an array of block numbers',
+            ).toBeArray()
+            expect(
+                blockNumbers,
+                'Should be sorted in the correct order',
+            ).toEqual(
                 order === 'asc' || order === undefined
                     ? (blockNumbers as number[]).sort((a, b) => a - b)
                     : (blockNumbers as number[]).sort((a, b) => b - a),
@@ -239,9 +280,15 @@ describe('POST /logs/event', () => {
 
             const eventLogs = await Node1Client.queryEventLogs(request)
 
-            expect(eventLogs.success).toEqual(true)
-            expect(eventLogs.httpCode).toEqual(200)
-            expect(eventLogs.body?.some((log) => log?.meta?.txID)).toBeTruthy()
+            expect(
+                eventLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                eventLogs.body?.some((log) => log?.meta?.txID),
+                'The response should contain the relevant event log',
+            ).toBeTrue()
         })
 
         it('should be able to omit the "offset" field', async () => {
@@ -258,9 +305,15 @@ describe('POST /logs/event', () => {
 
             const eventLogs = await Node1Client.queryEventLogs(request)
 
-            expect(eventLogs.success).toEqual(true)
-            expect(eventLogs.httpCode).toEqual(200)
-            expect(eventLogs.body?.some((log) => log?.meta?.txID)).toBeTruthy()
+            expect(
+                eventLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                eventLogs.body?.some((log) => log?.meta?.txID),
+                'The response should contain the relevant event log',
+            ).toBeTrue()
         })
 
         it('should be able paginate requests', async () => {
@@ -290,9 +343,15 @@ describe('POST /logs/event', () => {
 
             const allElements = await query(0, totalElements)
 
-            expect(allElements.success).toEqual(true)
-            expect(allElements.httpCode).toEqual(200)
-            expect(allElements.body?.length).toEqual(totalElements)
+            expect(
+                allElements.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(allElements.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                allElements.body?.length,
+                'Should be able to query for all elements',
+            ).toEqual(totalElements)
 
             const paginatedElements: components['schemas']['EventLogsResponse'][] =
                 []
@@ -303,9 +362,18 @@ describe('POST /logs/event', () => {
                     amountPerPage,
                 )
 
-                expect(paginatedResponse.success).toEqual(true)
-                expect(paginatedResponse.httpCode).toEqual(200)
-                expect(paginatedResponse.body?.length).toEqual(amountPerPage)
+                expect(
+                    paginatedResponse.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(
+                    paginatedResponse.httpCode,
+                    'Expected HTTP Code',
+                ).toEqual(200)
+                expect(
+                    paginatedResponse.body?.length,
+                    'Should be able to query for a paginated amount',
+                ).toEqual(amountPerPage)
 
                 const elements = paginatedResponse.body?.filter(
                     (it) => it !== undefined,
@@ -314,7 +382,10 @@ describe('POST /logs/event', () => {
                 paginatedElements.push(...elements)
             }
 
-            expect(allElements.body).toEqual(paginatedElements)
+            expect(
+                allElements.body,
+                'Paginated items should equal all elements',
+            ).toEqual(paginatedElements)
         })
     })
 
@@ -351,10 +422,16 @@ describe('POST /logs/event', () => {
         const expectOriginalEvent = (
             response: Response<Schema['EventLogsResponse']>,
         ) => {
-            expect(response.success).toEqual(true)
-            expect(response.httpCode).toEqual(200)
+            expect(
+                response.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
 
-            expect(response.body?.[0]).toEqual({
+            expect(
+                response.body?.[0],
+                'Should match the expected event log',
+            ).toEqual({
                 address: contractAddress,
                 topics: [eventHash, ...topicAddresses.map(addAddressPadding)],
                 data: expect.stringMatching(HEX_REGEX),
@@ -513,9 +590,9 @@ describe('POST /logs/event', () => {
                 },
             })
 
-            expect(res.success).toEqual(true)
-            expect(res.httpCode).toEqual(200)
-            expect(res.body).toEqual([])
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Expected Response Body').toEqual([])
         })
 
         it('should be empty for non-matching topics and matching address', async () => {
@@ -536,9 +613,9 @@ describe('POST /logs/event', () => {
                 },
             })
 
-            expect(res.success).toEqual(true)
-            expect(res.httpCode).toEqual(200)
-            expect(res.body).toEqual([])
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Expected Response Body').toEqual([])
         })
     })
 })

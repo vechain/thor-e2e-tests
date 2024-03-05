@@ -12,6 +12,6 @@ describe('GET /transactions/{id}/receipt', function () {
         assert(tx.body != null, 'Failed to get transaction receipt body')
 
         expect(tx.body.meta?.txID).toEqual(transfer.meta?.txID)
-        expect(tx.httpCode).toEqual(200)
+        expect(tx.httpCode, 'Expected HTTP Code').toEqual(200)
     })
 })

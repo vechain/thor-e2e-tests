@@ -3,6 +3,7 @@ import { components } from '../src/open-api-types'
 import fs from 'fs'
 import { readRandomTransfer } from '../src/populated-data'
 import { ThorWallet } from '../src/wallet'
+import 'jest-expect-message'
 
 export const POPULATED_DATA_FILENAME = './.chain-data.json'
 

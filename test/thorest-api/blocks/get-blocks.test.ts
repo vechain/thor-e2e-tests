@@ -21,9 +21,9 @@ describe('GET /blocks/{revision}', function () {
         async function (revision) {
             const block = await Node1Client.getBlock(revision, false)
 
-            expect(block.success).toEqual(true)
-            expect(block.httpCode).toEqual(200)
-            expect(block.body).toEqual({
+            expect(block.success, 'API response should be a success').toBeTrue()
+            expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(block.body, 'Expected Response Body').toEqual({
                 beneficiary: expect.stringMatching(HEX_REGEX_40),
                 com: expect.any(Boolean),
                 gasLimit: expect.any(Number),
@@ -51,9 +51,9 @@ describe('GET /blocks/{revision}', function () {
         async function (revision) {
             const block = await Node1Client.getBlock(revision, false)
 
-            expect(block.success).toEqual(true)
-            expect(block.httpCode).toEqual(200)
-            expect(block.body).toEqual(null)
+            expect(block.success, 'API response should be a success').toBeTrue()
+            expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(block.body, 'Expected Response Body').toEqual(null)
         },
     )
 
@@ -62,17 +62,17 @@ describe('GET /blocks/{revision}', function () {
         async function (revision) {
             const block = await Node1Client.getBlock(revision, false)
 
-            expect(block.success).toEqual(false)
-            expect(block.httpCode).toEqual(400)
+            expect(block.success, 'API Call should fail').toBeFalse()
+            expect(block.httpCode, 'Expected HTTP Code').toEqual(400)
         },
     )
 
     it('should be able get compressed blocks', async function () {
         const res = await Node1Client.getBlock(transfer.meta?.blockID!, false)
 
-        expect(res.success).toEqual(true)
-        expect(res.httpCode).toEqual(200)
-        expect(res.body).not.toEqual(null)
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Block should not be null').not.toEqual(null)
 
         const block = res.body as components['schemas']['GetBlockResponse']
 
@@ -88,9 +88,9 @@ describe('GET /blocks/{revision}', function () {
     it('should be able get expanded blocks', async function () {
         const res = await Node1Client.getBlock(transfer.meta.blockID, true)
 
-        expect(res.success).toEqual(true)
-        expect(res.httpCode).toEqual(200)
-        expect(res.body).not.toEqual(null)
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Block should not be null').not.toEqual(null)
 
         const block = res.body as components['schemas']['GetBlockResponse']
 

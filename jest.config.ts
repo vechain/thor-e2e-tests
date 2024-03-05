@@ -32,8 +32,12 @@ const config: Config = {
     // ms to wait before throwing a timeout error
     testTimeout: 60_000,
     json: true,
-    maxWorkers: 10,
-    setupFilesAfterEnv: ['./jest/setupAfterEnv.ts', 'jest-extended/all'],
+    maxWorkers: IS_GH_ACTIONS ? 1 : 10,
+    setupFilesAfterEnv: [
+        './jest/setupAfterEnv.ts',
+        'jest-extended/all',
+        'jest-expect-message',
+    ],
     globalSetup: './jest/globalSetup.ts',
     globalTeardown: './jest/globalTeardown.ts',
 }

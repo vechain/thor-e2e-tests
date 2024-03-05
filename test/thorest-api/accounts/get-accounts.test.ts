@@ -22,9 +22,9 @@ describe('GET /accounts/{address}', function () {
     it('correct balance', async function () {
         const res = await Node1Client.getAccount(transfer.vet.recipient)
 
-        expect(res.success).toBeTruthy()
-        expect(res.httpCode).toEqual(200)
-        expect(res.body).toEqual({
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Expected Response Body').toEqual({
             balance: FAUCET_AMOUNT,
             energy: expect.stringMatching(HEX_REGEX),
             hasCode: false,
@@ -35,9 +35,9 @@ describe('GET /accounts/{address}', function () {
         const addr = contractAddresses.energy
         const res = await Node1Client.getAccount(addr)
 
-        expect(res.success).toBeTruthy()
-        expect(res.httpCode).toEqual(200)
-        expect(res.body).toEqual({
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Expected Response Body').toEqual({
             balance: expect.stringMatching(HEX_REGEX),
             energy: expect.stringMatching(HEX_REGEX),
             hasCode: true,
@@ -49,9 +49,9 @@ describe('GET /accounts/{address}', function () {
             transfer.vet.recipient,
             revision,
         )
-        expect(res.success).toBeTruthy()
-        expect(res.httpCode).toEqual(200)
-        expect(res.body).toEqual({
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Expected Response Body').toEqual({
             balance: expect.stringMatching(HEX_REGEX),
             energy: expect.stringMatching(HEX_REGEX),
             hasCode: false,
@@ -60,13 +60,13 @@ describe('GET /accounts/{address}', function () {
 
     it.each(invalidAddresses)('invalid address: %s', async (a) => {
         const res = await Node1Client.getAccount(a as string)
-        expect(res.success).toBeFalsy()
-        expect(res.httpCode).toEqual(400)
+        expect(res.success, 'API Call should fail').toBeFalse()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
     })
 
     it.each(revisions.invalid)('invalid revision: %s', async (r) => {
         const res = await Node1Client.getAccount(transfer.vet.recipient, r)
-        expect(res.success).toBeFalsy()
-        expect(res.httpCode).toEqual(400)
+        expect(res.success, 'API Call should fail').toBeFalse()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
     })
 })

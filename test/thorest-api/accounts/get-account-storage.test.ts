@@ -58,9 +58,9 @@ describe('GET /accounts/{address}/storage', function () {
             SIMPLE_STORAGE_KEY,
         )
 
-        expect(res.success).toEqual(true)
-        expect(res.httpCode).toEqual(200)
-        expect(res.body).toEqual({
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Expected Response Body').toEqual({
             value: addUintPadding(amount),
         })
     })
@@ -87,9 +87,9 @@ describe('GET /accounts/{address}/storage', function () {
         )
 
         // Check the storage position after the transaction
-        expect(res.success).toEqual(true)
-        expect(res.httpCode).toEqual(200)
-        expect(res.body).toEqual({
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Expected Response Body').toEqual({
             value: addUintPadding(newAmount),
         })
 
@@ -100,9 +100,9 @@ describe('GET /accounts/{address}/storage', function () {
             `${(tx.meta?.blockNumber ?? 1) - 1}`,
         )
 
-        expect(historic.success).toEqual(true)
-        expect(historic.httpCode).toEqual(200)
-        expect(historic.body).toEqual({
+        expect(historic.success, 'API response should be a success').toBeTrue()
+        expect(historic.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(historic.body, 'Expected Response Body').toEqual({
             value: addUintPadding(startAmount),
         })
     })
@@ -113,9 +113,9 @@ describe('GET /accounts/{address}/storage', function () {
             SIMPLE_STORAGE_KEY,
             revision,
         )
-        expect(res.success).toBeTruthy()
-        expect(res.httpCode).toEqual(200)
-        expect(res.body).toEqual({
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Expected Response Body').toEqual({
             value: expect.stringMatching(HEX_REGEX_64),
         })
     })
@@ -127,7 +127,7 @@ describe('GET /accounts/{address}/storage', function () {
             r,
         )
 
-        expect(res.success).toBeFalsy()
-        expect(res.httpCode).toEqual(400)
+        expect(res.success, 'API Call should fail').toBeFalse()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
     })
 })

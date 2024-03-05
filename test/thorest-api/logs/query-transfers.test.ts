@@ -43,8 +43,11 @@ describe('POST /logs/transfers', () => {
             (log) => log?.meta?.txID === transfer.meta.txID,
         )
 
-        expect(relevantLog).toBeDefined()
-        expect(relevantLog).toEqual({
+        expect(relevantLog, 'Transfer event should be found').toBeDefined()
+        expect(
+            relevantLog,
+            'Transfer event should have the correct response body',
+        ).toEqual({
             sender: transfer.vet.sender,
             recipient: transfer.vet.recipient,
             amount: transfer.vet.amount,
@@ -74,11 +77,15 @@ describe('POST /logs/transfers', () => {
 
             const transferLogs = await Node1Client.queryTransferLogs(request)
 
-            expect(transferLogs.success).toEqual(true)
-            expect(transferLogs.httpCode).toEqual(200)
+            expect(
+                transferLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 transferLogs.body?.some((log) => log?.meta?.txID),
-            ).toBeTruthy()
+                'The response body some contain the relevant log',
+            ).toBeTrue()
         })
 
         it('should be able to omit the "to" field', async () => {
@@ -95,11 +102,15 @@ describe('POST /logs/transfers', () => {
 
             const transferLogs = await Node1Client.queryTransferLogs(request)
 
-            expect(transferLogs.success).toEqual(true)
-            expect(transferLogs.httpCode).toEqual(200)
+            expect(
+                transferLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 transferLogs.body?.some((log) => log?.meta?.txID),
-            ).toBeTruthy()
+                'The response body some contain the relevant log',
+            ).toBeTrue()
         })
 
         /**
@@ -119,11 +130,15 @@ describe('POST /logs/transfers', () => {
 
             const transferLogs = await Node1Client.queryTransferLogs(request)
 
-            expect(transferLogs.success).toEqual(true)
-            expect(transferLogs.httpCode).toEqual(200)
+            expect(
+                transferLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 transferLogs.body?.some((log) => log?.meta?.txID),
-            ).toBeTruthy()
+                'The response body some contain the relevant log',
+            ).toBeTrue()
         })
 
         it('should be able query by time', async () => {
@@ -140,11 +155,15 @@ describe('POST /logs/transfers', () => {
                 },
             })
 
-            expect(transferLogs.success).toEqual(true)
-            expect(transferLogs.httpCode).toEqual(200)
+            expect(
+                transferLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 transferLogs.body?.some((log) => log?.meta?.txID),
-            ).toBeTruthy()
+                'The response body some contain the relevant log',
+            ).toBeTrue()
         })
 
         it('should be able query by block', async () => {
@@ -161,11 +180,15 @@ describe('POST /logs/transfers', () => {
                 },
             })
 
-            expect(transferLogs.success).toEqual(true)
-            expect(transferLogs.httpCode).toEqual(200)
+            expect(
+                transferLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 transferLogs.body?.some((log) => log?.meta?.txID),
-            ).toBeTruthy()
+                'The response body some contain the relevant log',
+            ).toBeTrue()
         })
     })
 
@@ -181,11 +204,15 @@ describe('POST /logs/transfers', () => {
 
             const transferLogs = await Node1Client.queryTransferLogs(request)
 
-            expect(transferLogs.success).toEqual(true)
-            expect(transferLogs.httpCode).toEqual(200)
+            expect(
+                transferLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 transferLogs.body?.some((log) => log?.meta?.txID),
-            ).toBeTruthy()
+                'The response body some contain the relevant log',
+            ).toBeTrue()
         })
 
         it('should be able to omit the "offset" field', async () => {
@@ -202,11 +229,15 @@ describe('POST /logs/transfers', () => {
 
             const transferLogs = await Node1Client.queryTransferLogs(request)
 
-            expect(transferLogs.success).toEqual(true)
-            expect(transferLogs.httpCode).toEqual(200)
+            expect(
+                transferLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 transferLogs.body?.some((log) => log?.meta?.txID),
-            ).toBeTruthy()
+                'The response body some contain the relevant log',
+            ).toBeTrue()
         })
 
         it('should be able paginate requests', async () => {
@@ -232,8 +263,11 @@ describe('POST /logs/transfers', () => {
 
             const allElements = await query(0, totalTransfers)
 
-            expect(allElements.success).toEqual(true)
-            expect(allElements.httpCode).toEqual(200)
+            expect(
+                allElements.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(allElements.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(allElements.body?.length).toEqual(totalTransfers)
 
             const paginatedTransfers: components['schemas']['TransferLogsResponse'][] =
@@ -245,8 +279,14 @@ describe('POST /logs/transfers', () => {
                     amountPerPage,
                 )
 
-                expect(paginatedResponse.success).toEqual(true)
-                expect(paginatedResponse.httpCode).toEqual(200)
+                expect(
+                    paginatedResponse.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(
+                    paginatedResponse.httpCode,
+                    'Expected HTTP Code',
+                ).toEqual(200)
                 expect(paginatedResponse.body?.length).toEqual(amountPerPage)
 
                 const elements =
@@ -255,7 +295,9 @@ describe('POST /logs/transfers', () => {
                 paginatedTransfers.push(...elements)
             }
 
-            expect(allElements.body).toEqual(paginatedTransfers)
+            expect(allElements.body, 'Expected Response Body').toEqual(
+                paginatedTransfers,
+            )
         })
     })
 
@@ -264,14 +306,20 @@ describe('POST /logs/transfers', () => {
             response: Response<Schema['TransferLogsResponse']>,
             transfer: Transfer,
         ) => {
-            expect(response.success).toEqual(true)
-            expect(response.httpCode).toEqual(200)
+            expect(
+                response.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
 
             const relevantLog = response.body?.find((log) => {
                 return log?.meta?.txID === transfer.meta.txID
             })
 
-            expect(relevantLog).toEqual({
+            expect(
+                relevantLog,
+                'Should have the correct response body',
+            ).toEqual({
                 amount: transfer.vet.amount,
                 recipient: transfer.vet.recipient,
                 sender: transfer.vet.sender,
@@ -354,25 +402,33 @@ describe('POST /logs/transfers', () => {
                 order: order,
             })
 
-            expect(response.success).toEqual(true)
-            expect(response.httpCode).toEqual(200)
+            expect(
+                response.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 response.body?.some(
                     (log) => log?.meta?.blockNumber === firstBlock,
                 ),
-            ).toBeTruthy()
+                'First block should be present',
+            ).toBeTrue()
             expect(
                 response.body?.some(
                     (log) => log?.meta?.blockNumber === lastBlock,
                 ),
-            ).toBeTruthy()
+                'Last block should be present',
+            ).toBeTrue()
 
             const blockNumbers = response.body?.map(
                 (log) => log?.meta?.blockNumber,
             )
 
-            expect(blockNumbers).toBeArray()
-            expect(blockNumbers).toEqual(
+            expect(blockNumbers, 'The result should be an array').toBeArray()
+            expect(
+                blockNumbers,
+                'The result should be sorted correctly',
+            ).toEqual(
                 order === 'asc' || order === undefined
                     ? (blockNumbers as number[]).sort((a, b) => a - b)
                     : (blockNumbers as number[]).sort((a, b) => b - a),

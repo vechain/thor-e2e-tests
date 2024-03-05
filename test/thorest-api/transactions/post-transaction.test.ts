@@ -6,6 +6,9 @@ describe('POST /transactions', function () {
 
         const fundReceipt = await wallet.waitForFunding()
 
-        expect(fundReceipt?.reverted).toEqual(false)
+        expect(
+            fundReceipt?.reverted,
+            'Transaction should not be reverted',
+        ).toEqual(false)
     })
 })
