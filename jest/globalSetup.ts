@@ -4,6 +4,7 @@ import fs from 'fs'
 import { readRandomTransfer } from '../src/populated-data'
 import { ThorWallet } from '../src/wallet'
 import 'jest-expect-message'
+import assert from 'node:assert'
 
 export const POPULATED_DATA_FILENAME = './.chain-data.json'
 
@@ -68,6 +69,17 @@ const checkIfPopulated = async (): Promise<boolean> => {
 }
 
 const populate = async () => {
+    const currentBlock = await Node1Client.getBlock('best')
+
+    assert(currentBlock.success, 'Could not get best block')
+
+    // Sleep for a couple of blocks until nodes are stable
+    if ((currentBlock.body?.number || 0) < 3) {
+        const timeToSleep = 3 - (currentBlock.body?.number || 0) * 10_000
+
+        await new Promise((resolve) => setTimeout(resolve, timeToSleep))
+    }
+
     const alreadyPopulated = await checkIfPopulated()
 
     if (alreadyPopulated) {
