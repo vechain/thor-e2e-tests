@@ -71,7 +71,10 @@ class ThorWallet {
         bytecode: string,
         delegate = false,
         node?: NodeKey,
-    ): Promise<string> => {
+    ): Promise<{
+        contractAddress: string
+        receipt: components['schemas']['GetTxReceiptResponse']
+    }> => {
         const receipt = await this.sendClauses(
             [
                 {
@@ -91,7 +94,7 @@ class ThorWallet {
             throw new Error('Could not get contract address from receipt')
         }
 
-        return contractAddress
+        return { contractAddress, receipt }
     }
 
     public buildTransaction = async (

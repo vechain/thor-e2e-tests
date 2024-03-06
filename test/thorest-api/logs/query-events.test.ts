@@ -400,9 +400,13 @@ describe('POST /logs/event', () => {
         beforeAll(async () => {
             await wallet.waitForFunding()
 
-            contractAddress = await wallet.deployContract(
+            const res = await wallet.deployContract(
                 EventsContract__factory.bytecode,
             )
+
+            contractAddress = res.contractAddress
+
+            console.log('contractAddress', contractAddress)
 
             txReceipt = await wallet.sendClauses(
                 [
@@ -417,6 +421,8 @@ describe('POST /logs/event', () => {
                 ],
                 true,
             )
+
+            console.log('query by "criteriaSet" - txReceipt', txReceipt)
         })
 
         const expectOriginalEvent = (
