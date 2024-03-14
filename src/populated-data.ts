@@ -13,6 +13,20 @@ export type Transfer = {
 
 let populateData: PopulatedChainData | undefined
 
+export const populatedDataExists = () => {
+    return fs.existsSync(POPULATED_DATA_FILENAME)
+}
+
+export const writePopulatedData = (data: PopulatedChainData) => {
+    fs.writeFileSync(POPULATED_DATA_FILENAME, JSON.stringify(data))
+}
+
+export const removePopulatedData = () => {
+    if (populatedDataExists()) {
+        fs.unlinkSync(POPULATED_DATA_FILENAME)
+    }
+}
+
 export const readPopulatedData = (): PopulatedChainData => {
     if (populateData) {
         return populateData

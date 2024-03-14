@@ -47,7 +47,7 @@ jobs:
         run: yarn install
 
       - name: Run Tests
-        run: yarn test --maxWorkers ${{ github.event.inputs.maxWorkers || 3 }}
+        run: yarn test --maxWorkers ${{ github.event.inputs.maxWorkers }}
 
       - name: Print Compose Logs on Failre
         if: failure()

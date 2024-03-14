@@ -203,6 +203,26 @@ describe('POST /logs/event', () => {
                 'The response should contain the relevant event log',
             ).toBeTrue()
         })
+
+        it('should be able to set the range to null', async () => {
+            const transfer = await readRandomTransfer()
+            const baseRequest = buildRequestFromTransfer(transfer)
+
+            const eventLogs = await Node1Client.queryEventLogs({
+                ...baseRequest,
+                range: null,
+            })
+
+            expect(
+                eventLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                eventLogs.body?.some((log) => log?.meta?.txID),
+                'The response should contain the relevant event log',
+            ).toBeTrue()
+        })
     })
 
     describe('query by "order"', () => {

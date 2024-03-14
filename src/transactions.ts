@@ -1,55 +1,9 @@
-import { Transaction, TransactionClause } from '@vechain/sdk-core'
+import { TransactionClause } from '@vechain/sdk-core'
 import { Node1Client } from './thor-client'
 import { components } from './open-api-types'
-import { ethers } from 'hardhat'
-import type { BaseContract } from 'ethers'
 
 export const generateNonce = (): number => {
     return Math.floor(Math.random() * 1_000_000_000)
-}
-
-/**
- * Deploys a contract using hardhat
- */
-export const deployHardhatContract = async <T extends BaseContract>(
-    contractName: string,
-    args: string[] = [],
-) => {
-    const signers = await ethers.getSigners()
-    const randomSignerIndex = Math.floor(Math.random() * signers.length)
-    const signer = signers[randomSignerIndex]
-
-    const contractFactory = await ethers.getContractFactory(contractName)
-    const contract = await contractFactory.deploy(signer)
-
-    const txId = contract.deploymentTransaction()?.hash
-    const txReceipt = await pollReceipt(txId!)
-    const contractAddress = txReceipt.outputs?.[0].contractAddress as string
-
-    // This is a bug with vechain hardhat plugin
-    contract.getAddress = () => Promise.resolve(contractAddress)
-
-    return contract as T
-}
-
-/**
- * Compares the blockID of each receipt to determine if the transaction has been mined on the network
- * @param receipts
- */
-const compareReceipts = (
-    receipts: components['schemas']['GetTxReceiptResponse'][],
-) => {
-    if (receipts.some((r) => !r)) {
-        return false
-    }
-
-    const set = new Set(receipts.map((r) => r.meta?.blockID))
-
-    if (receipts.some((r) => r.reverted)) {
-        console.warn('TX has reverted')
-    }
-
-    return set.size === 1
 }
 
 /**
@@ -82,7 +36,6 @@ export const pollReceipt = async (
  * Warns if the transaction simulation fails
  * @param clauses
  * @param caller
- * @param node
  */
 export const warnIfSimulationFails = async (
     clauses: TransactionClause[],

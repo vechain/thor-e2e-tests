@@ -63,6 +63,28 @@ describe('POST /logs/transfers', () => {
     })
 
     describe('query by "range"', () => {
+        it('should be able set the range to null', async () => {
+            const transfer = await readRandomTransfer()
+
+            const baseRequest = buildRequestFromTransfer(transfer)
+            const request = {
+                ...baseRequest,
+                range: null,
+            }
+
+            const transferLogs = await Node1Client.queryTransferLogs(request)
+
+            expect(
+                transferLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                transferLogs.body?.some((log) => log?.meta?.txID),
+                'The response body some contain the relevant log',
+            ).toBeTrue()
+        })
+
         it('should be able to omit the "from" field', async () => {
             const transfer = await readRandomTransfer()
 

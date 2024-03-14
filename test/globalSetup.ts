@@ -1,6 +1,11 @@
 import { Node1Client } from '../src/thor-client'
 import fs from 'fs'
-import { readPopulatedData } from '../src/populated-data'
+import {
+    populatedDataExists,
+    readPopulatedData,
+    removePopulatedData,
+    writePopulatedData,
+} from '../src/populated-data'
 import { ThorWallet } from '../src/wallet'
 import 'jest-expect-message'
 import assert from 'node:assert'
@@ -37,7 +42,7 @@ const populateVetAndVtho = async (): Promise<string[]> => {
  * Checks if the chain is already populated with data. Checks a random 25 transactions
  */
 const checkIfPopulated = async (): Promise<boolean> => {
-    if (!fs.existsSync(POPULATED_DATA_FILENAME)) {
+    if (!populatedDataExists()) {
         return false
     }
 
@@ -66,8 +71,8 @@ const populate = async () => {
         return
     }
 
-    if (fs.existsSync(POPULATED_DATA_FILENAME)) {
-        fs.unlinkSync(POPULATED_DATA_FILENAME)
+    if (populatedDataExists()) {
+        removePopulatedData()
     }
 
     const transfers = await populateVetAndVtho()
@@ -76,7 +81,7 @@ const populate = async () => {
         transfers,
     }
 
-    fs.writeFileSync(POPULATED_DATA_FILENAME, JSON.stringify(data, null, 4))
+    writePopulatedData(data)
 }
 
 export default populate
