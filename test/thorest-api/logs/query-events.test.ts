@@ -43,6 +43,8 @@ const buildRequestFromTransfer = (
     }
 }
 
+type EventLogFilterRequest = components['schemas']['EventLogFilterRequest']
+
 describe('POST /logs/event', () => {
     let transferDetails = getTransferDetails()
 
@@ -89,153 +91,114 @@ describe('POST /logs/event', () => {
         ).toBeTrue()
     })
 
+    const runEventLogsTest = async (
+        modifyRequest: (
+            request: EventLogFilterRequest,
+            transfer: Transfer,
+        ) => EventLogFilterRequest,
+    ) => {
+        const transfer = await readRandomTransfer()
+        const request = modifyRequest(
+            buildRequestFromTransfer(transfer),
+            transfer,
+        )
+
+        const response = await Node1Client.queryEventLogs(request)
+        const relevantLog = response.body?.find((log) => {
+            return log?.meta?.txID === transfer.meta.txID
+        })
+
+        expect(response.success, 'API response should be a success').toBeTrue()
+        expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(
+            relevantLog,
+            'The response should contain the relevant event log',
+        ).toBeDefined()
+        expect(relevantLog).toEqual({
+            address: contractAddresses.energy,
+            topics: transfer.vtho.topics,
+            data: expect.stringMatching(HEX_REGEX_64),
+            meta: {
+                blockID: expect.stringMatching(HEX_REGEX_64),
+                blockNumber: expect.any(Number),
+                blockTimestamp: expect.any(Number),
+                txID: expect.stringMatching(HEX_REGEX_64),
+                txOrigin: transfer.meta.txOrigin,
+                clauseIndex: expect.any(Number),
+            },
+        })
+    }
+
     describe('query by "range"', () => {
         it('should be able to omit the "from" field', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-            const request = {
-                ...baseRequest,
-                range: {
-                    ...baseRequest.range,
-                    from: undefined,
-                },
-            }
-
-            const eventLogs = await Node1Client.queryEventLogs(request)
-
-            expect(
-                eventLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                eventLogs.body?.some((log) => log?.meta?.txID),
-                'The response should contain the relevant event log',
-            ).toBeTrue()
+            await runEventLogsTest((request) => {
+                return {
+                    ...request,
+                    range: {
+                        ...request.range,
+                        from: undefined,
+                    },
+                }
+            })
         })
 
         it('should be able to omit the "to" field', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-            const request = {
-                ...baseRequest,
-                range: {
-                    ...baseRequest.range,
-                    to: undefined,
-                },
-            }
-
-            const eventLogs = await Node1Client.queryEventLogs(request)
-
-            expect(
-                eventLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                eventLogs.body?.some((log) => log?.meta?.txID),
-                'The response should contain the relevant event log',
-            ).toBeTrue()
+            await runEventLogsTest((request) => {
+                return {
+                    ...request,
+                    range: {
+                        ...request.range,
+                        to: undefined,
+                    },
+                }
+            })
         })
 
-        /**
-         * This also checks that the default unit is "block"
-         */
         it('should be omit the "unit" field', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-            const request = {
-                ...baseRequest,
-                range: {
-                    ...baseRequest.range,
-                    unit: undefined,
-                },
-            }
-
-            const eventLogs = await Node1Client.queryEventLogs(request)
-
-            expect(
-                eventLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                eventLogs.body?.some((log) => log?.meta?.txID),
-                'The response should contain the relevant event log',
-            ).toBeTrue()
+            await runEventLogsTest((request) => {
+                return {
+                    ...request,
+                    range: {
+                        ...request.range,
+                        unit: undefined,
+                    },
+                }
+            })
         })
 
         it('should be able query by time', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-
-            const eventLogs = await Node1Client.queryEventLogs({
-                ...baseRequest,
-                range: {
-                    to: transfer.meta.blockTimestamp + 1000,
-                    from: transfer.meta.blockTimestamp - 1000,
-                    unit: 'time',
-                },
+            await runEventLogsTest((request, transfer) => {
+                return {
+                    ...request,
+                    range: {
+                        to: transfer.meta.blockTimestamp + 1000,
+                        from: transfer.meta.blockTimestamp - 1000,
+                        unit: 'time',
+                    },
+                }
             })
-
-            expect(
-                eventLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                eventLogs.body?.some((log) => log?.meta?.txID),
-                'The response should contain the relevant event log',
-            ).toBeTrue()
         })
 
         it('should be able query by block', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-
-            const eventLogs = await Node1Client.queryEventLogs({
-                ...baseRequest,
-                range: {
-                    to: transfer.meta.blockNumber,
-                    from: transfer.meta.blockNumber,
-                    unit: 'block',
-                },
+            await runEventLogsTest((request, transfer) => {
+                return {
+                    ...request,
+                    range: {
+                        to: transfer.meta.blockNumber,
+                        from: transfer.meta.blockNumber,
+                        unit: 'block',
+                    },
+                }
             })
-
-            expect(
-                eventLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                eventLogs.body?.some((log) => log?.meta?.txID),
-                'The response should contain the relevant event log',
-            ).toBeTrue()
         })
 
         it('should be able to set the range to null', async () => {
-            const transfer = await readRandomTransfer()
-            const baseRequest = buildRequestFromTransfer(transfer)
-
-            const eventLogs = await Node1Client.queryEventLogs({
-                ...baseRequest,
-                range: null,
+            await runEventLogsTest((request) => {
+                return {
+                    ...request,
+                    range: null,
+                }
             })
-
-            expect(
-                eventLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                eventLogs.body?.some((log) => log?.meta?.txID),
-                'The response should contain the relevant event log',
-            ).toBeTrue()
         })
     })
 
@@ -317,50 +280,24 @@ describe('POST /logs/event', () => {
 
     describe('query by "options"', () => {
         it('should be able omit all the options', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-            const request = {
-                ...baseRequest,
-                options: null,
-            }
-
-            const eventLogs = await Node1Client.queryEventLogs(request)
-
-            expect(
-                eventLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                eventLogs.body?.some((log) => log?.meta?.txID),
-                'The response should contain the relevant event log',
-            ).toBeTrue()
+            await runEventLogsTest((request) => {
+                return {
+                    ...request,
+                    options: null,
+                }
+            })
         })
 
         it('should be able to omit the "offset" field', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-            const request = {
-                ...baseRequest,
-                options: {
-                    limit: 10_000,
-                    offset: undefined,
-                },
-            }
-
-            const eventLogs = await Node1Client.queryEventLogs(request)
-
-            expect(
-                eventLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                eventLogs.body?.some((log) => log?.meta?.txID),
-                'The response should contain the relevant event log',
-            ).toBeTrue()
+            await runEventLogsTest((request) => {
+                return {
+                    ...request,
+                    options: {
+                        limit: 10_000,
+                        offset: undefined,
+                    },
+                }
+            })
         })
 
         it('should be able to omit the "limit" field', async () => {

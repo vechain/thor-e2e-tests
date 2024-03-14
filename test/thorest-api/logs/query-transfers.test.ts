@@ -29,6 +29,9 @@ const buildRequestFromTransfer = (
     }
 }
 
+type TransferLogFilterRequest =
+    components['schemas']['TransferLogFilterRequest']
+
 describe('POST /logs/transfers', () => {
     const transferDetails = getTransferDetails()
 
@@ -81,204 +84,118 @@ describe('POST /logs/transfers', () => {
         ).toBeTrue()
     })
 
+    const runTransferLogsTest = async (
+        modifyRequest: (
+            request: TransferLogFilterRequest,
+            transfer: Transfer,
+        ) => TransferLogFilterRequest,
+    ) => {
+        const transfer = await readRandomTransfer()
+        const request = buildRequestFromTransfer(transfer)
+
+        const modifiedRequest = modifyRequest(request, transfer)
+
+        const response = await Node1Client.queryTransferLogs(modifiedRequest)
+
+        const relevantLog = response.body?.find(
+            (log) => log?.meta?.txID === transfer.meta.txID,
+        )
+
+        expect(response.success, 'API response should be a success').toBeTrue()
+        expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(relevantLog).toBeDefined()
+        expect(relevantLog).toEqual({
+            sender: transfer.vet.sender,
+            recipient: transfer.vet.recipient,
+            amount: transfer.vet.amount,
+            meta: {
+                blockID: expect.stringMatching(HEX_REGEX_64),
+                blockNumber: expect.any(Number),
+                blockTimestamp: expect.any(Number),
+                txID: transfer.meta.txID,
+                txOrigin: transfer.meta.txOrigin,
+                clauseIndex: 0,
+            },
+        })
+    }
+
     describe('query by "range"', () => {
         it('should be able set the range to null', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-            const request = {
-                ...baseRequest,
+            await runTransferLogsTest((request) => ({
+                ...request,
                 range: null,
-            }
-
-            const transferLogs = await Node1Client.queryTransferLogs(request)
-
-            expect(
-                transferLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                transferLogs.body?.some((log) => log?.meta?.txID),
-                'The response body some contain the relevant log',
-            ).toBeTrue()
+            }))
         })
 
         it('should be able to omit the "from" field', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-            const request = {
-                ...baseRequest,
+            await runTransferLogsTest((request) => ({
+                ...request,
                 range: {
-                    ...baseRequest.range,
+                    ...request.range,
                     from: undefined,
                 },
-            }
-
-            const transferLogs = await Node1Client.queryTransferLogs(request)
-
-            expect(
-                transferLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                transferLogs.body?.some((log) => log?.meta?.txID),
-                'The response body some contain the relevant log',
-            ).toBeTrue()
+            }))
         })
 
         it('should be able to omit the "to" field', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-            const request = {
-                ...baseRequest,
+            await runTransferLogsTest((request) => ({
+                ...request,
                 range: {
-                    ...baseRequest.range,
+                    ...request.range,
                     to: undefined,
                 },
-            }
-
-            const transferLogs = await Node1Client.queryTransferLogs(request)
-
-            expect(
-                transferLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                transferLogs.body?.some((log) => log?.meta?.txID),
-                'The response body some contain the relevant log',
-            ).toBeTrue()
+            }))
         })
 
-        /**
-         * This also checks that the default unit is "block"
-         */
         it('should be omit the "unit" field', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-            const request = {
-                ...baseRequest,
+            await runTransferLogsTest((request) => ({
+                ...request,
                 range: {
-                    ...baseRequest.range,
+                    ...request.range,
                     unit: undefined,
                 },
-            }
-
-            const transferLogs = await Node1Client.queryTransferLogs(request)
-
-            expect(
-                transferLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                transferLogs.body?.some((log) => log?.meta?.txID),
-                'The response body some contain the relevant log',
-            ).toBeTrue()
+            }))
         })
 
         it('should be able query by time', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-
-            const transferLogs = await Node1Client.queryTransferLogs({
-                ...baseRequest,
+            await runTransferLogsTest((request, transfer) => ({
+                ...request,
                 range: {
                     to: transfer.meta.blockTimestamp + 1000,
                     from: transfer.meta.blockTimestamp - 1000,
                     unit: 'time',
                 },
-            })
-
-            expect(
-                transferLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                transferLogs.body?.some((log) => log?.meta?.txID),
-                'The response body some contain the relevant log',
-            ).toBeTrue()
+            }))
         })
 
         it('should be able query by block', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-
-            const transferLogs = await Node1Client.queryTransferLogs({
-                ...baseRequest,
+            await runTransferLogsTest((request, transfer) => ({
+                ...request,
                 range: {
                     to: transfer.meta.blockNumber,
                     from: transfer.meta.blockNumber,
                     unit: 'block',
                 },
-            })
-
-            expect(
-                transferLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                transferLogs.body?.some((log) => log?.meta?.txID),
-                'The response body some contain the relevant log',
-            ).toBeTrue()
+            }))
         })
     })
 
     describe('query by "options"', () => {
         it('should be able omit all the options', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-            const request = {
-                ...baseRequest,
+            await runTransferLogsTest((request) => ({
+                ...request,
                 options: null,
-            }
-
-            const transferLogs = await Node1Client.queryTransferLogs(request)
-
-            expect(
-                transferLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                transferLogs.body?.some((log) => log?.meta?.txID),
-                'The response body some contain the relevant log',
-            ).toBeTrue()
+            }))
         })
 
         it('should be able to omit the "offset" field', async () => {
-            const transfer = await readRandomTransfer()
-
-            const baseRequest = buildRequestFromTransfer(transfer)
-            const request = {
-                ...baseRequest,
+            await runTransferLogsTest((request) => ({
+                ...request,
                 options: {
                     limit: 10_000,
                     offset: undefined,
                 },
-            }
-
-            const transferLogs = await Node1Client.queryTransferLogs(request)
-
-            expect(
-                transferLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                transferLogs.body?.some((log) => log?.meta?.txID),
-                'The response body some contain the relevant log',
-            ).toBeTrue()
+            }))
         })
 
         it('should be able to omit the "limit" field', async () => {
@@ -360,67 +277,78 @@ describe('POST /logs/transfers', () => {
     })
 
     describe('query by "criteriaSet"', () => {
-        const expectOriginalTransfer = (
-            response: Response<Schema['TransferLogsResponse']>,
-            transfer: Transfer,
-        ) => {
-            expect(
-                response.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
-
-            const relevantLog = response.body?.find((log) => {
-                return log?.meta?.txID === transfer.meta.txID
-            })
-
-            expect(
-                relevantLog,
-                'Should have the correct response body',
-            ).toEqual({
-                amount: transfer.vet.amount,
-                recipient: transfer.vet.recipient,
-                sender: transfer.vet.sender,
-                meta: {
-                    blockID: expect.stringMatching(HEX_REGEX_64),
-                    blockNumber: expect.any(Number),
-                    blockTimestamp: expect.any(Number),
-                    txID: transfer.meta.txID,
-                    txOrigin: transfer.meta.txOrigin,
-                    clauseIndex: expect.any(Number),
-                },
-            })
-        }
-
-        it.each(['sender', 'txOrigin', 'recipient'])(
-            'should be able query by: %s',
-            async (key) => {
-                const transfer = await readRandomTransfer()
-
-                const res = await Node1Client.queryTransferLogs({
-                    criteriaSet: [
-                        {
-                            [key]: transfer.vet[key as keyof Transfer['vet']],
-                        },
-                    ],
-                    range: {
-                        from: transfer.meta.blockNumber,
-                        to: transfer.meta.blockNumber,
-                        unit: 'block',
+        it('should be able query by "sender"', async () => {
+            await runTransferLogsTest((request, transfer) => ({
+                ...request,
+                criteriaSet: [
+                    {
+                        sender: transfer.vet.sender,
                     },
-                })
+                ],
+            }))
+        })
 
-                expectOriginalTransfer(
-                    res as Response<Schema['TransferLogsResponse']>,
-                    transfer,
-                )
-            },
-        )
+        it('should be able query by "recipient"', async () => {
+            await runTransferLogsTest((request, transfer) => ({
+                ...request,
+                criteriaSet: [
+                    {
+                        recipient: transfer.vet.recipient,
+                    },
+                ],
+            }))
+        })
+
+        it('should be able query by "txOrigin"', async () => {
+            await runTransferLogsTest((request, transfer) => ({
+                ...request,
+                criteriaSet: [
+                    {
+                        txOrigin: transfer.meta.txOrigin,
+                    },
+                ],
+            }))
+        })
+
+        it('should be able query by "sender" and "recipient"', async () => {
+            await runTransferLogsTest((request, transfer) => ({
+                ...request,
+                criteriaSet: [
+                    {
+                        sender: transfer.vet.sender,
+                        recipient: transfer.vet.recipient,
+                    },
+                ],
+            }))
+        })
+
+        it('should be able query by "sender" and "txOrigin"', async () => {
+            await runTransferLogsTest((request, transfer) => ({
+                ...request,
+                criteriaSet: [
+                    {
+                        sender: transfer.vet.sender,
+                        txOrigin: transfer.meta.txOrigin,
+                    },
+                ],
+            }))
+        })
+
+        it('should be able query by "recipient" and "txOrigin"', async () => {
+            await runTransferLogsTest((request, transfer) => ({
+                ...request,
+                criteriaSet: [
+                    {
+                        recipient: transfer.vet.recipient,
+                        txOrigin: transfer.meta.txOrigin,
+                    },
+                ],
+            }))
+        })
 
         it('should be able query by all criteria', async () => {
-            const transfer = await readRandomTransfer()
-
-            const res = await Node1Client.queryTransferLogs({
+            await runTransferLogsTest((request, transfer) => ({
+                ...request,
                 criteriaSet: [
                     {
                         sender: transfer.vet.sender,
@@ -428,42 +356,19 @@ describe('POST /logs/transfers', () => {
                         txOrigin: transfer.meta.txOrigin,
                     },
                 ],
-                range: {
-                    from: transfer.meta.blockNumber,
-                    to: transfer.meta.blockNumber,
-                    unit: 'block',
-                },
-            })
-
-            expectOriginalTransfer(
-                res as Response<Schema['TransferLogsResponse']>,
-                transfer,
-            )
+            }))
         })
 
         it('should be able to omit the "criteriaSet" field', async () => {
-            const transfer = await readRandomTransfer()
-
-            const res = await Node1Client.queryTransferLogs({
+            await runTransferLogsTest((request) => ({
+                ...request,
                 criteriaSet: null,
-                range: {
-                    from: transfer.meta.blockNumber,
-                    to: transfer.meta.blockNumber,
-                    unit: 'block',
-                },
-            })
-
-            expectOriginalTransfer(
-                res as Response<Schema['TransferLogsResponse']>,
-                transfer,
-            )
+            }))
         })
     })
 
     describe('query by "order"', () => {
-        const runqueryTransferLogsTest = async (
-            order?: 'asc' | 'desc' | null,
-        ) => {
+        const queryTransferLogsTest = async (order?: 'asc' | 'desc' | null) => {
             const { firstBlock, lastBlock } = await getTransferDetails()
 
             const response = await Node1Client.queryTransferLogs({
@@ -514,19 +419,19 @@ describe('POST /logs/transfers', () => {
         }
 
         it('events should be ordered by DESC', async () => {
-            await runqueryTransferLogsTest('desc')
+            await queryTransferLogsTest('desc')
         })
 
         it('events should be ordered by ASC', async () => {
-            await runqueryTransferLogsTest('asc')
+            await queryTransferLogsTest('asc')
         })
 
         it('default should be asc', async () => {
-            await runqueryTransferLogsTest(undefined)
+            await queryTransferLogsTest(undefined)
         })
 
         it('default should be asc', async () => {
-            await runqueryTransferLogsTest(null)
+            await queryTransferLogsTest(null)
         })
     })
 })
