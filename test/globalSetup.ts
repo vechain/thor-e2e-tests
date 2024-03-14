@@ -1,32 +1,18 @@
 import { Node1Client } from '../src/thor-client'
-import { components } from '../src/open-api-types'
 import fs from 'fs'
-import { readRandomTransfer } from '../src/populated-data'
+import { readPopulatedData } from '../src/populated-data'
 import { ThorWallet } from '../src/wallet'
 import 'jest-expect-message'
 import assert from 'node:assert'
 
 export const POPULATED_DATA_FILENAME = './.chain-data.json'
 
-const ContractKeys = [
-    'EvmMethods',
-    'MyERC20',
-    'MyERC721',
-    'SimpleCounter',
-] as const
-
-export type ContractKey = (typeof ContractKeys)[number]
-
-type GetTxReceiptResponse = Required<
-    components['schemas']['GetTxReceiptResponse']
->
-
 export type PopulatedChainData = {
-    transfers: GetTxReceiptResponse[]
+    transfers: string[]
 }
 
-const populateVetAndVtho = async (): Promise<GetTxReceiptResponse[]> => {
-    const accounts: GetTxReceiptResponse[] = []
+const populateVetAndVtho = async (): Promise<string[]> => {
+    const txIds: string[] = []
 
     console.log('\n')
 
@@ -36,15 +22,15 @@ const populateVetAndVtho = async (): Promise<GetTxReceiptResponse[]> => {
         console.log('Populating [block=' + block.body?.number + ']')
 
         const res = await Promise.all(
-            Array.from({ length: 40 }, () => {
+            Array.from({ length: 20 }, () => {
                 return ThorWallet.new(true).waitForFunding()
             }),
         )
 
-        accounts.push(...res.map((r) => r as GetTxReceiptResponse))
+        txIds.push(...(res.map((r) => r?.meta?.txID) as string[]))
     }
 
-    return accounts
+    return txIds
 }
 
 /**
@@ -56,11 +42,15 @@ const checkIfPopulated = async (): Promise<boolean> => {
     }
 
     for (let i = 0; i < 25; i++) {
-        const transfer = readRandomTransfer()
+        const data = readPopulatedData()
 
-        const acc = await Node1Client.getAccount(transfer.vet.recipient)
+        const randomIndex = Math.floor(Math.random() * data.transfers.length)
 
-        if (acc.body?.balance === '0x' || acc.body?.energy === '0x') {
+        const txReceipt = await Node1Client.getTransactionReceipt(
+            data.transfers[randomIndex],
+        )
+
+        if (!txReceipt.body) {
             return false
         }
     }
@@ -69,17 +59,6 @@ const checkIfPopulated = async (): Promise<boolean> => {
 }
 
 const populate = async () => {
-    const currentBlock = await Node1Client.getBlock('best')
-
-    assert(currentBlock.success, 'Could not get best block')
-
-    // Sleep for a couple of blocks until nodes are stable
-    if ((currentBlock.body?.number || 0) < 3) {
-        const timeToSleep = 3 - (currentBlock.body?.number || 0) * 10_000
-
-        await new Promise((resolve) => setTimeout(resolve, timeToSleep))
-    }
-
     const alreadyPopulated = await checkIfPopulated()
 
     if (alreadyPopulated) {

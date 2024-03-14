@@ -2,7 +2,7 @@ import { faucetAccountLength, faucetMnemonic } from '../src/constants'
 import genesis from '../network/config/genesis.json'
 import path from 'path'
 import fs from 'fs'
-import { HDNode } from 'thor-devkit'
+import { HDNode } from '@vechain/sdk-core'
 
 type AccountFaucet = {
     address: string

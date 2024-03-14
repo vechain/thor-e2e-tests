@@ -3,7 +3,7 @@ import { contractAddresses } from '../../../src/contracts/addresses'
 import { HEX_REGEX } from '../../../src/utils/hex-utils'
 import { revisions } from '../../../src/constants'
 import { readRandomTransfer, Transfer } from '../../../src/populated-data'
-import { FAUCET_AMOUNT } from '../../../src/account-faucet'
+import { FAUCET_AMOUNT_HEX } from '../../../src/account-faucet'
 
 describe('GET /accounts/{address}', function () {
     const invalidAddresses = [
@@ -15,8 +15,8 @@ describe('GET /accounts/{address}', function () {
 
     let transfer: Transfer
 
-    beforeAll(() => {
-        transfer = readRandomTransfer()
+    beforeAll(async () => {
+        transfer = await readRandomTransfer()
     })
 
     it('correct balance', async function () {
@@ -25,7 +25,7 @@ describe('GET /accounts/{address}', function () {
         expect(res.success, 'API response should be a success').toBeTrue()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(res.body, 'Expected Response Body').toEqual({
-            balance: FAUCET_AMOUNT,
+            balance: FAUCET_AMOUNT_HEX,
             energy: expect.stringMatching(HEX_REGEX),
             hasCode: false,
         })

@@ -4,7 +4,7 @@ import { readRandomTransfer } from '../../../src/populated-data'
 
 describe('GET /transactions/{id}', function () {
     it('should get a transaction', async function () {
-        const transfer = readRandomTransfer()
+        const transfer = await readRandomTransfer()
 
         const tx = await Node1Client.getTransaction(transfer.meta?.txID!, {
             pending: true,

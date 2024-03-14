@@ -1,16 +1,26 @@
 /// <reference types="jest-extended" />
-import { Node1Client, Response, Schema } from '../../../src/thor-client'
+import {
+    Node1Client,
+    Response,
+    Schema,
+    SDKClient,
+} from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import {
     getTransferDetails,
     readRandomTransfer,
     Transfer,
 } from '../../../src/populated-data'
-import { HEX_REGEX, HEX_REGEX_64 } from '../../../src/utils/hex-utils'
+import {
+    HEX_REGEX,
+    HEX_REGEX_40,
+    HEX_REGEX_64,
+} from '../../../src/utils/hex-utils'
 import { components } from '../../../src/open-api-types'
-import { EventsContract__factory } from '../../../typechain-types'
+import { EventsContract__factory as EventsContract } from '../../../typechain-types'
+import { Contract, TransactionReceipt } from '@vechain/sdk-network'
+import { randomFunder } from '../../../src/account-faucet'
 import { addAddressPadding } from '../../../src/utils/padding-utils'
-import { generateAddresses, ThorWallet } from '../../../src/wallet'
 
 const buildRequestFromTransfer = (
     transfer: Transfer,
@@ -36,10 +46,8 @@ const buildRequestFromTransfer = (
 describe('POST /logs/event', () => {
     let transferDetails = getTransferDetails()
 
-    let wallet: ThorWallet = ThorWallet.new(true)
-
     it('event log should be included in query', async () => {
-        const transfer = readRandomTransfer()
+        const transfer = await readRandomTransfer()
 
         const request = buildRequestFromTransfer(transfer)
 
@@ -69,7 +77,7 @@ describe('POST /logs/event', () => {
 
     describe('query by "range"', () => {
         it('should be able to omit the "from" field', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const baseRequest = buildRequestFromTransfer(transfer)
             const request = {
@@ -94,7 +102,7 @@ describe('POST /logs/event', () => {
         })
 
         it('should be able to omit the "to" field', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const baseRequest = buildRequestFromTransfer(transfer)
             const request = {
@@ -122,7 +130,7 @@ describe('POST /logs/event', () => {
          * This also checks that the default unit is "block"
          */
         it('should be omit the "unit" field', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const baseRequest = buildRequestFromTransfer(transfer)
             const request = {
@@ -147,7 +155,7 @@ describe('POST /logs/event', () => {
         })
 
         it('should be able query by time', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const baseRequest = buildRequestFromTransfer(transfer)
 
@@ -172,7 +180,7 @@ describe('POST /logs/event', () => {
         })
 
         it('should be able query by block', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const baseRequest = buildRequestFromTransfer(transfer)
 
@@ -199,7 +207,8 @@ describe('POST /logs/event', () => {
 
     describe('query by "order"', () => {
         const runQueryEventLogsTest = async (order?: 'asc' | 'desc') => {
-            const { firstBlock, lastBlock } = getTransferDetails()
+            const { firstBlock, lastBlock, transferCount } =
+                await getTransferDetails()
 
             const response = await Node1Client.queryEventLogs({
                 range: {
@@ -270,7 +279,7 @@ describe('POST /logs/event', () => {
 
     describe('query by "options"', () => {
         it('should be able omit all the options', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const baseRequest = buildRequestFromTransfer(transfer)
             const request = {
@@ -292,7 +301,7 @@ describe('POST /logs/event', () => {
         })
 
         it('should be able to omit the "offset" field', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const baseRequest = buildRequestFromTransfer(transfer)
             const request = {
@@ -317,7 +326,7 @@ describe('POST /logs/event', () => {
         })
 
         it('should be able paginate requests', async () => {
-            const { firstBlock, lastBlock } = transferDetails
+            const { firstBlock, lastBlock } = await transferDetails
 
             const pages = 5
             const amountPerPage = 10
@@ -390,63 +399,63 @@ describe('POST /logs/event', () => {
     })
 
     describe('query by "criteriaSet"', () => {
-        let contractAddress: string
-        let txReceipt: components['schemas']['GetTxReceiptResponse']
-        const eventsInterface = EventsContract__factory.createInterface()
-        const addresses = generateAddresses(3)
-        const topicAddresses = addresses.map(addAddressPadding)
-        const eventHash = eventsInterface.getEvent('MyEvent').topicHash
+        const eventHash =
+            EventsContract.createInterface().getEvent('MyEvent').topicHash
+
+        let contract: Contract
+        let receipt: TransactionReceipt
+        let topics: string[]
+        let range: any
 
         beforeAll(async () => {
-            await wallet.waitForFunding()
-
-            const res = await wallet.deployContract(
-                EventsContract__factory.bytecode,
+            const contractFactory = SDKClient.contracts.createContractFactory(
+                EventsContract.abi,
+                EventsContract.bytecode,
+                randomFunder(),
             )
+            await contractFactory.startDeployment()
+            contract = await contractFactory.waitForDeployment()
+            receipt = contract.deployTransactionReceipt as TransactionReceipt
 
-            contractAddress = res.contractAddress
+            if (!receipt || receipt.reverted) {
+                throw new Error('Contract deployment failed')
+            }
 
-            console.log('contractAddress', contractAddress)
+            const eventAddresses = (
+                (await contract.read.getAddresses()) as string[][]
+            )[0]
+            topics = eventAddresses.map(addAddressPadding)
 
-            txReceipt = await wallet.sendClauses(
-                [
-                    {
-                        to: contractAddress,
-                        value: 0,
-                        data: eventsInterface.encodeFunctionData(
-                            'emitTripleEvent',
-                            [addresses[0], addresses[1], addresses[2]],
-                        ),
-                    },
-                ],
-                true,
-            )
-
-            console.log('query by "criteriaSet" - txReceipt', txReceipt)
+            range = {
+                to: receipt.meta.blockNumber,
+                from: receipt.meta.blockNumber,
+                unit: 'block',
+            }
         })
 
-        const expectOriginalEvent = (
+        const expectOriginalEvent = async (
             response: Response<Schema['EventLogsResponse']>,
         ) => {
+            const relevantLog = response.body?.find((log) => {
+                return log?.topics?.[0] === eventHash
+            })
+
             expect(
                 response.success,
                 'API response should be a success',
             ).toBeTrue()
             expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
 
-            expect(
-                response.body?.[0],
-                'Should match the expected event log',
-            ).toEqual({
-                address: contractAddress,
-                topics: [eventHash, ...topicAddresses.map(addAddressPadding)],
+            expect(relevantLog, 'Should match the expected event log').toEqual({
+                address: contract.address.toLowerCase(),
+                topics: [eventHash, ...topics],
                 data: expect.stringMatching(HEX_REGEX),
                 meta: {
                     blockID: expect.stringMatching(HEX_REGEX_64),
                     blockNumber: expect.any(Number),
                     blockTimestamp: expect.any(Number),
-                    txID: txReceipt.meta?.txID,
-                    txOrigin: txReceipt.meta?.txOrigin,
+                    txID: expect.stringMatching(HEX_REGEX_64),
+                    txOrigin: expect.stringMatching(HEX_REGEX_40),
                     clauseIndex: expect.any(Number),
                 },
             })
@@ -456,17 +465,13 @@ describe('POST /logs/event', () => {
             const res = await Node1Client.queryEventLogs({
                 criteriaSet: [
                     {
-                        address: contractAddress,
+                        address: contract.address,
                     },
                 ],
-                range: {
-                    from: txReceipt.meta?.blockNumber,
-                    to: txReceipt.meta?.blockNumber,
-                    unit: 'block',
-                },
+                range,
             })
 
-            expectOriginalEvent(res)
+            await expectOriginalEvent(res)
         })
 
         it('should be able query by topic0 address', async () => {
@@ -476,106 +481,59 @@ describe('POST /logs/event', () => {
                         topic0: eventHash,
                     },
                 ],
-                range: {
-                    from: txReceipt.meta?.blockNumber,
-                    to: txReceipt.meta?.blockNumber,
-                    unit: 'block',
-                },
+                range,
             })
 
-            expectOriginalEvent(res)
+            await expectOriginalEvent(res)
         })
 
-        it('should be able query by topic1', async () => {
-            const res = await Node1Client.queryEventLogs({
-                criteriaSet: [
-                    {
-                        topic1: topicAddresses[0],
-                    },
-                ],
-                range: {
-                    from: txReceipt.meta?.blockNumber,
-                    to: txReceipt.meta?.blockNumber,
-                    unit: 'block',
-                },
-            })
+        it.each([1, 2, 3])(
+            `should be able query by topic%d`,
+            async (topicIndex) => {
+                const res = await Node1Client.queryEventLogs({
+                    criteriaSet: [
+                        {
+                            [`topic${topicIndex}`]: topics[topicIndex - 1],
+                        },
+                    ],
+                    range,
+                })
 
-            expectOriginalEvent(res)
-        })
-
-        it('should be able query by topic2', async () => {
-            const res = await Node1Client.queryEventLogs({
-                criteriaSet: [
-                    {
-                        topic2: topicAddresses[1],
-                    },
-                ],
-                range: {
-                    from: txReceipt.meta?.blockNumber,
-                    to: txReceipt.meta?.blockNumber,
-                    unit: 'block',
-                },
-            })
-
-            expectOriginalEvent(res)
-        })
-
-        it('should be able query by topic3', async () => {
-            const res = await Node1Client.queryEventLogs({
-                criteriaSet: [
-                    {
-                        topic3: topicAddresses[2],
-                    },
-                ],
-                range: {
-                    from: txReceipt.meta?.blockNumber,
-                    to: txReceipt.meta?.blockNumber,
-                    unit: 'block',
-                },
-            })
-
-            expectOriginalEvent(res)
-        })
+                await expectOriginalEvent(res)
+            },
+        )
 
         it('should be able query by all topics', async () => {
             const res = await Node1Client.queryEventLogs({
                 criteriaSet: [
                     {
                         topic0: eventHash,
-                        topic1: topicAddresses[0],
-                        topic2: topicAddresses[1],
-                        topic3: topicAddresses[2],
+                        topic1: topics[0],
+                        topic2: topics[1],
+                        topic3: topics[2],
                     },
                 ],
-                range: {
-                    from: txReceipt.meta?.blockNumber,
-                    to: txReceipt.meta?.blockNumber,
-                    unit: 'block',
-                },
+                range,
             })
 
-            expectOriginalEvent(res)
+            await expectOriginalEvent(res)
         })
 
         it('should be able query by all topics and address', async () => {
             const res = await Node1Client.queryEventLogs({
                 criteriaSet: [
                     {
-                        address: contractAddress,
+                        address: contract.address,
                         topic0: eventHash,
-                        topic1: topicAddresses[0],
-                        topic2: topicAddresses[1],
-                        topic3: topicAddresses[2],
+                        topic1: topics[0],
+                        topic2: topics[1],
+                        topic3: topics[2],
                     },
                 ],
-                range: {
-                    from: txReceipt.meta?.blockNumber,
-                    to: txReceipt.meta?.blockNumber,
-                    unit: 'block',
-                },
+                range,
             })
 
-            expectOriginalEvent(res)
+            await expectOriginalEvent(res)
         })
 
         it('should be empty for matching topics and non-matching address', async () => {
@@ -584,16 +542,12 @@ describe('POST /logs/event', () => {
                     {
                         address: contractAddresses.energy,
                         topic0: eventHash,
-                        topic1: topicAddresses[0],
-                        topic2: topicAddresses[1],
-                        topic3: topicAddresses[2],
+                        topic1: topics[0],
+                        topic2: topics[1],
+                        topic3: topics[2],
                     },
                 ],
-                range: {
-                    from: txReceipt.meta?.blockNumber,
-                    to: txReceipt.meta?.blockNumber,
-                    unit: 'block',
-                },
+                range,
             })
 
             expect(res.success, 'API response should be a success').toBeTrue()
@@ -605,18 +559,14 @@ describe('POST /logs/event', () => {
             const res = await Node1Client.queryEventLogs({
                 criteriaSet: [
                     {
-                        address: contractAddress,
+                        address: contract.address,
                         topic0: eventHash,
-                        topic1: topicAddresses[0],
-                        topic2: topicAddresses[1],
-                        topic3: topicAddresses[1],
+                        topic1: topics[0],
+                        topic2: topics[1],
+                        topic3: topics[1],
                     },
                 ],
-                range: {
-                    from: txReceipt.meta?.blockNumber,
-                    to: txReceipt.meta?.blockNumber,
-                    unit: 'block',
-                },
+                range,
             })
 
             expect(res.success, 'API response should be a success').toBeTrue()

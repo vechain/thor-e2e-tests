@@ -4,7 +4,7 @@ import { readRandomTransfer } from '../../../src/populated-data'
 
 describe('GET /transactions/{id}/receipt', function () {
     it('should get transaction receipt', async function () {
-        const transfer = readRandomTransfer()
+        const transfer = await readRandomTransfer()
 
         const tx = await Node1Client.getTransactionReceipt(transfer.meta.txID)
 

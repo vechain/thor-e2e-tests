@@ -1,6 +1,11 @@
-import { address, secp256k1, Transaction } from 'thor-devkit'
+import {
+    addressUtils,
+    secp256k1,
+    Transaction,
+    TransactionBody,
+    TransactionClause,
+} from '@vechain/sdk-core'
 import { delegateTx, fundAccount } from './account-faucet'
-import { NodeKey, Nodes } from './thor-client'
 import {
     generateNonce,
     pollReceipt,
@@ -8,6 +13,7 @@ import {
 } from './transactions'
 import { getBlockRef } from './utils/block-utils'
 import { components } from './open-api-types'
+import { Node1Client } from './thor-client'
 
 export const generateAddress = () => {
     return generateEmptyWallet().address
@@ -20,13 +26,13 @@ export const generateAddresses = (count: number) => {
 export const addressFromPrivateKey = (privateKey: Buffer) => {
     const publicKey = secp256k1.derivePublicKey(privateKey)
 
-    return address.fromPublicKey(publicKey)
+    return addressUtils.fromPublicKey(publicKey).toLowerCase()
 }
 
 const generateEmptyWallet = () => {
     const privateKey = secp256k1.generatePrivateKey()
     const publicKey = secp256k1.derivePublicKey(privateKey)
-    const addr = address.fromPublicKey(publicKey)
+    const addr = addressUtils.fromPublicKey(publicKey).toLowerCase()
 
     return {
         privateKey: privateKey.toString('hex'),
@@ -70,7 +76,6 @@ class ThorWallet {
     public deployContract = async (
         bytecode: string,
         delegate = false,
-        node?: NodeKey,
     ): Promise<{
         contractAddress: string
         receipt: components['schemas']['GetTxReceiptResponse']
@@ -85,7 +90,6 @@ class ThorWallet {
             ],
             true,
             delegate,
-            node ?? 1,
         )
 
         const contractAddress = receipt.outputs?.[0].contractAddress
@@ -98,13 +102,10 @@ class ThorWallet {
     }
 
     public buildTransaction = async (
-        clauses: Transaction.Clause[],
-        node?: NodeKey,
-    ): Promise<Transaction.Body> => {
-        const client = Nodes[node ?? 1]
-
+        clauses: TransactionClause[],
+    ): Promise<TransactionBody> => {
         const bestBlockRef = await getBlockRef('best')
-        const genesisBlock = await client.getBlock('0')
+        const genesisBlock = await Node1Client.getBlock('0')
 
         if (!genesisBlock.success || !genesisBlock.body?.id) {
             throw new Error('Could not get best block')
@@ -126,26 +127,27 @@ class ThorWallet {
         transaction: Transaction,
         delegationSignature?: Buffer,
     ) => {
-        const signingHash = transaction.signingHash()
+        const signingHash = transaction.getSignatureHash()
         const signature = secp256k1.sign(signingHash, this.privateKey)
 
+        let tx: Transaction
+
         if (delegationSignature) {
-            transaction.signature = Buffer.concat([
-                signature,
-                delegationSignature,
-            ])
+            tx = new Transaction(
+                transaction.body,
+                Buffer.concat([signature, delegationSignature]),
+            )
         } else {
-            transaction.signature = signature
+            tx = new Transaction(transaction.body, signature)
         }
 
-        return transaction.encode().toString('hex')
+        return tx.encoded.toString('hex')
     }
 
     public sendClauses = async <T extends boolean>(
-        clauses: Transaction.Clause[],
+        clauses: TransactionClause[],
         waitForReceipt: T,
         delegate?: boolean,
-        node?: NodeKey,
     ): Promise<
         T extends true
             ? components['schemas']['GetTxReceiptResponse']
@@ -153,12 +155,10 @@ class ThorWallet {
     > => {
         await this.waitForFunding()
 
-        const client = Nodes[node ?? 1]
-
-        let transaction = await this.buildTransaction(clauses, node)
+        let transaction = await this.buildTransaction(clauses)
         let encoded: string
 
-        await warnIfSimulationFails(clauses, this.address, node)
+        await warnIfSimulationFails(clauses, this.address)
 
         if (delegate) {
             const delegated = delegateTx(transaction, this.address)
@@ -172,7 +172,7 @@ class ThorWallet {
             encoded = await this.signTransaction(tx)
         }
 
-        const res = await client.sendTransaction({
+        const res = await Node1Client.sendTransaction({
             raw: `0x${encoded}`,
         })
 
@@ -190,7 +190,7 @@ class ThorWallet {
             return res.body as components['schemas']['TXID'] as any
         }
 
-        const receipt = await pollReceipt(res.body?.id ?? '', node)
+        const receipt = await pollReceipt(res.body?.id ?? '')
 
         if (receipt.reverted) {
             console.error(

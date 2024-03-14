@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { components } from './open-api-types'
 
 import WebSocket from 'ws'
+import { HttpClient, ThorClient as _ThorClient } from '@vechain/sdk-network'
 
 type BaseResponse = {
     httpCode?: number
@@ -422,15 +423,7 @@ class ThorClient {
 }
 
 const Node1Client = new ThorClient('http://localhost:8669')
-const Node2Client = new ThorClient('http://localhost:8679')
-const Node3Client = new ThorClient('http://localhost:8689')
+const httpClient = new HttpClient('http://localhost:8669')
+const SDKClient = new _ThorClient(httpClient)
 
-const Nodes = {
-    1: Node1Client,
-    2: Node2Client,
-    3: Node3Client,
-}
-
-type NodeKey = keyof typeof Nodes
-
-export { Node1Client, Node2Client, Node3Client, Nodes, NodeKey }
+export { Node1Client, SDKClient }

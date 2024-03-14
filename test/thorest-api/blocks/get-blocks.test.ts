@@ -12,8 +12,8 @@ import { readRandomTransfer, Transfer } from '../../../src/populated-data'
 describe('GET /blocks/{revision}', function () {
     let transfer: Transfer
 
-    beforeAll(() => {
-        transfer = readRandomTransfer()
+    beforeAll(async () => {
+        transfer = await readRandomTransfer()
     })
 
     it.each(revisions.valid(true))(

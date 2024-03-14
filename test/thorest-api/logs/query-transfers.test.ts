@@ -33,7 +33,7 @@ describe('POST /logs/transfers', () => {
     const transferDetails = getTransferDetails()
 
     it('should find a log with all parameters set', async () => {
-        const transfer = readRandomTransfer()
+        const transfer = await readRandomTransfer()
 
         const request = buildRequestFromTransfer(transfer)
 
@@ -64,7 +64,7 @@ describe('POST /logs/transfers', () => {
 
     describe('query by "range"', () => {
         it('should be able to omit the "from" field', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const baseRequest = buildRequestFromTransfer(transfer)
             const request = {
@@ -89,7 +89,7 @@ describe('POST /logs/transfers', () => {
         })
 
         it('should be able to omit the "to" field', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const baseRequest = buildRequestFromTransfer(transfer)
             const request = {
@@ -117,7 +117,7 @@ describe('POST /logs/transfers', () => {
          * This also checks that the default unit is "block"
          */
         it('should be omit the "unit" field', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const baseRequest = buildRequestFromTransfer(transfer)
             const request = {
@@ -142,7 +142,7 @@ describe('POST /logs/transfers', () => {
         })
 
         it('should be able query by time', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const baseRequest = buildRequestFromTransfer(transfer)
 
@@ -167,7 +167,7 @@ describe('POST /logs/transfers', () => {
         })
 
         it('should be able query by block', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const baseRequest = buildRequestFromTransfer(transfer)
 
@@ -194,7 +194,7 @@ describe('POST /logs/transfers', () => {
 
     describe('query by "options"', () => {
         it('should be able omit all the options', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const baseRequest = buildRequestFromTransfer(transfer)
             const request = {
@@ -216,7 +216,7 @@ describe('POST /logs/transfers', () => {
         })
 
         it('should be able to omit the "offset" field', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const baseRequest = buildRequestFromTransfer(transfer)
             const request = {
@@ -241,7 +241,7 @@ describe('POST /logs/transfers', () => {
         })
 
         it('should be able paginate requests', async () => {
-            const { firstBlock, lastBlock } = transferDetails
+            const { firstBlock, lastBlock } = await transferDetails
 
             const pages = 5
             const amountPerPage = 10
@@ -337,7 +337,7 @@ describe('POST /logs/transfers', () => {
         it.each(['sender', 'txOrigin', 'recipient'])(
             'should be able query by: %s',
             async (key) => {
-                const transfer = readRandomTransfer()
+                const transfer = await readRandomTransfer()
 
                 const res = await Node1Client.queryTransferLogs({
                     criteriaSet: [
@@ -360,7 +360,7 @@ describe('POST /logs/transfers', () => {
         )
 
         it('should be able query by all criteria', async () => {
-            const transfer = readRandomTransfer()
+            const transfer = await readRandomTransfer()
 
             const res = await Node1Client.queryTransferLogs({
                 criteriaSet: [
@@ -386,7 +386,7 @@ describe('POST /logs/transfers', () => {
 
     describe('query by "order"', () => {
         const runqueryTransferLogsTest = async (order?: 'asc' | 'desc') => {
-            const { firstBlock, lastBlock } = getTransferDetails()
+            const { firstBlock, lastBlock } = await getTransferDetails()
 
             const response = await Node1Client.queryTransferLogs({
                 range: {

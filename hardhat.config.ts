@@ -1,9 +1,8 @@
 import { HardhatUserConfig } from 'hardhat/config'
 import '@nomicfoundation/hardhat-toolbox'
-
 import '@nomiclabs/hardhat-truffle5'
-import '@vechain/hardhat-vechain'
-import '@vechain/hardhat-ethers'
+import '@vechain/sdk-hardhat-plugin'
+import 'hardhat-jest'
 import { faucetAccountLength, faucetMnemonic } from './src/constants'
 
 const config: HardhatUserConfig = {
