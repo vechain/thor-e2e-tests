@@ -75,6 +75,20 @@ describe('POST /logs/event', () => {
         })
     })
 
+    it('should be able to omit all the parameters', async () => {
+        const transfer = await readRandomTransfer()
+        const response = await Node1Client.queryEventLogs({})
+
+        expect(response.success, 'API response should be a success').toBeTrue()
+        expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(
+            response.body?.some(
+                (log) => log?.meta?.txID === transfer.meta.txID,
+            ),
+            'The response should contain the relevant event log',
+        ).toBeTrue()
+    })
+
     describe('query by "range"', () => {
         it('should be able to omit the "from" field', async () => {
             const transfer = await readRandomTransfer()
@@ -226,7 +240,7 @@ describe('POST /logs/event', () => {
     })
 
     describe('query by "order"', () => {
-        const runQueryEventLogsTest = async (order?: 'asc' | 'desc') => {
+        const runQueryEventLogsTest = async (order?: 'asc' | 'desc' | null) => {
             const { firstBlock, lastBlock, transferCount } =
                 await getTransferDetails()
 
@@ -295,6 +309,10 @@ describe('POST /logs/event', () => {
         it('default should be asc', async () => {
             await runQueryEventLogsTest(undefined)
         })
+
+        it('should be able to set the order to null', async () => {
+            await runQueryEventLogsTest(null)
+        })
     })
 
     describe('query by "options"', () => {
@@ -343,6 +361,23 @@ describe('POST /logs/event', () => {
                 eventLogs.body?.some((log) => log?.meta?.txID),
                 'The response should contain the relevant event log',
             ).toBeTrue()
+        })
+
+        it('should be able to omit the "limit" field', async () => {
+            const request = {
+                options: {
+                    offset: 0,
+                },
+            }
+
+            const eventLogs = await Node1Client.queryEventLogs(request)
+
+            expect(
+                eventLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(eventLogs.body?.length).toEqual(0)
         })
 
         it('should be able paginate requests', async () => {
@@ -415,6 +450,33 @@ describe('POST /logs/event', () => {
                 allElements.body,
                 'Paginated items should equal all elements',
             ).toEqual(paginatedElements)
+        })
+
+        it('results should be empty when pagination exceeds the total amount', async () => {
+            // First, we need to make sure there are events
+            const res1 = await Node1Client.queryEventLogs({
+                options: {
+                    offset: 0,
+                    limit: 10_000,
+                },
+            })
+
+            expect(res1.success, 'API response should be a success').toBeTrue()
+            expect(res1.body?.length, 'Expected Response Body').toBeGreaterThan(
+                0,
+            )
+
+            // Then, we can set a large offset and check that there are no results
+            const res2 = await Node1Client.queryEventLogs({
+                options: {
+                    offset: 100_000,
+                    limit: 10_000,
+                },
+            })
+
+            expect(res2.success, 'API response should be a success').toBeTrue()
+            expect(res2.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res2.body, 'Expected Response Body').toEqual([])
         })
     })
 
