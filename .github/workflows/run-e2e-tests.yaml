@@ -2,19 +2,7 @@ name: E2E Tests
 
 on:
   workflow_dispatch:
-    inputs:
-      maxWorkers:
-        description: 'Max number of jest workers'
-        required: false
-        default: 3
-        type: number
   workflow_call:
-    inputs:
-      maxWorkers:
-        description: 'Max number of jest workers'
-        required: false
-        default: 3
-        type: number
   push:
     branches:
       - main
@@ -43,12 +31,7 @@ jobs:
         run: yarn install
 
       - name: Run Tests
-        run: yarn test --maxWorkers ${{ github.event.inputs.maxWorkers }}
-
-      - name: Print Compose Logs on Failre
-        if: failure()
-        working-directory: network
-        run: docker-compose logs authority-node-1
+        run: yarn test
 
       - name: Publish Results
         uses: dorny/test-reporter@v1
