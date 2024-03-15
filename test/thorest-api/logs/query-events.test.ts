@@ -48,7 +48,7 @@ type EventLogFilterRequest = components['schemas']['EventLogFilterRequest']
 describe('POST /logs/event', () => {
     let transferDetails = getTransferDetails()
 
-    it('event log should be included in query', async () => {
+    it('should find a log with all parameters set', async () => {
         const transfer = await readRandomTransfer()
 
         const request = buildRequestFromTransfer(transfer)
@@ -317,6 +317,42 @@ describe('POST /logs/event', () => {
             expect(eventLogs.body?.length).toEqual(0)
         })
 
+        it('should have no maximum "limit"', async () => {
+            const request = {
+                options: {
+                    offset: 0,
+                    limit: Number.MAX_SAFE_INTEGER,
+                },
+            }
+
+            const eventLogs = await Node1Client.queryEventLogs(request)
+
+            expect(
+                eventLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(eventLogs.body?.length).toBeGreaterThan(0)
+        })
+
+        it('should have no minimum "limit"', async () => {
+            const request = {
+                options: {
+                    offset: 0,
+                    limit: 0,
+                },
+            }
+
+            const eventLogs = await Node1Client.queryEventLogs(request)
+
+            expect(
+                eventLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(eventLogs.body?.length).toEqual(0)
+        })
+
         it('should be able paginate requests', async () => {
             const { firstBlock, lastBlock } = await transferDetails
 
@@ -389,7 +425,7 @@ describe('POST /logs/event', () => {
             ).toEqual(paginatedElements)
         })
 
-        it('results should be empty when pagination exceeds the total amount', async () => {
+        it('should be empty when pagination exceeds the total amount', async () => {
             // First, we need to make sure there are events
             const res1 = await Node1Client.queryEventLogs({
                 options: {

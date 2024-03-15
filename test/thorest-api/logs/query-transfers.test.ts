@@ -215,6 +215,42 @@ describe('POST /logs/transfers', () => {
             expect(transferLogs.body?.length).toEqual(0)
         })
 
+        it('should have no maximum "limit"', async () => {
+            const request = {
+                options: {
+                    offset: 0,
+                    limit: Number.MAX_SAFE_INTEGER,
+                },
+            }
+
+            const transferLogs = await Node1Client.queryTransferLogs(request)
+
+            expect(
+                transferLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(transferLogs.body?.length).toBeGreaterThan(0)
+        })
+
+        it('should have no minimum "limit"', async () => {
+            const request = {
+                options: {
+                    offset: 0,
+                    limit: 0,
+                },
+            }
+
+            const transferLogs = await Node1Client.queryTransferLogs(request)
+
+            expect(
+                transferLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(transferLogs.body?.length).toEqual(0)
+        })
+
         it('should be able paginate requests', async () => {
             const { firstBlock, lastBlock } = await transferDetails
 
