@@ -48,7 +48,6 @@ const fundAccount = async (account: string) => {
  * @param txBody - The transaction to delegate
  * @param senderAddress - The address of the sender
  *
- * @returns {Transaction, Buffer} - The updated transaction and the delegate signature
  */
 export const delegateTx = (txBody: TransactionBody, senderAddress: string) => {
     txBody.reserved = { features: 1 }
