@@ -39,7 +39,6 @@ const config: Config = {
         'jest-expect-message',
     ],
     globalSetup: './test/globalSetup.ts',
-    globalTeardown: './test/globalTeardown.ts',
 }
 
 export default config
