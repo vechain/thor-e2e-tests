@@ -2,9 +2,9 @@
 
 ## Prerequisites
 
--   [Docker](https://docs.docker.com/install/)
--   [Yarn](https://yarnpkg.com/en/docs/install)
--   [Node.js](https://nodejs.org/en/download/)
+- [Docker](https://docs.docker.com/install/)
+- [Yarn](https://yarnpkg.com/en/docs/install)
+- [Node.js](https://nodejs.org/en/download/)
 
 ## Running the tests
 
@@ -15,11 +15,22 @@ yarn test
 
 ## Debugging the tests
 
--   These steps are useful if you want to debug
+- These steps are useful if you want to debug
 
 ```bash
 yarn docker:up
 yarn test:fast
+```
+
+## Custom Docker Image
+
+- You can specify a custom docker image by running the following in the [vechain/thor](https://github.com/vechain/thor)
+  repo:
+
+```bash
+docker build -t vechain/thor:custom .
+export THOR_IMAGE=vechain/thor:custom
+yarn test
 ```
 
 ## Scripts
@@ -28,7 +39,7 @@ yarn test:fast
 
 ### Generate Open API Specification
 
--   These scripts will output the Open API Spec to `./src/open-api-types.ts`
+- These scripts will output the Open API Spec to `./src/open-api-types.ts`
 
 #### **Option 1** - By local file:
 
@@ -50,9 +61,9 @@ Tests are executed using a custom private thor blockchain. The genesis of this b
 This file contains accounts that are created with defined VET/VTHO balance for testing purposes. These accounts are used
 as a faucet. Please refer to:
 
--   `./src/wallet.ts` to generate new accounts/ private keys
--   `./src/account-faucet.ts` to fund your accounts with VET/VTHO
+- `./src/wallet.ts` to generate new accounts/ private keys
+- `./src/account-faucet.ts` to fund your accounts with VET/VTHO
 
 ### Types of tests
 
--   thorest-api --> Tests that validate the swagger contract definition of the Thorest api
+- thorest-api --> Tests that validate the swagger contract definition of the Thorest api
