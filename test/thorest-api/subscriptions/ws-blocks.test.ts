@@ -1,11 +1,11 @@
 import { Node1Client } from '../../../src/thor-client'
-import { SubscriptionBlockResponse } from '../../../src/open-api-types-padded'
+import { components } from '../../../src/open-api-types'
 
 describe('WS /subscriptions/blocks', () => {
     it('should be able to subscribe', async () => {
-        const beats: SubscriptionBlockResponse[] = []
+        const beats: components['schemas']['SubscriptionBlockResponse'][] = []
 
-        Node1Client.subscribeToBlocks((newBlock) => {
+        const ws = Node1Client.subscribeToBlocks((newBlock) => {
             beats.push(newBlock)
         })
 
@@ -16,5 +16,7 @@ describe('WS /subscriptions/blocks', () => {
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
         expect(beats.length).toBeGreaterThanOrEqual(2)
+
+        ws.unsubscribe()
     })
 })

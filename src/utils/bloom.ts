@@ -1,4 +1,4 @@
-import { blake2b256 } from 'thor-devkit'
+import { blake2b256 } from '@vechain/sdk-core'
 import HexUtils from './hex-utils'
 
 export function newFilter(bits: Buffer, k: number) {

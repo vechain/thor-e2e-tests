@@ -12,7 +12,7 @@ export const contracts = {
     authority: Authority__factory.connect(contractAddresses.authority),
     extension: Extension__factory.connect(contractAddresses.extension),
     params: Params__factory.connect(contractAddresses.params),
-    executor: Executor__factory.connect(contractAddresses.executor),
+    // executor: Executor__factory.connect(contractAddresses.executor),
 }
 
 export const interfaces = {
@@ -20,5 +20,5 @@ export const interfaces = {
     authority: contracts.authority.interface,
     extension: contracts.extension.interface,
     params: contracts.params.interface,
-    executor: contracts.executor.interface,
+    // executor: contracts.executor.interface,
 }

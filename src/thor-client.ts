@@ -1,26 +1,8 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { components } from './open-api-types'
-import {
-    Block,
-    EventLogsResponse,
-    ExecuteCodesResponse,
-    GetAccountCodeResponse,
-    GetAccountResponse,
-    GetPeersResponse,
-    GetStorageResponse,
-    GetTxReceiptResponse,
-    GetTxResponse,
-    StorageRange,
-    SubscriptionBeat2Response,
-    SubscriptionBeatResponse,
-    SubscriptionBlockResponse,
-    SubscriptionEventResponse,
-    SubscriptionTransferResponse,
-    TransferLogsResponse,
-    TXID,
-} from './open-api-types-padded'
 
 import WebSocket from 'ws'
+import { HttpClient, ThorClient as _ThorClient } from '@vechain/sdk-network'
 
 type BaseResponse = {
     httpCode?: number
@@ -38,11 +20,14 @@ export type SuccessResponse<T> = BaseResponse & {
     body: T
 }
 
-type Response<T> = ErrorResponse<T> | SuccessResponse<T>
+export type Response<T> = ErrorResponse<T> | SuccessResponse<T>
+
+export type Schema = components['schemas']
 
 class ThorClient {
     private readonly axios
     private readonly baseWsUrl: string
+    private readonly subscriptions: (() => void)[] = []
 
     constructor(public readonly baseUrl: string) {
         this.axios = axios.create({
@@ -54,7 +39,11 @@ class ThorClient {
         this.baseWsUrl = baseUrl.replace('http', 'ws').replace('https', 'wss')
     }
 
-    public async waitForBlock(): Promise<SubscriptionBlockResponse> {
+    public closeAllSubscriptions() {
+        this.subscriptions.forEach((s) => s())
+    }
+
+    public async waitForBlock(): Promise<Schema['SubscriptionBlockResponse']> {
         return new Promise((resolve, reject) => {
             const ws = this.subscribeToBlocks((data) => {
                 ws.unsubscribe()
@@ -73,14 +62,14 @@ class ThorClient {
         address: string,
         revision?: string,
         options?: AxiosRequestConfig,
-    ): Promise<Response<GetAccountResponse>> {
+    ): Promise<Response<Schema['GetAccountResponse']>> {
         let url: string = `/accounts/${address}`
 
         if (revision) {
             url = `${url}?revision=${revision}`
         }
 
-        return this.performRequest<GetAccountResponse>(() =>
+        return this.performRequest<Schema['GetAccountResponse']>(() =>
             this.axios.get(url, options),
         )
     }
@@ -90,14 +79,14 @@ class ThorClient {
         request: components['schemas']['ExecuteCodesRequest'],
         revision?: string,
         options?: AxiosRequestConfig,
-    ): Promise<Response<ExecuteCodesResponse>> {
+    ): Promise<Response<Schema['ExecuteCodesResponse']>> {
         let url: string = `/accounts/*`
 
         if (revision) {
             url = `${url}?revision=${revision}`
         }
 
-        return this.performRequest<ExecuteCodesResponse>(() =>
+        return this.performRequest<Schema['ExecuteCodesResponse']>(() =>
             this.axios.post(url, request, options),
         )
     }
@@ -107,14 +96,14 @@ class ThorClient {
         address: string,
         revision?: string,
         options?: AxiosRequestConfig,
-    ): Promise<Response<GetAccountCodeResponse>> {
+    ): Promise<Response<Schema['GetAccountCodeResponse']>> {
         let url: string = `/accounts/${address}/code`
 
         if (revision) {
             url = `${url}?revision=${revision}`
         }
 
-        return this.performRequest<GetAccountCodeResponse>(() =>
+        return this.performRequest<Schema['GetAccountCodeResponse']>(() =>
             this.axios.get(url, options),
         )
     }
@@ -125,14 +114,14 @@ class ThorClient {
         key: string,
         revision?: string,
         options?: AxiosRequestConfig,
-    ): Promise<Response<GetStorageResponse>> {
+    ): Promise<Response<Schema['GetStorageResponse']>> {
         let url: string = `/accounts/${address}/storage/${key}`
 
         if (revision) {
             url = `${url}?revision=${revision}`
         }
 
-        return this.performRequest<GetStorageResponse>(() =>
+        return this.performRequest<Schema['GetStorageResponse']>(() =>
             this.axios.get(url, options),
         )
     }
@@ -146,7 +135,7 @@ class ThorClient {
             pending?: boolean
         },
         options?: AxiosRequestConfig,
-    ): Promise<Response<GetTxResponse | null>> {
+    ): Promise<Response<Schema['GetTxResponse'] | null>> {
         let url = new URL(`${this.baseUrl}/transactions/${id}`)
 
         if (queryParams?.raw) {
@@ -161,7 +150,7 @@ class ThorClient {
             url.searchParams.append('pending', queryParams.pending.toString())
         }
 
-        return this.performRequest<GetTxResponse>(() =>
+        return this.performRequest<Schema['GetTxResponse'] | null>(() =>
             this.axios.get(url.toString(), options),
         )
     }
@@ -171,14 +160,14 @@ class ThorClient {
         id: string,
         head?: string,
         options?: AxiosRequestConfig,
-    ): Promise<Response<GetTxReceiptResponse | null>> {
+    ): Promise<Response<Schema['GetTxReceiptResponse'] | null>> {
         let url: string = `/transactions/${id}/receipt`
 
         if (head) {
             url = `${url}?head=${head}`
         }
 
-        return this.performRequest<GetTxReceiptResponse>(() =>
+        return this.performRequest<Schema['GetTxReceiptResponse']>(() =>
             this.axios.get(url, options),
         )
     }
@@ -187,8 +176,8 @@ class ThorClient {
     public async sendTransaction(
         request: components['schemas']['RawTx'],
         options?: AxiosRequestConfig,
-    ): Promise<Response<TXID>> {
-        return this.performRequest<TXID>(() =>
+    ): Promise<Response<Schema['TXID']>> {
+        return this.performRequest<Schema['TXID']>(() =>
             this.axios.post(`/transactions`, request, options),
         )
     }
@@ -198,21 +187,23 @@ class ThorClient {
         revision: string | number,
         expanded?: boolean,
         options?: AxiosRequestConfig,
-    ): Promise<Response<Block | null>> {
+    ): Promise<Response<Schema['Block'] | null>> {
         let url: string = `/blocks/${revision}`
 
         if (expanded) {
             url = `${url}?expanded=${expanded}`
         }
 
-        return this.performRequest<Block>(() => this.axios.get(url, options))
+        return this.performRequest<Schema['Block'] | null>(() =>
+            this.axios.get(url, options),
+        )
     }
 
     // POST /logs/event
     public async queryEventLogs(
-        request: components['schemas']['EventLogFilterRequest'],
+        request: Schema['EventLogFilterRequest'],
         options?: AxiosRequestConfig,
-    ): Promise<Response<EventLogsResponse>> {
+    ): Promise<Response<Schema['EventLogsResponse']>> {
         return this.performRequest(() =>
             this.axios.post(`/logs/event`, request, options),
         )
@@ -222,7 +213,7 @@ class ThorClient {
     public async queryTransferLogs(
         request: components['schemas']['TransferLogFilterRequest'],
         options?: AxiosRequestConfig,
-    ): Promise<Response<TransferLogsResponse>> {
+    ): Promise<Response<Schema['TransferLogsResponse']>> {
         return this.performRequest(() =>
             this.axios.post(`/logs/transfer`, request, options),
         )
@@ -231,7 +222,7 @@ class ThorClient {
     // GET /node/network/peers
     public async getPeers(
         options?: AxiosRequestConfig,
-    ): Promise<Response<GetPeersResponse>> {
+    ): Promise<Response<Schema['GetPeersResponse']>> {
         return this.performRequest(() =>
             this.axios.get(`/node/network/peers`, options),
         )
@@ -239,32 +230,21 @@ class ThorClient {
 
     // WS /subscriptions/block
     public subscribeToBlocks(
-        callback: (data: SubscriptionBlockResponse) => void,
+        callback: (data: Schema['SubscriptionBlockResponse']) => void,
         pos?: string,
-    ): { unsubscribe: () => void } {
+    ) {
         let url: string = `${this.baseWsUrl}/subscriptions/block`
 
         if (pos) {
             url = `${url}?pos=${pos}`
         }
 
-        const ws = new WebSocket(url)
-
-        ws.onmessage = (event: any) => {
-            const data = JSON.parse(event.data)
-            callback(data)
-        }
-
-        return {
-            unsubscribe: () => {
-                ws.close()
-            },
-        }
+        return this.openWebsocket(url, callback)
     }
 
     // WS /subscriptions/event
     public subscribeToEvents(
-        callback: (data: SubscriptionEventResponse) => void,
+        callback: (data: Schema['SubscriptionEventResponse']) => void,
         queryParameters?: {
             addr?: string
             t0?: string
@@ -273,7 +253,7 @@ class ThorClient {
             t3?: string
             pos?: string
         },
-    ): { unsubscribe: () => void } {
+    ) {
         let url = new URL(`${this.baseWsUrl}/subscriptions/event`)
 
         if (queryParameters?.addr) {
@@ -296,18 +276,11 @@ class ThorClient {
             url.searchParams.append('t3', queryParameters.t3)
         }
 
-        const ws = new WebSocket(url.toString())
-
-        ws.onmessage = (event: any) => {
-            const data = JSON.parse(event.data)
-            callback(data)
+        if (queryParameters?.pos) {
+            url.searchParams.append('pos', queryParameters.pos)
         }
 
-        return {
-            unsubscribe: () => {
-                ws.close()
-            },
-        }
+        return this.openWebsocket(url.toString(), callback)
     }
 
     // WS /subscriptions/transfers
@@ -318,8 +291,8 @@ class ThorClient {
             sender?: string
             txOrigin?: string
         },
-        callback: (data: SubscriptionTransferResponse) => void,
-    ): { unsubscribe: () => void } {
+        callback: (data: Schema['SubscriptionTransferResponse']) => void,
+    ) {
         let url = new URL(`${this.baseWsUrl}/subscriptions/transfer`)
 
         if (queryParameters.pos) {
@@ -338,91 +311,47 @@ class ThorClient {
             url.searchParams.append('txOrigin', queryParameters.txOrigin)
         }
 
-        const ws = new WebSocket(url.toString())
-
-        ws.onmessage = (event: any) => {
-            const data = JSON.parse(event.data)
-            callback(data)
-        }
-
-        return {
-            unsubscribe: () => {
-                ws.close()
-            },
-        }
+        return this.openWebsocket(url.toString(), callback)
     }
 
     // WS /subscriptions/beats
     public subscribeToBeats(
-        callback: (data: SubscriptionBeatResponse) => void,
+        callback: (data: Schema['SubscriptionBeatResponse']) => void,
         pos?: string,
-    ): { unsubscribe: () => void } {
+    ) {
         let url: string = `${this.baseWsUrl}/subscriptions/beat`
 
         if (pos) {
             url = `${url}?pos=${pos}`
         }
 
-        const ws = new WebSocket(url)
-
-        ws.onmessage = (event: any) => {
-            const data = JSON.parse(event.data)
-            callback(data)
-        }
-
-        return {
-            unsubscribe: () => {
-                ws.close()
-            },
-        }
+        return this.openWebsocket(url, callback)
     }
 
     // WS /subscriptions/txpool
-    public subscribeToTxPool(callback: (txId: { id: string }) => void): {
-        unsubscribe: () => void
-    } {
-        const ws = new WebSocket(`${this.baseWsUrl}/subscriptions/txpool`)
+    public subscribeToTxPool(callback: (txId: { id: string }) => void) {
+        const url = `${this.baseWsUrl}/subscriptions/txpool`
 
-        ws.onmessage = (event: any) => {
-            const data = JSON.parse(event.data)
-            callback(data)
-        }
-
-        return {
-            unsubscribe: () => {
-                ws.close()
-            },
-        }
+        return this.openWebsocket(url, callback)
     }
 
     // WS /subscriptions/beat2
     public subscribeToBeats2(
-        callback: (data: SubscriptionBeat2Response) => void,
+        callback: (data: Schema['SubscriptionBeat2Response']) => void,
         pos?: string,
-    ): { unsubscribe: () => void } {
+    ) {
         let url: string = `${this.baseWsUrl}/subscriptions/beat2`
 
         if (pos) {
             url = `${url}?pos=${pos}`
         }
 
-        const ws = new WebSocket(url)
-
-        ws.onmessage = (event: any) => {
-            const data = JSON.parse(event.data)
-            callback(data)
-        }
-
-        return {
-            unsubscribe: () => {
-                ws.close()
-            },
-        }
+        return this.openWebsocket(url, callback)
     }
 
     // POST /debug/tracers
     public async traceClause(
-        request: components['schemas']['PostDebugTracerRequest'],
+        request: Schema['PostDebugTracerRequest'],
         options?: AxiosRequestConfig,
     ): Promise<Response<any>> {
         return this.performRequest(() =>
@@ -432,7 +361,7 @@ class ThorClient {
 
     // POST /debug/tracers/call
     public async traceContractCall(
-        request: components['schemas']['PostDebugTracerCallRequest'],
+        request: Schema['PostDebugTracerCallRequest'],
         options?: AxiosRequestConfig,
     ): Promise<Response<unknown>> {
         return this.performRequest(() =>
@@ -444,14 +373,32 @@ class ThorClient {
     public async retrieveStorageRange(
         request: components['schemas']['StorageRangeOption'],
         options?: AxiosRequestConfig,
-    ): Promise<Response<StorageRange>> {
+    ): Promise<Response<Schema['StorageRange']>> {
         return this.performRequest(() =>
             this.axios.post(`/debug/storage-range`, request, options),
         )
     }
 
+    private openWebsocket<T>(url: string, callback: (data: T) => void) {
+        const ws = new WebSocket(url)
+        ws.onmessage = (event: any) => {
+            const data = JSON.parse(event.data)
+            callback(data)
+        }
+
+        this.subscriptions.push(() => ws.close())
+
+        return {
+            unsubscribe: () => {
+                ws.close()
+            },
+        }
+    }
+
     private initBlockSubscription() {
-        this.subscribeToBlocks((data: SubscriptionBlockResponse) => {})
+        this.subscribeToBlocks(
+            (data: Schema['SubscriptionBlockResponse']) => {},
+        )
     }
 
     private async performRequest<T>(
@@ -476,15 +423,7 @@ class ThorClient {
 }
 
 const Node1Client = new ThorClient('http://localhost:8669')
-const Node2Client = new ThorClient('http://localhost:8679')
-const Node3Client = new ThorClient('http://localhost:8689')
+const httpClient = new HttpClient('http://localhost:8669')
+const SDKClient = new _ThorClient(httpClient)
 
-const Nodes = {
-    1: Node1Client,
-    2: Node2Client,
-    3: Node3Client,
-}
-
-type NodeKey = keyof typeof Nodes
-
-export { Node1Client, Node2Client, Node3Client, Nodes, NodeKey }
+export { Node1Client, SDKClient }

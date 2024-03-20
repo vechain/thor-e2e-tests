@@ -1,19 +1,17 @@
 import { Node1Client } from '../../../src/thor-client'
 import assert from 'node:assert'
-import { generateWalletWithFunds } from '../../../src/wallet'
+import { readRandomTransfer } from '../../../src/populated-data'
 
 describe('GET /transactions/{id}/receipt', function () {
     it('should get transaction receipt', async function () {
-        const { receipt } = await generateWalletWithFunds()
+        const transfer = await readRandomTransfer()
 
-        assert(receipt.meta.txID, 'Failed to get transaction receipt')
-
-        const tx = await Node1Client.getTransactionReceipt(receipt.meta.txID)
+        const tx = await Node1Client.getTransactionReceipt(transfer.meta.txID)
 
         assert(tx.success, 'Failed to get transaction receipt')
         assert(tx.body != null, 'Failed to get transaction receipt body')
 
-        expect(tx.body.meta.txID).toEqual(receipt.meta.txID)
-        expect(tx.httpCode).toEqual(200)
+        expect(tx.body.meta?.txID).toEqual(transfer.meta?.txID)
+        expect(tx.httpCode, 'Expected HTTP Code').toEqual(200)
     })
 })

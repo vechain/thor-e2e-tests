@@ -1,10 +1,9 @@
 import { Node1Client } from '../../../src/thor-client'
-import { generateWalletWithFunds, Wallet } from '../../../src/wallet'
-import { sendClauses } from '../../../src/transactions'
 import { SimpleCounter__factory } from '../../../typechain-types'
 import { addUintPadding } from '../../../src/utils/padding-utils'
 import { revisions } from '../../../src/constants'
 import { HEX_REGEX_64 } from '../../../src/utils/hex-utils'
+import { ThorWallet } from '../../../src/wallet'
 
 const SIMPLE_STORAGE_KEY =
     '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -12,9 +11,9 @@ const SIMPLE_STORAGE_KEY =
 const setSimpleStorage = async (
     contractAddress: string,
     amount: number,
-    privateKey: string,
+    wallet: ThorWallet,
 ) => {
-    return await sendClauses(
+    return await wallet.sendClauses(
         [
             {
                 to: contractAddress,
@@ -25,19 +24,16 @@ const setSimpleStorage = async (
                 ),
             },
         ],
-        privateKey,
         true,
     )
 }
 
 describe('GET /accounts/{address}/storage', function () {
-    let wallet: Wallet
+    let wallet = ThorWallet.new(true)
     let simpleStorageAddress: string
 
     beforeAll(async () => {
-        wallet = await generateWalletWithFunds()
-
-        const txReceipt = await sendClauses(
+        const txReceipt = await wallet.sendClauses(
             [
                 {
                     to: null,
@@ -45,27 +41,26 @@ describe('GET /accounts/{address}/storage', function () {
                     data: SimpleCounter__factory.bytecode,
                 },
             ],
-            wallet.privateKey,
             true,
         )
 
-        expect(txReceipt.outputs[0].contractAddress).toBeTruthy()
-        simpleStorageAddress = txReceipt.outputs[0].contractAddress as string
+        expect(txReceipt.outputs?.[0].contractAddress).toBeTruthy()
+        simpleStorageAddress = txReceipt.outputs?.[0].contractAddress as string
     })
 
     it('should return the storage value', async function () {
         const amount = 973252
 
-        await setSimpleStorage(simpleStorageAddress, amount, wallet.privateKey)
+        await setSimpleStorage(simpleStorageAddress, amount, wallet)
 
         const res = await Node1Client.getAccountStorage(
             simpleStorageAddress,
             SIMPLE_STORAGE_KEY,
         )
 
-        expect(res.success).toEqual(true)
-        expect(res.httpCode).toEqual(200)
-        expect(res.body).toEqual({
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Expected Response Body').toEqual({
             value: addUintPadding(amount),
         })
     })
@@ -83,7 +78,7 @@ describe('GET /accounts/{address}/storage', function () {
         const tx = await setSimpleStorage(
             simpleStorageAddress,
             newAmount,
-            wallet.privateKey,
+            wallet,
         )
 
         const res = await Node1Client.getAccountStorage(
@@ -92,9 +87,9 @@ describe('GET /accounts/{address}/storage', function () {
         )
 
         // Check the storage position after the transaction
-        expect(res.success).toEqual(true)
-        expect(res.httpCode).toEqual(200)
-        expect(res.body).toEqual({
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Expected Response Body').toEqual({
             value: addUintPadding(newAmount),
         })
 
@@ -102,12 +97,12 @@ describe('GET /accounts/{address}/storage', function () {
         const historic = await Node1Client.getAccountStorage(
             simpleStorageAddress,
             SIMPLE_STORAGE_KEY,
-            `${(tx.meta.blockNumber ?? 1) - 1}`,
+            `${(tx.meta?.blockNumber ?? 1) - 1}`,
         )
 
-        expect(historic.success).toEqual(true)
-        expect(historic.httpCode).toEqual(200)
-        expect(historic.body).toEqual({
+        expect(historic.success, 'API response should be a success').toBeTrue()
+        expect(historic.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(historic.body, 'Expected Response Body').toEqual({
             value: addUintPadding(startAmount),
         })
     })
@@ -118,9 +113,9 @@ describe('GET /accounts/{address}/storage', function () {
             SIMPLE_STORAGE_KEY,
             revision,
         )
-        expect(res.success).toBeTruthy()
-        expect(res.httpCode).toEqual(200)
-        expect(res.body).toEqual({
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Expected Response Body').toEqual({
             value: expect.stringMatching(HEX_REGEX_64),
         })
     })
@@ -132,7 +127,7 @@ describe('GET /accounts/{address}/storage', function () {
             r,
         )
 
-        expect(res.success).toBeFalsy()
-        expect(res.httpCode).toEqual(400)
+        expect(res.success, 'API Call should fail').toBeFalse()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
     })
 })

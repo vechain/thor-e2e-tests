@@ -736,7 +736,8 @@ export interface paths {
     '/debug/storage-range': {
         /**
          * Retrieve storage range
-         * @description of the account with given address
+         * @description The endpoint retrieves storage entries related to a particular clause execution and contract address. This
+         * could be useful for inspecting or analyzing storage changes.
          */
         post: {
             requestBody: {
@@ -767,6 +768,7 @@ export type webhooks = Record<string, never>
 export interface components {
     schemas: {
         /**
+         * GetAccountResponse
          * @example {
          *   "balance": "0x47ff1f90327aa0f8e",
          *   "energy": "0xcf624158d591398",
@@ -791,6 +793,7 @@ export interface components {
             hasCode?: boolean
         }
         /**
+         * ExecuteCodesRequest
          * @example {
          *   "gas": 50000,
          *   "gasPrice": "1000000000000000",
@@ -821,6 +824,7 @@ export interface components {
         ExecuteCodesRequest: components['schemas']['ExtendedCallData'] &
             components['schemas']['BatchCallData']
         /**
+         * ExecuteCodesResponse
          * @example [
          *   {
          *     "data": "0x0000000000000000000000000000000000000000000000000000000000000001",
@@ -874,6 +878,7 @@ export interface components {
          */
         ExecuteCodesResponse: components['schemas']['CallResult'][]
         /**
+         * GetAccountCodeResponse
          * @example {
          *   "code": "0x6060604052600080fd00a165627a7a72305820c23d3ae2dc86ad130561a2829d87c7cb8435365492bd1548eb7e7fc0f3632be90029"
          * }
@@ -886,6 +891,7 @@ export interface components {
             code?: string
         }
         /**
+         * GetStorageResponse
          * @example {
          *   "value": "0x0000000000000000000000000000000000000000000000000000000000000001"
          * }
@@ -898,6 +904,7 @@ export interface components {
             value?: string
         }
         /**
+         * GetTxResponse
          * @example {
          *   "id": "0x4de71f2d588aa8a1ea00fe8312d92966da424d9939a511fc0be81e65fad52af8",
          *   "chainTag": 1,
@@ -920,18 +927,22 @@ export interface components {
          */
         GetTxResponse: OneOf<
             [
-                {
+                components['schemas']['Tx'] & {
                     meta?: components['schemas']['TxMeta']
-                } & components['schemas']['Tx'],
-                {
+                },
+                components['schemas']['RawTx'] & {
                     meta?: components['schemas']['TxMeta']
-                } & components['schemas']['RawTx'],
+                },
             ]
         >
-        GetTxReceiptResponse: {
+        /** GetTxReceiptResponse */
+        GetTxReceiptResponse: components['schemas']['Receipt'] & {
             meta?: components['schemas']['ReceiptMeta']
-        } & components['schemas']['Receipt']
+        }
         /**
+         * GetBlockResponse
+         * @description The response will contain information about the block identified by the provided `revision`.
+         *
          * @example {
          *   "number": 325324,
          *   "id": "0x0004f6cc88bb4626a92907718e82f255b8fa511453a78e8797eb8cea3393b215",
@@ -955,68 +966,86 @@ export interface components {
          *   ]
          * }
          */
-        GetBlockResponse: OneOf<
-            [
-                {
-                    /** @description An array of transaction IDs */
-                    transactions?: string[]
-                } & components['schemas']['Block'] &
-                    components['schemas']['IsTrunk'] &
-                    components['schemas']['IsFinalized'],
-                {
-                    /** @description All included transactions, expanded, to include their receipts */
-                    transactions?: (components['schemas']['Tx'] &
-                        components['schemas']['Receipt'])[]
-                } & components['schemas']['Block'] &
-                    components['schemas']['IsTrunk'] &
-                    components['schemas']['IsFinalized'],
-            ]
-        >
+        GetBlockResponse:
+            | components['schemas']['RegularBlockResponse']
+            | components['schemas']['ExpandedBlockResponse']
+        /**
+         * RegularBlockResponse
+         * @description The response will contain information about the block identified by the provided `revision`. The `transactions`
+         * field contains an array of transaction IDs.
+         */
+        RegularBlockResponse: components['schemas']['Block'] &
+            components['schemas']['IsTrunk'] &
+            components['schemas']['IsFinalized'] & {
+                /** @description An array of transaction IDs */
+                transactions?: string[]
+            }
+        /**
+         * ExpandedBlockResponse
+         * @description The response will contain information about the block identified by the provided `revision`. The `transactions`
+         * field contains an array of transactions, expanded to include their receipts.
+         */
+        ExpandedBlockResponse: components['schemas']['Block'] &
+            components['schemas']['IsTrunk'] &
+            components['schemas']['IsFinalized'] & {
+                /** @description All included transactions, expanded, to include their receipts */
+                transactions?: (components['schemas']['Tx'] &
+                    components['schemas']['Receipt'])[]
+            }
+        /** EventLogFilterRequest */
         EventLogFilterRequest: {
             range?: components['schemas']['FilterRange']
             options?: components['schemas']['FilterOptions']
-            criteriaSet?: components['schemas']['EventCriteria'][]
+            criteriaSet?: components['schemas']['EventCriteria'][] | null
             /**
-             * @description <b>Optional:</b> Specifies the order of the results. Use `asc` for ascending order, and `desc` for descending order.
+             * @description Specifies the order of the results. Use `asc` for ascending order, and `desc` for descending order.
              *
              * Default value: `asc`
              *
-             * @enum {string}
+             * @enum {string|null}
              */
-            order?: 'asc' | 'desc'
+            order?: 'asc' | 'desc' | null
         }
-        EventLogsResponse: ({
+        /** EventLogsResponse */
+        EventLogsResponse: (components['schemas']['Event'] & {
             meta?: components['schemas']['LogMeta']
-        } & components['schemas']['Event'])[]
+        })[]
+        /** TransferLogFilterRequest */
         TransferLogFilterRequest: {
             range?: components['schemas']['FilterRange']
             options?: components['schemas']['FilterOptions']
-            criteriaSet?: components['schemas']['TransferCriteria'][]
+            criteriaSet?: components['schemas']['TransferCriteria'][] | null
             /**
-             * @description <b>Optional:</b> Specifies the order of the results. Use `asc` for ascending order, and `desc` for descending order.
+             * @description Specifies the order of the results. Use `asc` for ascending order, and `desc` for descending order.
              *
-             * @enum {string}
+             * @enum {string|null}
              */
-            order?: 'asc' | 'desc'
+            order?: 'asc' | 'desc' | null
         }
-        TransferLogsResponse: ({
+        /** TransferLogsResponse */
+        TransferLogsResponse: (components['schemas']['Transfer'] & {
             meta?: components['schemas']['LogMeta']
-        } & components['schemas']['Transfer'])[]
-        GetPeersResponse: unknown
-        SubscriptionBlockResponse: {
-            /** @description An array of transaction IDs associated with the block. */
-            transactions?: string[]
-        } & components['schemas']['Block'] &
-            components['schemas']['Obsolete']
-        SubscriptionEventResponse: {
-            meta?: components['schemas']['LogMeta']
-        } & components['schemas']['Event'] &
-            components['schemas']['Obsolete']
-        SubscriptionTransferResponse: {
-            meta?: components['schemas']['LogMeta']
-        } & components['schemas']['Transfer'] &
-            components['schemas']['Obsolete']
-        SubscriptionBeat2Response: {
+        })[]
+        /** GetPeersResponse */
+        GetPeersResponse: components['schemas']['PeerStats'][]
+        /** SubscriptionBlockResponse */
+        SubscriptionBlockResponse: components['schemas']['Block'] &
+            components['schemas']['Obsolete'] & {
+                /** @description An array of transaction IDs associated with the block. */
+                transactions?: string[]
+            }
+        /** SubscriptionEventResponse */
+        SubscriptionEventResponse: components['schemas']['Event'] &
+            components['schemas']['Obsolete'] & {
+                meta?: components['schemas']['LogMeta']
+            }
+        /** SubscriptionTransferResponse */
+        SubscriptionTransferResponse: components['schemas']['Transfer'] &
+            components['schemas']['Obsolete'] & {
+                meta?: components['schemas']['LogMeta']
+            }
+        /** SubscriptionBeat2Response */
+        SubscriptionBeat2Response: components['schemas']['SubscriptionBeatResponse'] & {
             /**
              * Format: uint64
              * @description The gas limit of the block
@@ -1024,8 +1053,9 @@ export interface components {
              * @example 12000000
              */
             gasLimit?: number
-        } & components['schemas']['SubscriptionBeatResponse']
-        SubscriptionBeatResponse: {
+        }
+        /** SubscriptionBeatResponse */
+        SubscriptionBeatResponse: components['schemas']['Obsolete'] & {
             /**
              * Format: uint32
              * @description The block number (height)
@@ -1034,14 +1064,14 @@ export interface components {
              */
             number?: number
             /**
-             * Format: bytes32
+             * Format: hex
              * @description The block identifier
              *
              * @example 0x0004f6cc88bb4626a92907718e82f255b8fa511453a78e8797eb8cea3393b215
              */
             id?: string
             /**
-             * Format: bytes32
+             * Format: hex
              * @description The parent block identifier
              *
              * @example 0x0004f6cb730dbd90fed09d165bfdf33cc0eed47ec068938f6ee7b7c12a4ea98d
@@ -1078,8 +1108,9 @@ export interface components {
              * @example 13
              */
             k?: number
-        } & components['schemas']['Obsolete']
+        }
         /**
+         * PostDebugTracerRequest
          * @example {
          *   "target": "0x010709463c1f0c9aa66a31182fb36d1977d99bfb6526bae0564a0eac4006c31a/0/0",
          *   "name": "prestate",
@@ -1089,6 +1120,7 @@ export interface components {
         PostDebugTracerRequest: components['schemas']['TracerOption'] &
             components['schemas']['ClauseTracerOption']
         /**
+         * PostDebugTracerCallRequest
          * @example {
          *   "value": "0x0",
          *   "to": "0x0000000000000000000000000000456E65726779",
@@ -1106,6 +1138,7 @@ export interface components {
             components['schemas']['CallData'] &
             components['schemas']['ExtendedCallData']
         /**
+         * TxMeta
          * @description Transaction metadata such as block number, block timestamp, etc.
          * @example {
          *   "blockID": "0x0004f6cc88bb4626a92907718e82f255b8fa511453a78e8797eb8cea3393b215",
@@ -1115,7 +1148,8 @@ export interface components {
          */
         TxMeta: {
             /**
-             * @description The block identifier (bytes32) in which the transaction was included.
+             * Format: hex
+             * @description The block identifier in which the transaction was included.
              * @example 0x0004f6cc88bb4626a92907718e82f255b8fa511453a78e8797eb8cea3393b215
              */
             blockID?: string
@@ -1133,6 +1167,7 @@ export interface components {
             blockTimestamp?: number
         }
         /**
+         * ReceiptMeta
          * @description The transaction receipt metadata such as block number, block timestamp, etc.
          * @example {
          *   "blockID": "0x0004f6cc88bb4626a92907718e82f255b8fa511453a78e8797eb8cea3393b215",
@@ -1161,6 +1196,7 @@ export interface components {
              */
             blockTimestamp?: number
             /**
+             * Format: hex
              * @description The transaction identifier.
              * @example 0x284bba50ef777889ff1a367ed0b38d5e5626714477c40de38d71cedd6f9fa477
              */
@@ -1172,9 +1208,13 @@ export interface components {
              */
             txOrigin?: string
         }
-        /** @description The event or transfer log metadata such as block number, block timestamp, etc. */
+        /**
+         * LogMeta
+         * @description The event or transfer log metadata such as block number, block timestamp, etc.
+         */
         LogMeta: {
             /**
+             * Format: hex
              * @description The block identifier in which the log was included.
              * @example 0x0004f6cc88bb4626a92907718e82f255b8fa511453a78e8797eb8cea3393b215
              */
@@ -1192,6 +1232,7 @@ export interface components {
              */
             blockTimestamp?: number
             /**
+             * Format: hex
              * @description The transaction identifier, from which the log was generated.
              * @example 0x284bba50ef777889ff1a367ed0b38d5e5626714477c40de38d71cedd6f9fa477
              */
@@ -1208,6 +1249,7 @@ export interface components {
              */
             clauseIndex?: number
         }
+        /** Block */
         Block: {
             /**
              * Format: uint32
@@ -1216,7 +1258,7 @@ export interface components {
              */
             number?: number
             /**
-             * Format: bytes32
+             * Format: hex
              * @description The block identifier.
              * @example 0x0004f6cc88bb4626a92907718e82f255b8fa511453a78e8797eb8cea3393b215
              */
@@ -1228,7 +1270,7 @@ export interface components {
              */
             size?: number
             /**
-             * Format: bytes32
+             * Format: hex
              * @description The parent block identifier.
              * @example 0x0004f6cb730dbd90fed09d165bfdf33cc0eed47ec068938f6ee7b7c12a4ea98d
              */
@@ -1246,7 +1288,7 @@ export interface components {
              */
             gasLimit?: number
             /**
-             * Format: bytes32
+             * Format: hex
              * @description The address assigned by the block proposer to receive the reward (in VTHO)
              * @example 0xb4094c25f86d628fdd571afc4077f0d0196afb48
              */
@@ -1264,7 +1306,7 @@ export interface components {
              */
             totalScore?: number
             /**
-             * Format: bytes32
+             * Format: hex
              * @description The root hash of transactions in the block
              * @example 0x89dfd9fcd10c9e53d68592cf8b540b280b72d381b868523223992f3e09a806bb
              */
@@ -1276,13 +1318,13 @@ export interface components {
              */
             txsFeatures?: number
             /**
-             * Format: bytes32
+             * Format: hex
              * @description The root hash for the global state after applying changes in this block
              * @example 0x86bcc6d214bc9d8d0dedba1012a63c8317d19ce97f60c8a2ef5c59bbd40d4261
              */
             stateRoot?: string
             /**
-             * Format: bytes32
+             * Format: hex
              * @description The hash of the transaction receipts trie
              * @example 0x15787e2533c470e8a688e6cd17a1ee12d8457778d5f82d2c109e2d6226d8e54e
              */
@@ -1293,19 +1335,20 @@ export interface components {
              */
             com?: boolean
             /**
-             * Format: bytes20
+             * Format: hex
              * @description The address of the block signer
              * @example 0xab7b27fc9e7d29f9f2e5bd361747a5515d0cc2d1
              */
             signer?: string
         }
+        /** Clause */
         Clause: {
             /**
-             * @description <b>Nullable:</b> The recipient of the clause. Null indicates contract deployment.
+             * @description The recipient of the clause. Null indicates contract deployment.
              *
              * @example 0x0000000000000000000000000000456e65726779
              */
-            to?: string
+            to?: string | null
             /**
              * @description The hexadecimal representation of the amount (wei) of VET to be transferred.
              *
@@ -1319,6 +1362,7 @@ export interface components {
              */
             data?: string
         }
+        /** Tx */
         Tx: {
             /**
              * @description The transaction identifier.
@@ -1334,7 +1378,7 @@ export interface components {
              * @description The address of the sponsor / delegator account.
              * @example null
              */
-            delegator?: string
+            delegator?: string | null
             /**
              * Format: uint32
              * @description Byte size of the transaction that is RLP encoded.
@@ -1358,6 +1402,7 @@ export interface components {
              * @example 720
              */
             expiration?: number
+            /** @description An array of clauses that are executed by the transaction. */
             clauses?: components['schemas']['Clause'][]
             /**
              * Format: uint8
@@ -1372,11 +1417,11 @@ export interface components {
              */
             gas?: number
             /**
-             * Format: bytes32
-             * @description <b>Optional</b>:The transaction ID that this transaction depends on.
+             * Format: hex
+             * @description The transaction ID that this transaction depends on.
              * @example null
              */
-            dependsOn?: string
+            dependsOn?: string | null
             /**
              * @description The transaction `nonce` is a 64-bit unsigned integer that is determined by the transaction sender.
              *
@@ -1384,13 +1429,16 @@ export interface components {
              */
             nonce?: string
         }
+        /** RawTx */
         RawTx: {
             /**
+             * Format: hex
              * @description The raw RLP encoded transaction.
              * @example 0xf901854a880104c9cf34b0f5701ef8e7f8e594058d4c951aa24ca012cef3408b259ac1c69d1258890254beb02d1dcc0000b8c469ff936b00000000000000000000000000000000000000000000000000000000ee6c7f95000000000000000000000000167f6cc1e67a615b51b5a2deaba6b9feca7069df000000000000000000000000000000000000000000000000000000000000136a00000000000000000000000000000000000000000000000254beb02d1dcc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080830469978084cb6b32c5c101b88272da83429a49a354f566dd8c85ba288a7c86d1d3161c0aad6a276a7c9f8e69c14df3d76f0d3442a4f4a2a13d016c32c45e82d5010f27386eeb384dee3d8390c0006adead8b8ce8823c583e1ac15facef8f1cc665a707ade82b3c956a53a2b24e0c03d80504bc4b276b5d067b72636d8e88d2ffc65528f868df2cadc716962978a000
              */
             raw?: string
         }
+        /** Event */
         Event: {
             /**
              * @description The address of the contract that produces the event (bytes20).
@@ -1414,6 +1462,7 @@ export interface components {
              */
             data?: string
         }
+        /** Transfer */
         Transfer: {
             /**
              * @description The address that sent the VET.
@@ -1434,6 +1483,7 @@ export interface components {
              */
             amount?: string
         }
+        /** Receipt */
         Receipt: {
             /**
              * Format: uint64
@@ -1477,6 +1527,7 @@ export interface components {
                 transfers?: components['schemas']['Transfer'][]
             }[]
         }
+        /** CallData */
         CallData: {
             /**
              * @description The amount of token to be transferred.
@@ -1491,58 +1542,60 @@ export interface components {
              */
             data?: string
             /**
-             * @description <b>Nullable:</b> The recipient of the call. Null indicates contract deployment.
+             * @description The recipient of the call. Null indicates contract deployment.
              *
              * @example 0x0000000000000000000000000000456e65726779
              */
-            to?: string
+            to?: string | null
             /**
              * Format: uint64
-             * @description <b>Optional:</b> The maximum allowed gas for execution.
+             * @description The maximum allowed gas for execution.
              *
              * @example 21000
              */
-            gas?: number
+            gas?: number | null
             /**
-             * @description <b>Optional:</b> The absolute gas price.
+             * @description The absolute gas price.
              *
              * @example 1000000000000000
              */
-            gasPrice?: string
+            gasPrice?: string | null
             /**
-             * @description <b>Optional:</b> The caller's address (msg.sender).
+             * @description The caller's address (msg.sender).
              *
              * @example 0x6d95e6dca01d109882fe1726a2fb9865fa41e7aa
              */
-            caller?: string
+            caller?: string | null
         }
+        /** ExtendedCallData */
         ExtendedCallData: {
             /**
-             * @description <b>Optional:</b> The transaction's proved work (for extension contract).
+             * @description The transaction's proved work (for extension contract).
              *
              * @example 1000
              */
-            provedWork?: string
+            provedWork?: string | null
             /**
-             * @description <b>Optional:</b> The address of the gas payer (for extension contract).
+             * @description The address of the gas payer (for extension contract).
              *
              * @example 0xd3ae78222beadb038203be21ed5ce7c9b1bff602
              */
-            gasPayer?: string
+            gasPayer?: string | null
             /**
              * Format: uint32
-             * @description <b>Optional:</b> The transaction expiration (for extension contract).
+             * @description The transaction expiration (for extension contract).
              *
              * @example 1000
              */
-            expiration?: number
+            expiration?: number | null
             /**
-             * @description <b>Optional:</b> The block reference (for extension contract).
+             * @description The block reference (for extension contract).
              *
              * @example 0x00000000851caf3c
              */
-            blockRef?: string
+            blockRef?: string | null
         }
+        /** CallResult */
         CallResult: {
             /**
              * @description The output data produced by the contract execution.
@@ -1575,6 +1628,7 @@ export interface components {
             vmError?: string
         }
         /**
+         * BatchCallData
          * @example {
          *   "clauses": [
          *     {
@@ -1590,30 +1644,32 @@ export interface components {
          */
         BatchCallData: {
             /** @description An array of clauses to be executed. */
-            clauses?: components['schemas']['Clause'][]
+            clauses?: components['schemas']['Clause'][] | null
             /**
              * Format: uint64
-             * @description <b>Optional:</b> The maximum allowed gas for the execution of the batch call.
+             * @description The maximum allowed gas for the execution of the batch call.
              *
              * @example 50000
              */
-            gas?: number
+            gas?: number | null
             /**
-             * @description <b>Optional:</b> The absolute gas price for the batch call.
+             * @description The absolute gas price for the batch call.
              *
              * @example 1000000000000000
              */
-            gasPrice?: string
+            gasPrice?: string | null
             /**
-             * @description <b>Optional:</b> The caller's address (msg.sender) for the batch call.
+             * @description The caller's address (msg.sender) for the batch call.
              *
              * @example 0x6d95e6dca01d109882fe1726a2fb9865fa41e7aa
              */
-            caller?: string
+            caller?: string | null
         }
+        /** BatchCallResult */
         BatchCallResult: components['schemas']['CallResult'][]
         /**
-         * @description <b>Optional:</b> Include these parameters to receive filtered results in a paged format.
+         * FilterOptions
+         * @description Include these parameters to receive filtered results in a paged format.
          *
          * <b>Note: </b> If omitted, a timeout may occur if there is a large amount of data to query. If there is a small amount of data you can omit to receive all results in a single response.
          *
@@ -1630,24 +1686,25 @@ export interface components {
          */
         FilterOptions: {
             /**
-             * @description <b>Optional:</b> The offset in the matched record set. Use this parameter for pagination.
+             * @description The offset in the matched record set. Use this parameter for pagination.
              *
              * Default's to 0.
              *
              * @example 0
              */
-            offset?: number
+            offset?: number | null
             /**
-             * @description <b>Optional:</b> The limit of records to be included in the output. Use this parameter for pagination.
+             * @description The limit of records to be included in the output. Use this parameter for pagination.
              *
              * Default's to all results.
              *
              * @example 100
              */
-            limit?: number
-        }
+            limit?: number | null
+        } | null
         /**
-         * @description <b>Optional:</b> Defines the range for filtering. Setting values to null indicates the entire range.
+         * FilterRange
+         * @description Defines the range for filtering. Setting values to null indicates the entire range.
          *
          * <b>Note: </b> If omitted or set to null, a timeout may occur if there is a large amount of data to query.
          *
@@ -1665,29 +1722,30 @@ export interface components {
          */
         FilterRange: {
             /**
-             * @description <b>Optional:</b> Specifies the unit of measurement for the `from` and `to` values.
+             * @description Specifies the unit of measurement for the `from` and `to` values.
              * Use `block` for block numbers or `time` for block timestamps. Default is `block`.
              *
              * @example block
-             * @enum {string}
+             * @enum {string|null}
              */
-            unit?: 'block' | 'time'
+            unit?: 'block' | 'time' | null
             /**
              * Format: uint64
-             * @description <b>Optional:</b> Defines the starting block number or timestamp for the specified range.
+             * @description Defines the starting block number or timestamp for the specified range.
              *
              * @example 17240365
              */
-            from?: number
+            from?: number | null
             /**
              * Format: uint64
-             * @description <b>Optional:</b> Specifies the ending block number or timestamp for the specified range.
+             * @description Specifies the ending block number or timestamp for the specified range.
              *
              * @example 17289864
              */
-            to?: number
-        }
+            to?: number | null
+        } | null
         /**
+         * EventCriteria
          * @description Criteria to filter events. All fields are joined with the `AND` operator.
          * `null` fields are ignored.
          *
@@ -1709,20 +1767,20 @@ export interface components {
          */
         EventCriteria: {
             /**
-             * @description <b>Optional:</b> The address of the contract that emits the event.
+             * @description The address of the contract that emits the event.
              *
              * @example 0x0000000000000000000000000000456E65726779
              */
-            address?: string
+            address?: string | null
             /**
-             * @description <b>Optional:</b> The keccak256 hash representing the event signature.
+             * @description The keccak256 hash representing the event signature.
              * For example, the signature for the `Transfer` event is `keccak256("Transfer(address,address,uint256)")`.
              *
              * @example 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
              */
-            topic0?: string
+            topic0?: string | null
             /**
-             * @description <b>Optional:</b> Filters events based on the 1st parameter in the event.
+             * @description Filters events based on the 1st parameter in the event.
              *
              * <b>Note</b>: The parameter must be padded to 32 bytes.
              *
@@ -1730,9 +1788,9 @@ export interface components {
              *
              * @example 0x0000000000000000000000006d95e6dca01d109882fe1726a2fb9865fa41e7aa
              */
-            topic1?: string
+            topic1?: string | null
             /**
-             * @description <b>Optional:</b> Filters events based on the 2nd parameter in the event.
+             * @description Filters events based on the 2nd parameter in the event.
              *
              * <b>Note</b>: The parameter must be padded to 32 bytes.
              *
@@ -1740,9 +1798,9 @@ export interface components {
              *
              * @example 0x0000000000000000000000006d95e6dca01d109882fe1726a2fb9865fa41e7aa
              */
-            topic2?: string
+            topic2?: string | null
             /**
-             * @description <b>Optional:</b> Filters events based on the 3rd parameter in the event.
+             * @description Filters events based on the 3rd parameter in the event.
              *
              * <b>Note</b>: The parameter must be padded to 32 bytes.
              *
@@ -1750,9 +1808,9 @@ export interface components {
              *
              * @example 0x0000000000000000000000006d95e6dca01d109882fe1726a2fb9865fa41e7aa
              */
-            topic3?: string
+            topic3?: string | null
             /**
-             * @description <b>Optional:</b> Filters events based on the 4th parameter in the event.
+             * @description Filters events based on the 4th parameter in the event.
              *
              * <b>Note</b>: The parameter must be padded to 32 bytes.
              *
@@ -1760,28 +1818,30 @@ export interface components {
              *
              * @example 0x0000000000000000000000006d95e6dca01d109882fe1726a2fb9865fa41e7aa
              */
-            topic4?: string
+            topic4?: string | null
         }
+        /** TransferCriteria */
         TransferCriteria: {
             /**
-             * @description <b>Optional: </b> The address from which the transaction was sent.
+             * @description The address from which the transaction was sent.
              *
              * @example 0x6d95e6dca01d109882fe1726a2fb9865fa41e7aa
              */
-            txOrigin?: string
+            txOrigin?: string | null
             /**
-             * @description <b>Optional: </b> The address that sent the VET. In most cases this is the same as `txOrigin`, but it may be different if the VET was sent by a contract.
+             * @description The address that sent the VET. In most cases this is the same as `txOrigin`, but it may be different if the VET was sent by a contract.
              *
              * @example 0x6d95e6dca01d109882fe1726a2fb9865fa41e7aa
              */
-            sender?: string
+            sender?: string | null
             /**
-             * @description <b>Optional: </b> The address that received the VET.
+             * @description The address that received the VET.
              *
              * @example 0x45429a2255e7248e57fce99e7239aed3f84b7a53
              */
-            recipient?: string
+            recipient?: string | null
         }
+        /** PeerStats */
         PeerStats: {
             /**
              * @description The identifier and version of the connected peer's software.
@@ -1820,6 +1880,7 @@ export interface components {
             duration?: number
         }
         /**
+         * TXID
          * @example {
          *   "id": "0x4de71f2d588aa8a1ea00fe8312d92966da424d9939a511fc0be81e65fad52af8"
          * }
@@ -1834,15 +1895,21 @@ export interface components {
             id?: string
         }
         /**
+         * Obsolete
          * @example {
          *   "obsolete": false
          * }
          */
         Obsolete: {
-            /** @description Indicates whether the block containing this data has become obsolete (true) or not (false). */
+            /**
+             * @description Indicates whether the block containing this data has become obsolete (true) or not (false).
+             *
+             * @example false
+             */
             obsolete?: boolean
         }
         /**
+         * ClauseTracerOption
          * @example {
          *   "target": "0x010709463c1f0c9aa66a31182fb36d1977d99bfb6526bae0564a0eac4006c31a/0/0"
          * }
@@ -1859,6 +1926,7 @@ export interface components {
             target?: string
         }
         /**
+         * TracerOption
          * @example {
          *   "name": "prestate",
          *   "config": {}
@@ -1866,10 +1934,10 @@ export interface components {
          */
         TracerOption: {
             /**
-             * @description <b>Optional:</b> The name of the tracer. An empty name stands for the default struct logger tracer.
+             * @description The name of the tracer. An empty name stands for the default struct logger tracer.
              *
              * @example prestate
-             * @enum {string}
+             * @enum {string|null}
              */
             name?:
                 | ''
@@ -1882,39 +1950,51 @@ export interface components {
                 | 'trigram'
                 | 'evmdis'
                 | 'opcount'
+                | null
             /**
-             * @description <b>Optional:</b> The configuration of the tracer. It is specific to the `name`
+             * @description The configuration of the tracer. It is specific to the `name`
              *
              * @example {}
              */
-            config?: Record<string, never>
+            config?: unknown
         }
+        /** StorageRangeOption */
         StorageRangeOption: {
             /**
-             * @description <b>Optional:</b> The address of the contract/ account to be traced.
+             * @description The address of the contract/ account to be traced.
              *
              * @example 0xd8ccdd85abdbf68dfec95f06c973e87b1b5a9997
              */
             address?: string
             /**
-             * @description <b>Optional:</b> The start key of the storage range. Default is `0x0000000000000000000000000000000000000000000000000000000000000000`
+             * @description The start key of the storage range. Default is `0x0000000000000000000000000000000000000000000000000000000000000000`
              *
              * @example 0x0000000000000000000000000000000000000000000000000000000000000000
              */
-            keyStart?: string
+            keyStart?: string | null
             /**
-             * @description <b>Optional:</b> The maximum number of results to be returned. Default is 1000.
+             * @description The maximum number of results to be returned. Default is 1000.
              *
              * @example 10
              */
-            maxResult?: number
-            /** @example 0x010709463c1f0c9aa66a31182fb36d1977d99bfb6526bae0564a0eac4006c31a/0/0 */
+            maxResult?: number | null
+            /**
+             * @description The unified path of the transaction clause.
+             *
+             * Format:
+             * `blockID/(txIndex|txId)/clauseIndex`
+             *
+             * @example 0x010709463c1f0c9aa66a31182fb36d1977d99bfb6526bae0564a0eac4006c31a/0/0
+             */
             target?: string
         }
+        /** StorageRange */
         StorageRange: {
             /** @example null */
-            nextKey?: string
+            nextKey?: string | null
             /**
+             * @description The data is non-nullable, but an empty object is returned if no data is found.
+             *
              * @example {
              *   "0x33e423980c9b37d048bd5fadbd4a2aeb95146922045405accc2f468d0ef96988": {
              *     "key": "0x0000000000000000000000000000000000000000000000000000000000000001",
@@ -1924,6 +2004,7 @@ export interface components {
              */
             storage?: Record<string, never>
         }
+        /** IsTrunk */
         IsTrunk: {
             /**
              * @description Whether the block is trunk (true) or not (false)
@@ -1931,6 +2012,7 @@ export interface components {
              */
             isTrunk?: boolean
         }
+        /** IsFinalized */
         IsFinalized: {
             /**
              * @description Whether the block has been finalized (true) or not (false)
@@ -1956,7 +2038,7 @@ export interface components {
          * @example false
          */
         RawTxInQuery?: boolean
-        /** @description Specify either a block number or ID. If omitted, the `best` block is assumed. */
+        /** @description Specify either `best`, a block number or block ID. If omitted, the `best` block is assumed. */
         RevisionInQuery?: string
         /**
          * @description
@@ -1992,7 +2074,7 @@ export interface components {
         /**
          * @description A saved block ID for resuming the subscription. If omitted, the best block ID is assumed.
          *
-         * **Note**: If the provided position is too far behind the best block, a 403 error will be thrown. The allowable difference depends on the configuration of each the node.
+         * **Note**: If the provided position is too far behind the best block, a 403 error will be thrown. The allowable difference depends on the configuration of each node.
          *
          * See the argument `api-backtrace-limit` when starting a node.
          */

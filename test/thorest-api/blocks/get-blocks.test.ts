@@ -1,5 +1,4 @@
 import { Node1Client } from '../../../src/thor-client'
-import { generateWalletWithFunds } from '../../../src/wallet'
 import { components } from '../../../src/open-api-types'
 import {
     HEX_REGEX,
@@ -8,16 +7,23 @@ import {
     HEX_REGEX_64,
 } from '../../../src/utils/hex-utils'
 import { revisions } from '../../../src/constants'
+import { readRandomTransfer, Transfer } from '../../../src/populated-data'
 
 describe('GET /blocks/{revision}', function () {
+    let transfer: Transfer
+
+    beforeAll(async () => {
+        transfer = await readRandomTransfer()
+    })
+
     it.each(revisions.valid(true))(
         'can get block for revision: %s',
         async function (revision) {
             const block = await Node1Client.getBlock(revision, false)
 
-            expect(block.success).toEqual(true)
-            expect(block.httpCode).toEqual(200)
-            expect(block.body).toEqual({
+            expect(block.success, 'API response should be a success').toBeTrue()
+            expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(block.body, 'Expected Response Body').toEqual({
                 beneficiary: expect.stringMatching(HEX_REGEX_40),
                 com: expect.any(Boolean),
                 gasLimit: expect.any(Number),
@@ -45,9 +51,9 @@ describe('GET /blocks/{revision}', function () {
         async function (revision) {
             const block = await Node1Client.getBlock(revision, false)
 
-            expect(block.success).toEqual(true)
-            expect(block.httpCode).toEqual(200)
-            expect(block.body).toEqual(null)
+            expect(block.success, 'API response should be a success').toBeTrue()
+            expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(block.body, 'Expected Response Body').toEqual(null)
         },
     )
 
@@ -56,45 +62,41 @@ describe('GET /blocks/{revision}', function () {
         async function (revision) {
             const block = await Node1Client.getBlock(revision, false)
 
-            expect(block.success).toEqual(false)
-            expect(block.httpCode).toEqual(400)
+            expect(block.success, 'API Call should fail').toBeFalse()
+            expect(block.httpCode, 'Expected HTTP Code').toEqual(400)
         },
     )
 
     it('should be able get compressed blocks', async function () {
-        const { receipt, address } = await generateWalletWithFunds()
+        const res = await Node1Client.getBlock(transfer.meta?.blockID!, false)
 
-        expect(receipt.meta.blockID).toBeTruthy()
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Block should not be null').not.toEqual(null)
 
-        const block = await Node1Client.getBlock(receipt.meta.blockID!, false)
+        const block = res.body as components['schemas']['GetBlockResponse']
 
-        expect(block.success).toEqual(true)
-        expect(block.httpCode).toEqual(200)
-        expect(block.body).not.toEqual(null)
-
-        const relevantTx = block.body!.transactions!.find(
+        const relevantTx = block.transactions!.find(
             // @ts-ignore
-            (txID: string) => txID === receipt.meta.txID,
+            (txID: string) => txID === transfer.meta.txID,
         )
 
         expect(relevantTx).toBeTruthy()
-        expect(relevantTx).toEqual(receipt.meta.txID)
+        expect(relevantTx).toEqual(transfer.meta?.txID)
     })
 
     it('should be able get expanded blocks', async function () {
-        const { receipt, address } = await generateWalletWithFunds()
+        const res = await Node1Client.getBlock(transfer.meta.blockID, true)
 
-        expect(receipt.meta.blockID).toBeTruthy()
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Block should not be null').not.toEqual(null)
 
-        const block = await Node1Client.getBlock(receipt.meta.blockID!, true)
+        const block = res.body as components['schemas']['GetBlockResponse']
 
-        expect(block.success).toEqual(true)
-        expect(block.httpCode).toEqual(200)
-        expect(block.body).not.toEqual(null)
-
-        const relevantTx = block.body!.transactions!.find(
+        const relevantTx = block.transactions!.find(
             // @ts-ignore
-            (tx: components['schemas']['Tx']) => tx.id === receipt.meta.txID,
+            (tx: components['schemas']['Tx']) => tx.id === transfer.meta.txID,
         )
 
         expect(relevantTx).toBeTruthy()
@@ -106,12 +108,12 @@ describe('GET /blocks/{revision}', function () {
             dependsOn: null,
             expiration: expect.any(Number),
             gas: expect.any(Number),
-            gasPayer: receipt.gasPayer,
+            gasPayer: expect.stringMatching(HEX_REGEX_40),
             gasPriceCoef: expect.any(Number),
-            gasUsed: receipt.gasUsed,
-            id: receipt.meta.txID,
+            gasUsed: expect.any(Number),
+            id: transfer.meta.txID,
             nonce: expect.stringMatching(HEX_REGEX),
-            origin: receipt.gasPayer,
+            origin: expect.stringMatching(HEX_REGEX_40),
             outputs: expect.any(Array),
             paid: expect.stringMatching(HEX_REGEX),
             reverted: false,

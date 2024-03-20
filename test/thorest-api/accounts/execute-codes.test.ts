@@ -1,14 +1,10 @@
 import { Node1Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { MyERC20__factory } from '../../../typechain-types'
-import {
-    generateEmptyWallet,
-    generateWalletWithFunds,
-    Wallet,
-} from '../../../src/wallet'
 import { interfaces } from '../../../src/contracts/hardhat'
 import { getBlockRef } from '../../../src/utils/block-utils'
 import { revisions } from '../../../src/constants'
+import { generateAddress, ThorWallet } from '../../../src/wallet'
 
 const CALLER_ADDR = '0x435933c8064b4Ae76bE665428e0307eF2cCFBD68'
 const GAS_PAYER = '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed'
@@ -18,7 +14,7 @@ const SEND_VTHO_CLAUSE = {
     to: contractAddresses.energy,
     value: '0x0',
     data: interfaces.energy.encodeFunctionData('transfer', [
-        generateEmptyWallet().address,
+        generateAddress(),
         SEND_VTHO_AMOUNT,
     ]),
 }
@@ -43,14 +39,14 @@ const READ_ONLY_REQUEST = (address: string) => {
 }
 
 describe('POST /accounts/*', function () {
-    let wallet: Wallet
+    let wallet = ThorWallet.new(true)
 
     beforeAll(async () => {
-        wallet = await generateWalletWithFunds()
+        await wallet.waitForFunding()
     })
 
     it('should execute an array of clauses', async function () {
-        const to = generateEmptyWallet()
+        const to = generateAddress()
 
         const tokenAmount = '0x100000'
 
@@ -58,7 +54,7 @@ describe('POST /accounts/*', function () {
             clauses: [
                 // VET Transfer
                 {
-                    to: to.address,
+                    to: to,
                     value: tokenAmount,
                     data: '0x',
                 },
@@ -67,7 +63,7 @@ describe('POST /accounts/*', function () {
                     to: contractAddresses.energy,
                     value: '0x0',
                     data: interfaces.energy.encodeFunctionData('transfer', [
-                        to.address,
+                        to,
                         tokenAmount,
                     ]),
                 },
@@ -80,16 +76,16 @@ describe('POST /accounts/*', function () {
             caller: wallet.address,
         })
 
-        expect(res.success).toEqual(true)
-        expect(res.httpCode).toEqual(200)
-        expect(res.body).toEqual([
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Expected Response Body').toEqual([
             {
                 data: '0x',
                 events: [],
                 transfers: [
                     {
                         sender: wallet.address,
-                        recipient: to.address,
+                        recipient: to,
                         amount: tokenAmount,
                     },
                 ],
@@ -105,7 +101,7 @@ describe('POST /accounts/*', function () {
                         topics: [
                             '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
                             `0x000000000000000000000000${wallet.address.slice(2)}`,
-                            `0x000000000000000000000000${to.address.slice(2)}`,
+                            `0x000000000000000000000000${to.slice(2)}`,
                         ],
                         data: `0x0000000000000000000000000000000000000000000000000000000000${tokenAmount.slice(2)}`,
                     },
@@ -143,9 +139,15 @@ describe('POST /accounts/*', function () {
         // generated wallet had no funds configured in genesis, so this should be reverted
         const historicCall = await Node1Client.executeAccountBatch(request, '0')
 
-        expect(historicCall.success).toEqual(true)
-        expect(historicCall.httpCode).toEqual(200)
-        expect(historicCall.body?.[0]?.reverted).toEqual(true)
+        expect(
+            historicCall.success,
+            'API response should be a success',
+        ).toBeTrue()
+        expect(historicCall.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(
+            historicCall.body?.[0]?.reverted,
+            'Transaction should not revert',
+        ).toEqual(true)
 
         // generated wallet was funded, so this should be successful
         const currentCall = await Node1Client.executeAccountBatch(
@@ -153,16 +155,25 @@ describe('POST /accounts/*', function () {
             'best',
         )
 
-        expect(currentCall.success).toEqual(true)
-        expect(currentCall.httpCode).toEqual(200)
-        expect(currentCall.body?.[0]?.reverted).toEqual(false)
+        expect(
+            currentCall.success,
+            'API response should be a success',
+        ).toBeTrue()
+        expect(currentCall.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(
+            currentCall.body?.[0]?.reverted,
+            'Transaction should not revert',
+        ).toEqual(false)
     })
 
     it('should be able to call read only contract methods', async () => {
         const request = READ_ONLY_REQUEST(wallet.address)
         const historicCall = await Node1Client.executeAccountBatch(request, '0')
-        expect(historicCall.success).toEqual(true)
-        expect(historicCall.httpCode).toEqual(200)
+        expect(
+            historicCall.success,
+            'API response should be a success',
+        ).toBeTrue()
+        expect(historicCall.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(historicCall.body?.[0]?.reverted).toEqual(false)
         expect(historicCall.body?.[1]?.reverted).toEqual(false)
         const balanceOf = parseInt(historicCall.body?.[0]?.data ?? '-1', 16)
@@ -176,8 +187,8 @@ describe('POST /accounts/*', function () {
         async (revision) => {
             const request = READ_ONLY_REQUEST(wallet.address)
             const res = await Node1Client.executeAccountBatch(request, revision)
-            expect(res.success).toEqual(true)
-            expect(res.httpCode).toEqual(200)
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(res.body?.[0]?.reverted).toEqual(false)
             expect(res.body?.[1]?.reverted).toEqual(false)
         },
@@ -194,8 +205,8 @@ describe('POST /accounts/*', function () {
                 revision,
             )
 
-            expect(res.success).toEqual(true)
-            expect(res.httpCode).toEqual(200)
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
         },
     )
 
@@ -210,8 +221,8 @@ describe('POST /accounts/*', function () {
                 revision,
             )
 
-            expect(res.success).toEqual(false)
-            expect(res.httpCode).toEqual(400)
+            expect(res.success, 'API Call should fail').toBeFalse()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
         },
     )
 
@@ -233,9 +244,9 @@ describe('POST /accounts/*', function () {
                 blockRef,
             })
 
-            expect(res.httpCode).toEqual(200)
-            expect(res.success).toEqual(true)
-            expect(res.body).toEqual([
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.body, 'Expected Response Body').toEqual([
                 {
                     data: `${blockRef}000000000000000000000000000000000000000000000000`,
                     events: [],
@@ -264,9 +275,9 @@ describe('POST /accounts/*', function () {
 
             const res = await Node1Client.executeAccountBatch(requestBody)
 
-            expect(res.httpCode).toEqual(200)
-            expect(res.success).toEqual(true)
-            expect(res.body).toEqual([
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.body, 'Expected Response Body').toEqual([
                 {
                     data: `0x000000000000000000000000${GAS_PAYER.slice(2)}`,
                     events: [],
@@ -295,9 +306,9 @@ describe('POST /accounts/*', function () {
                 provedWork,
             })
 
-            expect(res.httpCode).toEqual(200)
-            expect(res.success).toEqual(true)
-            expect(res.body).toEqual([
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.body, 'Expected Response Body').toEqual([
                 {
                     data: '0x000000000000000000000000000000000000000000000000000000000002edb3',
                     events: [],
@@ -329,9 +340,9 @@ describe('POST /accounts/*', function () {
                 expiration,
             })
 
-            expect(res.httpCode).toEqual(200)
-            expect(res.success).toEqual(true)
-            expect(res.body).toEqual([
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.body, 'Expected Response Body').toEqual([
                 {
                     data: '0x000000000000000000000000000000000000000000000000000000000000353b',
                     events: [],

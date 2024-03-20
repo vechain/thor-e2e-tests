@@ -1,40 +1,31 @@
-import { sendClauses } from './transactions'
 import { contractAddresses } from './contracts/addresses'
 import { interfaces } from './contracts/hardhat'
-import { HDNode, secp256k1, Transaction } from 'thor-devkit'
+import { secp256k1, Transaction, TransactionBody } from '@vechain/sdk-core'
+import faucetAccounts from './faucet-accounts.json'
+import { ThorWallet } from './wallet'
+import { unitsUtils } from '@vechain/sdk-core'
 
-type AccountFaucet = {
-    address: string
-    privateKey: string
-}
-export const faucetMnemonic =
-    'denial kitchen pet squirrel other broom bar gas better priority spoil cross'.split(
-        ' ',
-    )
+const FAUCET_AMOUNT = unitsUtils.parseVET((10_000).toString())
+const FAUCET_AMOUNT_HEX = `0x${FAUCET_AMOUNT.toString(16)}`
 
-const faucetAccounts: AccountFaucet[] = []
-
-const hdNode = HDNode.fromMnemonic(faucetMnemonic)
-
-for (let i = 0; i < 100; i++) {
-    const node = hdNode.derive(i)
-    faucetAccounts.push({
-        address: node.address,
-        privateKey: node.privateKey!.toString('hex'),
-    })
-}
-
-const FAUCET_AMOUNT = '0x65536000000000000000000'
-
-const fundAccount = async (account: string) => {
+const randomFunder = () => {
     const randomIndex = Math.floor(Math.random() * faucetAccounts.length)
-    const fundingAccount = faucetAccounts[randomIndex]
+    return faucetAccounts[randomIndex].privateKey
+}
 
-    const receipt = await sendClauses(
+/**
+ * Fund an account using the faucet. VET and VTHO will be sent to the account
+ * @param account
+ */
+const fundAccount = async (account: string) => {
+    const fundingAccount = randomFunder()
+    const wallet = new ThorWallet(Buffer.from(fundingAccount, 'hex'))
+
+    const receipt = await wallet.sendClauses(
         [
             {
                 to: account,
-                value: FAUCET_AMOUNT,
+                value: FAUCET_AMOUNT_HEX,
                 data: '0x',
             },
             {
@@ -46,20 +37,27 @@ const fundAccount = async (account: string) => {
                 ]),
             },
         ],
-        fundingAccount.privateKey,
         true,
     )
 
     return { receipt, amount: FAUCET_AMOUNT }
 }
 
-export const delegateTx = (transaction: Transaction, senderAddress: string) => {
-    transaction.body.reserved = { features: 1 }
+/**
+ * Delegate a transaction using the faucet
+ * @param txBody - The transaction to delegate
+ * @param senderAddress - The address of the sender
+ *
+ */
+export const delegateTx = (txBody: TransactionBody, senderAddress: string) => {
+    txBody.reserved = { features: 1 }
+
+    const transaction = new Transaction(txBody)
 
     const randomIndex = Math.floor(Math.random() * faucetAccounts.length)
     const fundingAccount = faucetAccounts[randomIndex]
 
-    const encoded = transaction.signingHash(senderAddress)
+    const encoded = transaction.getSignatureHash(senderAddress)
 
     const signature = secp256k1.sign(
         encoded,
@@ -72,4 +70,4 @@ export const delegateTx = (transaction: Transaction, senderAddress: string) => {
     }
 }
 
-export { faucetAccounts, fundAccount, FAUCET_AMOUNT }
+export { randomFunder, fundAccount, FAUCET_AMOUNT_HEX }
