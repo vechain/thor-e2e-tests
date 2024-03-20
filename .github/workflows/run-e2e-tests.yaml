@@ -1,48 +1,48 @@
 name: E2E Tests
 
 on:
-  workflow_dispatch:
-  workflow_call:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    workflow_dispatch:
+    workflow_call:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
 
 permissions:
-  checks: write
-  pull-requests: write
+    checks: write
+    pull-requests: write
 
 jobs:
-  e2e_tests:
-    name: Run E2E Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    e2e_tests:
+        name: Run E2E Tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
 
-      - name: Install Node Modules
-        run: yarn install
+            - name: Install Node Modules
+              run: yarn install
 
-      - name: Run Tests
-        run: yarn test
+            - name: Run Tests
+              run: yarn test
 
-      - name: Publish Results
-        uses: dorny/test-reporter@v1
-        id: test-reporter
-        if: success() || failure() # run this step even if previous step failed
-        with:
-          name: E2E Test Report
-          only-summary: 'false'
-          list-suites: 'all'
-          list-tests: 'all'
-          fail-on-error: 'true'
-          reporter: 'jest-junit'
-          path: |
-            junit.xml
+            - name: Publish Results
+              uses: dorny/test-reporter@v1
+              id: test-reporter
+              if: success() || failure() # run this step even if previous step failed
+              with:
+                  name: E2E Test Report
+                  only-summary: 'false'
+                  list-suites: 'all'
+                  list-tests: 'all'
+                  fail-on-error: 'true'
+                  reporter: 'jest-junit'
+                  path: |
+                      junit.xml

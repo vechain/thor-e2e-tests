@@ -3,6 +3,7 @@ import { components } from './open-api-types'
 
 import WebSocket from 'ws'
 import { HttpClient, ThorClient as _ThorClient } from '@vechain/sdk-network'
+import { decodeRevertReason } from './utils/revert-utils'
 
 type BaseResponse = {
     httpCode?: number
@@ -363,7 +364,7 @@ class ThorClient {
     public async traceContractCall(
         request: Schema['PostDebugTracerCallRequest'],
         options?: AxiosRequestConfig,
-    ): Promise<Response<unknown>> {
+    ): Promise<Response<any>> {
         return this.performRequest(() =>
             this.axios.post(`/debug/tracers/call`, request, options),
         )
@@ -377,6 +378,81 @@ class ThorClient {
         return this.performRequest(() =>
             this.axios.post(`/debug/storage-range`, request, options),
         )
+    }
+
+    /**
+     * A utility function to debug a particular clause in a reverted transaction
+     */
+    public async debugRevertedClause(
+        txId: string,
+        clauseIndex: number,
+    ): Promise<any | undefined> {
+        const targetPrefix = await this.getDebugTargetPrefix(txId)
+
+        if (!targetPrefix) {
+            return
+        }
+
+        return this.traceClause({
+            target: `${targetPrefix}/${clauseIndex}`,
+            name: 'call',
+            config: {
+                OnlyTopCall: true,
+            },
+        })
+    }
+
+    /**
+     * A utility function to get the index of a transaction in a block
+     * @param txId
+     */
+    public async getDebugTargetPrefix(
+        txId: string,
+    ): Promise<string | undefined> {
+        const tx = await this.getTransaction(txId)
+
+        if (!tx.success || !tx.body?.meta?.blockID) {
+            return undefined
+        }
+
+        const block = await this.getBlock(tx.body.meta.blockID, false)
+
+        if (!block.success || !block.body) {
+            return undefined
+        }
+
+        // @ts-ignore
+        const txIndex = block.body.transactions.indexOf(txId)
+
+        return `${block.body.id}/${txIndex}`
+    }
+
+    /**
+     * A utility function to debug all clauses in a reverted transaction
+     * @param txId
+     */
+    public async debugRevertedTransaction(
+        txId: string,
+    ): Promise<string | undefined> {
+        const tx = await this.getTransaction(txId)
+
+        if (!tx.success || !tx.body?.meta?.blockID || !tx.body.clauses) {
+            return undefined
+        }
+
+        for (let i = 0; i < tx.body.clauses.length; i++) {
+            const debugged = await this.debugRevertedClause(txId, i)
+
+            if (!debugged.success || !debugged.body) {
+                continue
+            }
+
+            const revertReason = decodeRevertReason(debugged.body.output)
+
+            if (revertReason) {
+                return revertReason
+            }
+        }
     }
 
     private openWebsocket<T>(url: string, callback: (data: T) => void) {

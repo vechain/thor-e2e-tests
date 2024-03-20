@@ -1,5 +1,6 @@
 import {
     addressUtils,
+    type InterfaceAbi,
     secp256k1,
     Transaction,
     TransactionBody,
@@ -13,7 +14,7 @@ import {
 } from './transactions'
 import { getBlockRef } from './utils/block-utils'
 import { components } from './open-api-types'
-import { Node1Client } from './thor-client'
+import { Node1Client, SDKClient } from './thor-client'
 
 export const generateAddress = () => {
     return generateEmptyWallet().address
@@ -73,32 +74,18 @@ class ThorWallet {
         return new ThorWallet(privateKey, () => receipt)
     }
 
-    public deployContract = async (
-        bytecode: string,
-        delegate = false,
-    ): Promise<{
-        contractAddress: string
-        receipt: components['schemas']['GetTxReceiptResponse']
-    }> => {
-        const receipt = await this.sendClauses(
-            [
-                {
-                    to: null,
-                    value: 0,
-                    data: bytecode,
-                },
-            ],
-            true,
-            delegate,
+    public deployContract = async (bytecode: string, abi: InterfaceAbi) => {
+        await this.waitForFunding()
+
+        const factory = SDKClient.contracts.createContractFactory(
+            abi,
+            bytecode,
+            this.privateKey.toString('hex'),
         )
 
-        const contractAddress = receipt.outputs?.[0].contractAddress
+        await factory.startDeployment()
 
-        if (!contractAddress) {
-            throw new Error('Could not get contract address from receipt')
-        }
-
-        return { contractAddress, receipt }
+        return await factory.waitForDeployment()
     }
 
     public buildTransaction = async (

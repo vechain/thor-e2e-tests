@@ -4,7 +4,7 @@ export const addAddressPadding = (address: string): string => {
     return ethers.zeroPadValue(address, 32)
 }
 
-export const addUintPadding = (amount: number): string => {
+export const addUintPadding = (amount: number | bigint): string => {
     const bn = BigInt(amount)
-    return `0x${bn.toString(16).padStart(64, '0')}`
+    return bn.toString(16).padStart(64, '0')
 }

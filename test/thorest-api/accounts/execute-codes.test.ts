@@ -1,6 +1,6 @@
 import { Node1Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
-import { MyERC20__factory } from '../../../typechain-types'
+import { SimpleCounter__factory } from '../../../typechain-types'
 import { interfaces } from '../../../src/contracts/hardhat'
 import { getBlockRef } from '../../../src/utils/block-utils'
 import { revisions } from '../../../src/constants'
@@ -70,7 +70,7 @@ describe('POST /accounts/*', function () {
                 // Contract Deployment
                 {
                     value: '0x0',
-                    data: MyERC20__factory.createInterface().encodeDeploy(),
+                    data: SimpleCounter__factory.createInterface().encodeDeploy(),
                 },
             ],
             caller: wallet.address,

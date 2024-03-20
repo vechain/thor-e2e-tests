@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-contract SimpleCounter {
+contract SimpleCounterParis {
     uint256 private counter;
 
     // Event emitted when the counter is incremented
