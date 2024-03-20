@@ -22,6 +22,17 @@ yarn docker:up
 yarn test:fast
 ```
 
+## Custom Docker Image
+
+-   You can specify a custom docker image by running the following in the [vechain/thor](https://github.com/vechain/thor)
+    repo:
+
+```bash
+docker build -t vechain/thor:custom .
+export THOR_IMAGE=vechain/thor:custom
+yarn test
+```
+
 ## Scripts
 
 ---
@@ -39,7 +50,7 @@ yarn generate:openapi ./thor.yaml
 #### **Option 2** - By URL:
 
 ```bash
-yarn generate:openapi https://darrenvechain.github.io/thor-docs/thor.yaml
+yarn generate:openapi https://raw.githubusercontent.com/vechain/thor/master/api/doc/thor.yaml
 ```
 
 ---
