@@ -348,7 +348,7 @@ describe('EVM Opcodes', () => {
         async (dupN) => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('DUP_ALL', []),
-                'DUP_ALL',
+                `DUP${dupN}`,
             )
 
             const relevantStructLogs = debugged.structLogs.filter(
