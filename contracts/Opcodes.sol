@@ -512,70 +512,184 @@ contract OpcodeTests {
         return z;
     }
 
-    function JUMPDEST() public payable {
-        assembly {
-            jumpdest()
-        }
+    //TODO
+//    function JUMPDEST() public payable {
+//        assembly {
+//            jumpdest()
+//        }
+//    }
+
+    function PUSH1(uint8 x) public payable returns (uint) {
+        return x;
     }
 
-    function PUSH1() public payable {
-        assembly {
-            push1(0x01)
-        }
+    function PUSH2(uint16 x) public payable returns (uint) {
+        return x;
     }
 
-    function PUSH2() public payable {
-        assembly {
-            push2(0x0102)
-        }
+    function PUSH3(uint24 x) public payable returns (uint) {
+        return x;
     }
 
-    function PUSH3() public payable {
-        assembly {
-            push3(0x010203)
-        }
+    function PUSH4(uint32 x) public payable returns (uint) {
+        return x;
     }
 
-    function PUSH4() public payable {
-        assembly {
-            push4(0x01020304)
-        }
+    function PUSH5(uint40 x) public payable returns (uint) {
+        return x;
     }
 
-    function PUSH5() public payable {
-        assembly {
-            push5(0x0102030405)
-        }
+    function PUSH6(uint48 x) public payable returns (uint) {
+        return x;
     }
 
-    function PUSH6() public payable {
-        assembly {
-            push6(0x010203040506)
-        }
+    function PUSH7(uint56 x) public payable returns (uint) {
+        return x;
     }
 
-    function PUSH7() public payable {
-        assembly {
-            push7(0x01020304050607)
-        }
+    function PUSH8(uint64 x) public payable returns (uint) {
+        return x;
     }
 
-    function PUSH8() public payable {
-        assembly {
-            push8(0x0102030405060708)
-        }
+    function PUSH9(uint72 x) public payable returns (uint) {
+        return x;
     }
 
-    function PUSH9() public payable {
-        assembly {
-            push9(0x010203040506070809)
-        }
+    function PUSH10(uint80 x) public payable returns (uint) {
+        return x;
     }
 
-    function PUSH10() public payable {
-        assembly {
-            push10(0x0102030405060708090A)
-        }
+    function PUSH11(uint88 x) public payable returns (uint) {
+        return x;
     }
 
+    function PUSH12(uint96 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH13(uint104 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH14(uint112 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH15(uint120 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH16(uint128 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH17(uint136 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH18(uint144 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH19(uint152 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH20(uint160 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH21(uint168 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH22(uint176 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH23(uint184 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH24(uint192 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH25(uint200 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH26(uint208 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH27(uint216 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH28(uint224 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH29(uint232 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH30(uint240 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH31(uint248 x) public payable returns (uint) {
+        return x;
+    }
+
+    function PUSH32() public payable returns (uint) {
+        return 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+    }
+
+    function DUP_LOWER(uint256[] memory dupStack) private returns (uint256) {
+        uint256 zero = dupStack[0];
+        uint256 one = dupStack[1];
+        uint256 two = dupStack[2];
+        uint256 three = dupStack[3];
+        uint256 four = dupStack[4];
+        uint256 five = dupStack[5];
+        uint256 six = dupStack[6];
+        uint256 seven = dupStack[7];
+        uint256 eight = dupStack[8];
+        uint256 nine = dupStack[9];
+        uint256 ten = dupStack[10];
+        uint256 eleven = dupStack[11];
+        uint256 twelve = dupStack[12];
+        uint256 thirteen = dupStack[13];
+
+        return dupStack[0];
+    }
+
+    function DUP_HIGHER(uint256[] memory dupStack) private returns (uint256) {
+        uint256 fourteen = dupStack[14];
+        uint256 fifteen = dupStack[15];
+        uint256 sixteen = dupStack[16];
+        uint256 seventeen = dupStack[17];
+        uint256 eighteen = dupStack[18];
+        uint256 nineteen = dupStack[19];
+        uint256 twenty = dupStack[19];
+        uint256 twentyOne = dupStack[19];
+        uint256 twentyTwo = dupStack[19];
+        uint256 twentyThree = dupStack[19];
+        uint256 twentyFour = dupStack[19];
+        uint256 twentyFive = dupStack[19];
+        uint256 twentySix = dupStack[19];
+        uint256 twentySeven = dupStack[19];
+
+        return dupStack[19];
+    }
+
+    function DUP_ALL() public payable returns (uint256) {
+        uint256[] memory dupStack = new uint256[](30);
+        DUP_LOWER(dupStack);
+        DUP_HIGHER(dupStack);
+
+        return 0;
+    }
 }
