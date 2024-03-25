@@ -29,25 +29,46 @@ interface Energy {
     function balanceOf(address _owner) external view returns (uint256 balance);
 
     /// @notice transfer '_amount' of VeThor from msg sender to account '_to'
-    function transfer(address _to, uint256 _amount) external returns (bool success);
+    function transfer(
+        address _to,
+        uint256 _amount
+    ) external returns (bool success);
 
     /// @notice It's not a VIP180(ERC20)'s standard method.
     /// transfer '_amount' of VeThor from account '_from' to account '_to'
     /// If account '_from' is an external account, '_from' must be the msg sender, or
     /// if account '_from' is a contract account, msg sender must be the master of contract '_from'.
-    function move(address _from, address _to, uint256 _amount) external returns (bool success);
+    function move(
+        address _from,
+        address _to,
+        uint256 _amount
+    ) external returns (bool success);
 
     /// @notice It's a VIP180(ERC20)'s standard method.
-    function transferFrom(address _from, address _to, uint256 _amount) external returns (bool success);
+    function transferFrom(
+        address _from,
+        address _to,
+        uint256 _amount
+    ) external returns (bool success);
 
     /// @notice It's a VIP180(ERC20)'s standard method.
     /// @return remaining - remaining amount of VeThor that the '_spender' is able to withdraw from '_owner'.
-    function allowance(address _owner, address _spender) external view returns (uint256 remaining);
+    function allowance(
+        address _owner,
+        address _spender
+    ) external view returns (uint256 remaining);
 
     /// @notice It's a VIP180(ERC20)'s standard method which means approving a '_value' to be transferred to _spender from msg sender.
-    function approve(address _spender, uint256 _value) external returns (bool success);
+    function approve(
+        address _spender,
+        uint256 _value
+    ) external returns (bool success);
 
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
-    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
+    event Approval(
+        address indexed _owner,
+        address indexed _spender,
+        uint256 _value
+    );
 }

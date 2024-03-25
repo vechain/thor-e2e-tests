@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
+contract HelloWorld {
+    function hello() public pure returns (string memory) {
+        return 'Hello, World!';
+    }
+}
 /**
- * @title OpcodeTests
+ * @title contract IndividualOpCodes
  * @dev This contract is used to test the different opcodes in the Ethereum Virtual Machine (EVM)
  */
-
-contract OpcodeTests {
+contract IndividualOpCodes {
     function STOP() public payable {
         assembly {
             stop()
@@ -17,7 +21,7 @@ contract OpcodeTests {
         assembly {
             let z := add(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -25,7 +29,7 @@ contract OpcodeTests {
         assembly {
             let z := mul(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -33,7 +37,7 @@ contract OpcodeTests {
         assembly {
             let z := sub(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -41,7 +45,7 @@ contract OpcodeTests {
         assembly {
             let z := div(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -49,7 +53,7 @@ contract OpcodeTests {
         assembly {
             let z := sdiv(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -57,7 +61,7 @@ contract OpcodeTests {
         assembly {
             let z := mod(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -65,23 +69,31 @@ contract OpcodeTests {
         assembly {
             let z := smod(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
-    function ADDMOD(uint256 x, uint256 y, uint256 z) public payable returns (uint256) {
+    function ADDMOD(
+        uint256 x,
+        uint256 y,
+        uint256 z
+    ) public payable returns (uint256) {
         assembly {
             let w := addmod(x, y, z)
             mstore(0x20, w)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
-    function MULMOD(uint256 x, uint256 y, uint256 z) public payable returns (uint256) {
+    function MULMOD(
+        uint256 x,
+        uint256 y,
+        uint256 z
+    ) public payable returns (uint256) {
         assembly {
             let w := mulmod(x, y, z)
             mstore(0x20, w)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -89,24 +101,24 @@ contract OpcodeTests {
         assembly {
             let z := exp(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
     function SIGNEXTEND() public payable returns (uint256) {
         assembly {
-        // Load the value from memory
+            // Load the value from memory
             let value := mload(0x40) // Load the first 32 bytes of memory
 
-        // Extend the value from 16 bits to 32 bits
-        // Note: SIGNEXTEND opcode extends the value to 256 bits, so we need to shift it back to 32 bits
+            // Extend the value from 16 bits to 32 bits
+            // Note: SIGNEXTEND opcode extends the value to 256 bits, so we need to shift it back to 32 bits
             value := signextend(15, value) // Sign-extend the value from 16 to 32 bits
 
-        // Store the extended value back to memory
+            // Store the extended value back to memory
             mstore(0x40, value)
 
-        // Return the memory pointer
-            return (0x40, 0x20)
+            // Return the memory pointer
+            return(0x40, 0x20)
         }
     }
 
@@ -114,7 +126,7 @@ contract OpcodeTests {
         assembly {
             let z := lt(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -122,7 +134,7 @@ contract OpcodeTests {
         assembly {
             let z := gt(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -130,7 +142,7 @@ contract OpcodeTests {
         assembly {
             let z := slt(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -138,7 +150,7 @@ contract OpcodeTests {
         assembly {
             let z := sgt(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -146,7 +158,7 @@ contract OpcodeTests {
         assembly {
             let z := eq(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -154,7 +166,7 @@ contract OpcodeTests {
         assembly {
             let y := iszero(x)
             mstore(0x20, y)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -162,7 +174,7 @@ contract OpcodeTests {
         assembly {
             let z := and(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -170,7 +182,7 @@ contract OpcodeTests {
         assembly {
             let z := or(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -178,7 +190,7 @@ contract OpcodeTests {
         assembly {
             let z := xor(x, y)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -186,7 +198,7 @@ contract OpcodeTests {
         assembly {
             let y := not(x)
             mstore(0x20, y)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -202,7 +214,7 @@ contract OpcodeTests {
         assembly {
             let z := shl(y, x) // Corrected operands order
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -210,7 +222,7 @@ contract OpcodeTests {
         assembly {
             let z := shr(y, x) // Corrected operands order
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -218,7 +230,7 @@ contract OpcodeTests {
         assembly {
             let z := sar(y, x)
             mstore(0x20, z)
-            return (0x20, 0x20)
+            return(0x20, 0x20)
         }
     }
 
@@ -286,7 +298,11 @@ contract OpcodeTests {
         return z;
     }
 
-    function CALLDATACOPY(uint256 x, uint256 y, uint256 z) public payable returns (bytes memory) {
+    function CALLDATACOPY(
+        uint256 x,
+        uint256 y,
+        uint256 z
+    ) public payable returns (bytes memory) {
         bytes memory data = new bytes(z);
         assembly {
             calldatacopy(add(data, 0x20), y, z)
@@ -302,7 +318,11 @@ contract OpcodeTests {
         return z;
     }
 
-    function CODECOPY(uint256 s, uint256 f, uint256 t) public payable returns (bytes memory) {
+    function CODECOPY(
+        uint256 s,
+        uint256 f,
+        uint256 t
+    ) public payable returns (bytes memory) {
         bytes memory data = new bytes(s);
         assembly {
             codecopy(add(data, 0x20), f, t)
@@ -326,7 +346,12 @@ contract OpcodeTests {
         return z;
     }
 
-    function EXTCODECOPY(address x, uint256 f, uint256 t, uint256 s) public payable returns (bytes memory) {
+    function EXTCODECOPY(
+        address x,
+        uint256 f,
+        uint256 t,
+        uint256 s
+    ) public payable returns (bytes memory) {
         bytes memory data = new bytes(s);
         assembly {
             extcodecopy(x, add(data, 0x20), f, t)
@@ -342,7 +367,11 @@ contract OpcodeTests {
         return z;
     }
 
-    function RETURNDATACOPY(uint256 x, uint256 y, uint256 z) public payable returns (bytes memory) {
+    function RETURNDATACOPY(
+        uint256 x,
+        uint256 y,
+        uint256 z
+    ) public payable returns (bytes memory) {
         bytes memory data = new bytes(z);
         assembly {
             returndatacopy(add(data, 0x20), y, z)
@@ -473,29 +502,7 @@ contract OpcodeTests {
         }
         return y;
     }
-
-    //TODO
-//    function JUMP(uint256 x) public payable {
-//        assembly {
-//            jump(x)
-//        }
-//    }
-// TODO
-//    function JUMPI(uint256 x, uint256 y) public payable {
-//        assembly {
-//            jumpi(x, y)
-//        }
-//    }
-
-    //TODO
-//    function PC() public payable returns (uint256) {
-//        uint256 z;
-//        assembly {
-//            z := pc()
-//        }
-//        return z;
-//    }
-
+    
     function MSIZE() public payable returns (uint256) {
         uint256 z;
         assembly {
@@ -511,13 +518,6 @@ contract OpcodeTests {
         }
         return z;
     }
-
-    //TODO
-//    function JUMPDEST() public payable {
-//        assembly {
-//            jumpdest()
-//        }
-//    }
 
     function PUSH1(uint8 x) public payable returns (uint) {
         return x;
@@ -644,7 +644,8 @@ contract OpcodeTests {
     }
 
     function PUSH32() public payable returns (uint) {
-        return 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+        return
+            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
     }
 
     function DUP_LOWER(uint256[] memory dupStack) private returns (uint256) {
@@ -691,5 +692,104 @@ contract OpcodeTests {
         DUP_HIGHER(dupStack);
 
         return 0;
+    }
+
+    function LOG0(uint256 x, uint256 y) public payable {
+        assembly {
+            log0(x, y)
+        }
+    }
+
+    function LOG1(uint256 x, uint256 y, uint256 z) public payable {
+        assembly {
+            log1(x, y, z)
+        }
+    }
+
+    function LOG2(uint256 x, uint256 y, uint256 z, uint256 w) public payable {
+        assembly {
+            log2(x, y, z, w)
+        }
+    }
+
+    function LOG3(
+        uint256 x,
+        uint256 y,
+        uint256 z,
+        uint256 w,
+        uint256 v
+    ) public payable {
+        assembly {
+            log3(x, y, z, w, v)
+        }
+    }
+
+    function LOG4(
+        uint256 x,
+        uint256 y,
+        uint256 z,
+        uint256 w,
+        uint256 v,
+        uint256 u
+    ) public payable {
+        assembly {
+            log4(x, y, z, w, v, u)
+        }
+    }
+
+    function CREATE() public payable {
+        assembly {
+            pop(create(10, 0x123, 32))
+        }
+    }
+
+    function CALL() public payable {
+        assembly {
+            pop(call(10, 0x123, 32, 32, 32, 32, 32))
+        }
+    }
+
+    function CALLCODE() public payable {
+        assembly {
+            pop(callcode(10, 0x123, 32, 32, 32, 32, 32))
+        }
+    }
+
+    function RETURN(uint256 x) public payable returns (uint256) {
+        return x;
+    }
+
+    function DELEGATECALL() public payable {
+        assembly {
+            pop(delegatecall(10, 0x123, 32, 32, 32, 32))
+        }
+    }
+
+    function CREATE2() public payable {
+        assembly {
+            pop(create2(10, 0x123, 32, 32))
+        }
+    }
+
+    function STATICCALL() public payable {
+        assembly {
+            pop(staticcall(10, 0x123, 32, 32, 32, 32))
+        }
+    }
+
+    function REVERT() public payable {
+        require(false, 'Revert');
+    }
+
+    function INVALID() public payable {
+        assembly {
+            invalid()
+        }
+    }
+
+    function SELFDESTRUCT(address x) public payable {
+        assembly {
+            selfdestruct(x)
+        }
     }
 }

@@ -22,6 +22,9 @@ const config: HardhatUserConfig = {
                     },
                 },
             },
+            {
+                version: '0.5.16',
+            },
         ],
     },
     networks: {

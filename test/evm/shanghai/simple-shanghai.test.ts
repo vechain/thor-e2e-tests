@@ -11,7 +11,7 @@ describe('Simple Shanghai', () => {
         await wallet.waitForFunding()
     })
 
-    it('should NOT be able to deploy a paris contract', async () => {
+    it('should fail to deploy a shanghai contract', async () => {
         const tx = await wallet.sendClauses(
             [
                 {

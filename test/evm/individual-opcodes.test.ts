@@ -1,45 +1,39 @@
 import { ThorWallet } from '../../src/wallet'
-import { OpcodeTests__factory as Opcodes } from '../../typechain-types'
 import { Contract } from '@vechain/sdk-network'
+import { IndividualOpCodes__factory as Opcodes } from '../../typechain-types'
 import { Node1Client } from '../../src/thor-client'
 import {
     addAddressPadding,
     addUintPadding,
 } from '../../src/utils/padding-utils'
-import { ethers } from 'ethers'
-import { TransactionUtils } from '@vechain/sdk-core'
-import exp from 'node:constants'
 
 const opcodesInterface = Opcodes.createInterface()
 
-const zeroPadValue = (value: string) => ethers.zeroPadValue(value, 32).slice(2)
-
 /**
- * TODO: Missed Opcodes:
- * - STOP
- * - ADDRESS
+ * TODO - Missing Tests:
+ * - JUMP
+ * - JUMPI
+ * - PC
+ * - JUMPDEST
+ * - SWAP 1-16
  */
 
-describe('EVM Opcodes', () => {
+describe('Individual OpCodes', () => {
     let wallet: ThorWallet
     let opcodes: Contract
-    let deploymentTarget: string
     const caller = '0xf077b491b355e64048ce21e3a6fc4751eeea77fa'
     const paddedCaller = addAddressPadding(caller) //remove 0x
         .slice(2)
-
     beforeAll(async () => {
         wallet = ThorWallet.new(true)
         opcodes = await wallet.deployContract(Opcodes.bytecode, Opcodes.abi)
-
-        const targetPrefix = (await Node1Client.getDebugTargetPrefix(
-            opcodes.deployTransactionReceipt?.meta.txID as string,
-        )) as string
-
-        deploymentTarget = `${targetPrefix}/0`
     })
 
-    const traceContractCall = async (data: string, name: string) => {
+    const traceContractCall = async (
+        data: string,
+        name: string,
+        isFailure = false,
+    ) => {
         const clause = {
             to: opcodes.address,
             value: '0x1',
@@ -49,13 +43,13 @@ describe('EVM Opcodes', () => {
         const debugged = await Node1Client.traceContractCall({
             ...clause,
             caller,
-            gas: TransactionUtils.intrinsicGas([clause]),
+            gas: 1_000_000,
         })
 
         expect(debugged.httpCode).toBe(200)
         expect(debugged.body).toBeDefined()
         expect(debugged.body.failed, `Trace should succeed for ${name}`).toBe(
-            false,
+            isFailure,
         )
 
         return debugged.body
@@ -139,14 +133,16 @@ describe('EVM Opcodes', () => {
             expected:
                 '0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000',
         },
-        // TODO: Enable this test when all tests are complete
-        // CODESIZE: { input: [], expected: zeroPadValue('0x1082') },
-        // TODO: This test is failing, need to investigate
-        // CODECOPY: {
-        //     input: [10n, 10n, 10n],
-        //     expected:
-        //         '0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a021a5760003560e01c8000000000000000000000000000000000000000000000',
-        // },
+        CODESIZE: {
+            input: [],
+            expected:
+                '0000000000000000000000000000000000000000000000000000000000003b19',
+        },
+        CODECOPY: {
+            input: [10n, 10n, 10n],
+            expected:
+                '0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a06675760003560e01c8000000000000000000000000000000000000000000000',
+        },
         // BigNumber(2).pow(0) <= value <= BigNumber(2).pow(8) - 1
         PUSH1: {
             input: [BigInt(2) ^ BigInt(4)],
@@ -309,6 +305,38 @@ describe('EVM Opcodes', () => {
             expected:
                 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
         },
+        CREATE: {
+            input: [],
+            expected: '',
+        },
+        CALL: {
+            input: [],
+            expected: '',
+        },
+        CALLCODE: {
+            input: [],
+            expected: '',
+        },
+        RETURN: {
+            input: [11234n],
+            expected: addUintPadding(11234n),
+        },
+        DELEGATECALL: {
+            input: [],
+            expected: '',
+        },
+        CREATE2: {
+            input: [],
+            expected: '',
+        },
+        STATICCALL: {
+            input: [],
+            expected: '',
+        },
+        SELFDESTRUCT: {
+            input: [caller],
+            expected: '',
+        },
     }
 
     it.each(Object.entries(reusableTests))(
@@ -335,7 +363,7 @@ describe('EVM Opcodes', () => {
         const balance = BigInt(`0x${debugged.returnValue}`)
 
         expect(
-            debugged.body.structLogs.some((log: any) => log.op === 'BALANCE'),
+            debugged.structLogs.some((log: any) => log.op === 'BALANCE'),
         ).toEqual(true)
         expect(balance).toBeGreaterThan(0)
     })
@@ -347,7 +375,7 @@ describe('EVM Opcodes', () => {
         'should give the correct output for opcode: DUP%s',
         async (dupN) => {
             const debugged = await traceContractCall(
-                opcodesInterface.encodeFunctionData('DUP_ALL', []),
+                opcodesInterface.encodeFunctionData('DUP_ALL'),
                 `DUP${dupN}`,
             )
 
@@ -358,4 +386,84 @@ describe('EVM Opcodes', () => {
             expect(relevantStructLogs.length).toBeGreaterThan(0)
         },
     )
+
+    const logTests = {
+        LOG0: [1n, 3n],
+        LOG1: [1n, 3n, 5n],
+        LOG2: [1n, 3n, 5n, 7n],
+        LOG3: [1n, 3n, 5n, 7n, 9n],
+        LOG4: [1n, 3n, 5n, 7n, 9n, 11n],
+    }
+
+    it.each(Object.entries(logTests))(
+        'should give the correct output for opcode: %s',
+        async (logN, input) => {
+            const debugged = await traceContractCall(
+                opcodesInterface.encodeFunctionData(logN as any, input as any),
+                logN,
+            )
+
+            const relevantStructLogs = debugged.structLogs.filter(
+                (log: any) => log.op === logN,
+            )
+
+            expect(relevantStructLogs.length).toBeGreaterThan(0)
+
+            const simulation = await simulateContractCall(
+                opcodesInterface.encodeFunctionData(logN as any, input as any),
+            )
+            const relevantEvent = simulation?.[0]?.events?.[0]
+
+            expect(relevantEvent).toBeDefined()
+            expect(relevantEvent?.topics?.length).toBe(input.length - 2)
+        },
+    )
+
+    it('should give the correct output for opcode: REVERT', async () => {
+        const debugged = await traceContractCall(
+            opcodesInterface.encodeFunctionData('REVERT'),
+            'REVERT',
+            true,
+        )
+
+        const relevantStructLogs = debugged.structLogs.filter(
+            (log: any) => log.op === 'REVERT',
+        )
+
+        expect(relevantStructLogs.length).toBeGreaterThan(0)
+    })
+
+    it('should give the correct output for opcode: INVALID', async () => {
+        const debugged = await traceContractCall(
+            opcodesInterface.encodeFunctionData('INVALID'),
+            'INVALID',
+            true,
+        )
+
+        expect(debugged.structLogs[debugged.structLogs.length - 1].error).toBe(
+            'invalid opcode 0xfe',
+        )
+    })
+
+    it('should give the correct output for opcode: STOP', async () => {
+        const debugged = await traceContractCall(
+            opcodesInterface.encodeFunctionData('STOP'),
+            'STOP',
+        )
+
+        expect(debugged.structLogs[debugged.structLogs.length - 1].op).toBe(
+            'STOP',
+        )
+    })
+
+    it('should give the correct output for opcode: ADDRESS', async () => {
+        const debugged = await traceContractCall(
+            opcodesInterface.encodeFunctionData('ADDRESS'),
+            'ADDRESS',
+        )
+
+        expect(debugged.returnValue).toBe(
+            addAddressPadding(opcodes.address).slice(2),
+        )
+    })
 })

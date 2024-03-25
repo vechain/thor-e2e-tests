@@ -9,22 +9,30 @@ pragma solidity 0.8.20;
 /// Signer address is releated to sign a block, endorsor address is used for charging miner's fee and identity is used for identifying the proposer.
 
 interface Authority {
-
     /// @return executor address
-    function executor() external view returns(address);
+    function executor() external view returns (address);
 
     /// @notice add a proposer to the candidates lists.
-    function add(address _signer, address _endorsor, bytes32 _identity) external;
+    function add(
+        address _signer,
+        address _endorsor,
+        bytes32 _identity
+    ) external;
 
     /// @notice remove proposer '_signer' from the candidates lists.
     function revoke(address _signer) external;
 
     /// @notice get information about proposer "_signer"
-    function get(address _signer) external view returns(bool listed, address endorsor, bytes32 identity, bool active);
+    function get(
+        address _signer
+    )
+        external
+        view
+        returns (bool listed, address endorsor, bytes32 identity, bool active);
 
     /// @notice get the first proposer in the candidates list.
-    function first() external view returns(address);
+    function first() external view returns (address);
 
     /// @notice get next one of proposer "_signer"
-    function next(address _signer) external view returns(address);
+    function next(address _signer) external view returns (address);
 }
