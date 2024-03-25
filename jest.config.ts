@@ -2,15 +2,6 @@ import type { Config } from 'jest'
 
 const IS_GH_ACTIONS = process.env.GITHUB_ACTIONS === 'true'
 
-// Default to Paris EVM
-const EVM_TARGET = process.env.EVM_TARGET || 'paris'
-const evmTargets = ['paris', 'shanghai'] as const
-const excludedEVMs = evmTargets
-    .filter((evm) => evm !== EVM_TARGET)
-    .map((evm) => `test/evm/${evm}`)
-
-console.log(`Excluding EVMs: ${excludedEVMs}`)
-
 const config: Config = {
     verbose: true,
     // seconds to be considered slow
@@ -48,7 +39,6 @@ const config: Config = {
         'jest-expect-message',
     ],
     globalSetup: './test/globalSetup.ts',
-    testPathIgnorePatterns: excludedEVMs,
 }
 
 export default config
