@@ -1,11 +1,15 @@
 import { ThorWallet } from '../../src/wallet'
 import { Contract } from '@vechain/sdk-network'
-import { IndividualOpCodes__factory as Opcodes } from '../../typechain-types'
+import {
+    IndividualOpCodes__factory as Opcodes,
+    SimpleCounterShanghai__factory as ShanghaiCounter,
+} from '../../typechain-types'
 import { Node1Client } from '../../src/thor-client'
 import {
     addAddressPadding,
     addUintPadding,
 } from '../../src/utils/padding-utils'
+import { pollReceipt } from '../../src/transactions'
 
 const opcodesInterface = Opcodes.createInterface()
 
@@ -465,5 +469,27 @@ describe('Individual OpCodes', () => {
         expect(debugged.returnValue).toBe(
             addAddressPadding(opcodes.address).slice(2),
         )
+    })
+
+    it('should give the correct output for opcode: PUSH0', async () => {
+        const tx = await wallet.sendClauses(
+            [
+                {
+                    data: ShanghaiCounter.bytecode,
+                    value: 0,
+                    to: null,
+                },
+            ],
+            false,
+        )
+
+        const receipt = await pollReceipt(tx.id ?? '')
+
+        expect(receipt.reverted).toBe(true)
+
+        const debugged = await Node1Client.debugRevertedClause(tx.id ?? '', 0)
+
+        // 0x5f is the PUSH0 opcode
+        expect(debugged?.body?.error).toEqual('invalid opcode 0x5f')
     })
 })
