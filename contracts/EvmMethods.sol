@@ -2,7 +2,6 @@
 pragma solidity 0.8.20;
 
 contract EvmMethods {
-
     function getBlockHash(uint blockNumber) public view returns (bytes32) {
         return blockhash(blockNumber);
     }
@@ -79,11 +78,17 @@ contract EvmMethods {
         return block.timestamp;
     }
 
-    function requireCondition(bool condition, string memory message) public pure {
+    function requireCondition(
+        bool condition,
+        string memory message
+    ) public pure {
         require(condition, message);
     }
 
-    function assertCondition(bool condition, string memory message) public pure {
+    function assertCondition(
+        bool condition,
+        string memory message
+    ) public pure {
         assert(condition);
     }
 
@@ -91,12 +96,18 @@ contract EvmMethods {
         revert(message);
     }
 
-    function callExternalFunction(address target, bytes memory data) public returns (bool, bytes memory) {
+    function callExternalFunction(
+        address target,
+        bytes memory data
+    ) public returns (bool, bytes memory) {
         (bool success, bytes memory result) = target.call(data);
         return (success, result);
     }
 
-    function delegateCallExternalFunction(address target, bytes memory data) public returns (bool, bytes memory) {
+    function delegateCallExternalFunction(
+        address target,
+        bytes memory data
+    ) public returns (bool, bytes memory) {
         (bool success, bytes memory result) = target.delegatecall(data);
         return (success, result);
     }
@@ -106,12 +117,13 @@ contract EvmMethods {
     }
 
     function decodeData(bytes memory data) public pure returns (uint256) {
-        (uint256 value) = abi.decode(data, (uint256));
+        uint256 value = abi.decode(data, (uint256));
         return value;
     }
 
-    function calculateKeccak256(bytes memory data) public pure returns (bytes32) {
+    function calculateKeccak256(
+        bytes memory data
+    ) public pure returns (bytes32) {
         return keccak256(data);
     }
-
 }

@@ -7,7 +7,26 @@ import { faucetAccountLength, faucetMnemonic } from './src/constants'
 
 const config: HardhatUserConfig = {
     defaultNetwork: 'vechain',
-    solidity: '0.8.20',
+    solidity: {
+        compilers: [
+            {
+                version: '0.8.20',
+            },
+            {
+                version: '0.8.24',
+                settings: {
+                    evmVersion: 'shanghai',
+                    optimizer: {
+                        enabled: true,
+                        runs: 200,
+                    },
+                },
+            },
+            {
+                version: '0.5.16',
+            },
+        ],
+    },
     networks: {
         hardhat: {},
         vechain: {

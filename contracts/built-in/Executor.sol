@@ -13,7 +13,10 @@ interface Executor {
     /// @notice proposing a voting from a approver
     /// @param _target a contract address, it will be executed if the voting is passed.
     /// @param _data call data, usually composed to method ID plus input data.
-    function propose(address _target, bytes memory _data) external returns(bytes32);
+    function propose(
+        address _target,
+        bytes memory _data
+    ) external returns (bytes32);
 
     /// @notice approving a voting from a approver
     /// @param _proposalID identify a voting

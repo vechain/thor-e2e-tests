@@ -8,6 +8,8 @@ import { ThorWallet } from '../../../src/wallet'
 const SIMPLE_STORAGE_KEY =
     '0x0000000000000000000000000000000000000000000000000000000000000000'
 
+const addPaddingWithPrefix = (value: number) => `0x${addUintPadding(value)}`
+
 const setSimpleStorage = async (
     contractAddress: string,
     amount: number,
@@ -61,7 +63,7 @@ describe('GET /accounts/{address}/storage', function () {
         expect(res.success, 'API response should be a success').toBeTrue()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(res.body, 'Expected Response Body').toEqual({
-            value: addUintPadding(amount),
+            value: addPaddingWithPrefix(amount),
         })
     })
 
@@ -90,7 +92,7 @@ describe('GET /accounts/{address}/storage', function () {
         expect(res.success, 'API response should be a success').toBeTrue()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(res.body, 'Expected Response Body').toEqual({
-            value: addUintPadding(newAmount),
+            value: addPaddingWithPrefix(newAmount),
         })
 
         // Check the storage position before the transaction
@@ -103,7 +105,7 @@ describe('GET /accounts/{address}/storage', function () {
         expect(historic.success, 'API response should be a success').toBeTrue()
         expect(historic.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(historic.body, 'Expected Response Body').toEqual({
-            value: addUintPadding(startAmount),
+            value: addPaddingWithPrefix(startAmount),
         })
     })
 
