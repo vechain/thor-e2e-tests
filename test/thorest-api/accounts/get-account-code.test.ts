@@ -5,6 +5,10 @@ import { SimpleCounter__factory } from '../../../typechain-types'
 import { revisions } from '../../../src/constants'
 import { generateAddresses, ThorWallet } from '../../../src/wallet'
 
+/**
+ * @group api
+ * @group accounts
+ */
 describe('GET /accounts/{address}/code', function () {
     const accountAddress = generateAddresses(4)
 

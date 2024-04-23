@@ -22,6 +22,10 @@ const opcodesInterface = Opcodes.createInterface()
  * - SWAP 1-16
  */
 
+/**
+ * @group opcodes
+ * @group evm
+ */
 describe('Individual OpCodes', () => {
     let wallet: ThorWallet
     let opcodes: Contract
@@ -344,7 +348,7 @@ describe('Individual OpCodes', () => {
     }
 
     it.each(Object.entries(reusableTests))(
-        'should give the correct output for opcode:  %s',
+        'should give the correct output for opcode: %s',
         async (name, { input, expected }) => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData(name as any, input as any),

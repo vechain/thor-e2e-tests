@@ -1,6 +1,10 @@
 import { Node1Client } from '../../../src/thor-client'
 import { generateAddress, ThorWallet } from '../../../src/wallet'
 
+/**
+ * @group api
+ * @group websockets
+ */
 describe('WS /subscriptions/txpool', () => {
     it('should be able to subscribe', async () => {
         const txs: { id: string }[] = []

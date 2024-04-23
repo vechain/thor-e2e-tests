@@ -45,8 +45,12 @@ const buildRequestFromTransfer = (
 
 type EventLogFilterRequest = components['schemas']['EventLogFilterRequest']
 
+/**
+ * @group api
+ * @group events
+ */
 describe('POST /logs/event', () => {
-    let transferDetails = getTransferDetails()
+    const transferDetails = getTransferDetails()
 
     it('should find a log with all parameters set', async () => {
         const transfer = await readRandomTransfer()

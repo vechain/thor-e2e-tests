@@ -9,6 +9,10 @@ import {
 import { revisions } from '../../../src/constants'
 import { readRandomTransfer, Transfer } from '../../../src/populated-data'
 
+/**
+ * @group api
+ * @group blocks
+ */
 describe('GET /blocks/{revision}', function () {
     let transfer: Transfer
 

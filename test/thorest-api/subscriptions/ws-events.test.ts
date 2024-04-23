@@ -6,6 +6,10 @@ import { addAddressPadding } from '../../../src/utils/padding-utils'
 import { components } from '../../../src/open-api-types'
 import { generateAddress } from '../../../src/wallet'
 
+/**
+ * @group api
+ * @group websockets
+ */
 describe('WS /subscriptions/event', () => {
     it('should be able to subscribe', async () => {
         const events: components['schemas']['SubscriptionEventResponse'][] = []

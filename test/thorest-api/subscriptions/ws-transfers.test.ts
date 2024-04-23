@@ -3,6 +3,10 @@ import { fundAccount } from '../../../src/account-faucet'
 import { components } from '../../../src/open-api-types'
 import { generateAddress } from '../../../src/wallet'
 
+/**
+ * @group api
+ * @group websockets
+ */
 describe('WS /subscriptions/transfer', () => {
     it('should be able to subscribe', async () => {
         const events: components['schemas']['SubscriptionTransferResponse'][] =

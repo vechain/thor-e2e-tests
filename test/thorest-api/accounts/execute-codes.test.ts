@@ -38,8 +38,12 @@ const READ_ONLY_REQUEST = (address: string) => {
     }
 }
 
+/**
+ * @group api
+ * @group accounts
+ */
 describe('POST /accounts/*', function () {
-    let wallet = ThorWallet.new(true)
+    const wallet = ThorWallet.new(true)
 
     beforeAll(async () => {
         await wallet.waitForFunding()

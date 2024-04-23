@@ -2,6 +2,10 @@ import { Node1Client } from '../../../src/thor-client'
 import assert from 'node:assert'
 import { readRandomTransfer } from '../../../src/populated-data'
 
+/**
+ * @group api
+ * @group transactions
+ */
 describe('GET /transactions/{id}', function () {
     it('should get a transaction', async function () {
         const transfer = await readRandomTransfer()

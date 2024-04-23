@@ -1,6 +1,10 @@
 import { Node1Client } from '../../../src/thor-client'
 import { components } from '../../../src/open-api-types'
 
+/**
+ * @group api
+ * @group websockets
+ */
 describe('WS /subscriptions/blocks', () => {
     it('should be able to subscribe', async () => {
         const beats: components['schemas']['SubscriptionBlockResponse'][] = []

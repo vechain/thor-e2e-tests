@@ -1,19 +1,19 @@
 # VechainThor E2E Tests
 
-## Prerequisites
+### Prerequisites
 
 -   [Docker](https://docs.docker.com/install/)
 -   [Yarn](https://yarnpkg.com/en/docs/install)
 -   [Node.js](https://nodejs.org/en/download/)
 
-## Running the tests
+### Running the tests
 
 ```shell
 yarn install
 yarn test
 ```
 
-## Debugging the tests
+### Debugging the tests
 
 -   These steps are useful if you want to debug
 
@@ -22,7 +22,7 @@ yarn docker:up
 yarn test:fast
 ```
 
-## Custom Docker Image
+### Custom Docker Image
 
 -   You can specify a custom docker image by running the following in the [vechain/thor](https://github.com/vechain/thor)
     repo:
@@ -31,6 +31,11 @@ yarn test:fast
 docker build -t vechain/thor:custom .
 export THOR_IMAGE=vechain/thor:custom
 yarn test
+```
+
+### Running a group of tests
+```bash
+yarn test --group=accounts
 ```
 
 ## Scripts

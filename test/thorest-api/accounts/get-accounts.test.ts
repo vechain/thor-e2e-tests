@@ -5,6 +5,10 @@ import { revisions } from '../../../src/constants'
 import { readRandomTransfer, Transfer } from '../../../src/populated-data'
 import { FAUCET_AMOUNT_HEX } from '../../../src/account-faucet'
 
+/**
+ * @group api
+ * @group accounts
+ */
 describe('GET /accounts/{address}', function () {
     const invalidAddresses = [
         '0x00000000',

@@ -22,6 +22,10 @@ import { Contract } from '@vechain/sdk-network'
  * @notice - Copied from: https://github.com/ethereum/go-ethereum/blob/master/tests/solidity/test/opCodes.js
  */
 
+/**
+ * @group opcodes
+ * @group evm
+ */
 describe('EVM Opcodes', () => {
     let wallet: ThorWallet
     let opcodes: Contract
