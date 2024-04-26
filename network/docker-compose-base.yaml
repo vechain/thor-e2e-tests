@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
     base-authority-node:
-        image: ${THOR_IMAGE:-vechain/thor:latest}
+        image: ${THOR_IMAGE:-ghcr.io/vechain/thor:master-latest}
         entrypoint: '/node/config/start.sh'
         volumes:
             - type: bind

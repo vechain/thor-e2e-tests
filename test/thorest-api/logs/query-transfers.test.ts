@@ -32,6 +32,10 @@ const buildRequestFromTransfer = (
 type TransferLogFilterRequest =
     components['schemas']['TransferLogFilterRequest']
 
+/**
+ * @group api
+ * @group events
+ */
 describe('POST /logs/transfers', () => {
     const transferDetails = getTransferDetails()
 

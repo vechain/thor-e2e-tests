@@ -39,6 +39,7 @@ const config: Config = {
         'jest-expect-message',
     ],
     globalSetup: './test/globalSetup.ts',
+    runner: 'groups',
 }
 
 export default config

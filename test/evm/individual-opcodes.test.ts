@@ -22,6 +22,10 @@ const opcodesInterface = Opcodes.createInterface()
  * - SWAP 1-16
  */
 
+/**
+ * @group opcodes
+ * @group evm
+ */
 describe('Individual OpCodes', () => {
     let wallet: ThorWallet
     let opcodes: Contract
@@ -344,7 +348,7 @@ describe('Individual OpCodes', () => {
     }
 
     it.each(Object.entries(reusableTests))(
-        'should give the correct output for opcode:  %s',
+        'should give the correct output for opcode: %s',
         async (name, { input, expected }) => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData(name as any, input as any),
@@ -472,24 +476,26 @@ describe('Individual OpCodes', () => {
     })
 
     it('should give the correct output for opcode: PUSH0', async () => {
-        const tx = await wallet.sendClauses(
-            [
-                {
-                    data: ShanghaiCounter.bytecode,
-                    value: 0,
-                    to: null,
-                },
-            ],
-            false,
-        )
+        const clauses = [
+            {
+                data: ShanghaiCounter.bytecode,
+                value: '0x0',
+                to: null,
+            },
+        ]
+
+        const tx = await wallet.sendClauses(clauses, false)
 
         const receipt = await pollReceipt(tx.id ?? '')
 
         expect(receipt.reverted).toBe(true)
 
-        const debugged = await Node1Client.debugRevertedClause(tx.id ?? '', 0)
-
         // 0x5f is the PUSH0 opcode
-        expect(debugged?.body?.error).toEqual('invalid opcode 0x5f')
+        const simulation = await Node1Client.executeAccountBatch({
+            clauses,
+            caller,
+        })
+
+        expect(simulation.body?.[0]?.vmError).toEqual('invalid opcode 0x5f')
     })
 })

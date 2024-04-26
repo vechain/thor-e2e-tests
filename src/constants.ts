@@ -1,7 +1,7 @@
 const validRevisions = [
     'best',
     '1',
-    '0x00000000c05a20fbca2bf6ae3affba6af4a74b800b585bf7a4988aba7aea69f6',
+    '0x00000000960ec8253d43e16dcab39253d8919feef4936c2924419df31d395bbb',
 ]
 
 const validRevisionsNotFound = [

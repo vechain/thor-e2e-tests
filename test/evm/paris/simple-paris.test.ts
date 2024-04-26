@@ -1,6 +1,11 @@
 import { ThorWallet } from '../../../src/wallet'
 import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-types'
 
+/**
+ * @group opcodes
+ * @group evm
+ * @group paris
+ */
 describe('Simple Paris', () => {
     let wallet: ThorWallet
 

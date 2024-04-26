@@ -4,6 +4,10 @@ import assert from 'node:assert'
 import { ThorWallet } from '../../../src/wallet'
 import { components } from '../../../src/open-api-types'
 
+/**
+ * @group api
+ * @group websockets
+ */
 describe('WS /subscriptions/beat2', () => {
     it('should be able to subscribe', async () => {
         const beats: components['schemas']['SubscriptionBeat2Response'][] = []

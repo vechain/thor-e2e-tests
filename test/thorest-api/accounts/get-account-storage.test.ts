@@ -30,8 +30,12 @@ const setSimpleStorage = async (
     )
 }
 
+/**
+ * @group api
+ * @group accounts
+ */
 describe('GET /accounts/{address}/storage', function () {
-    let wallet = ThorWallet.new(true)
+    const wallet = ThorWallet.new(true)
     let simpleStorageAddress: string
 
     beforeAll(async () => {
