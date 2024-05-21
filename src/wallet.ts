@@ -142,7 +142,7 @@ class ThorWallet {
     > => {
         await this.waitForFunding()
 
-        let transaction = await this.buildTransaction(clauses)
+        const transaction = await this.buildTransaction(clauses)
         let encoded: string
 
         await warnIfSimulationFails(clauses, this.address)

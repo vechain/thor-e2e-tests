@@ -48,19 +48,22 @@ describe('GET /accounts/{address}', function () {
         })
     })
 
-    it.each(revisions.valid())('valid revision %s', async function (revision) {
-        const res = await Node1Client.getAccount(
-            transfer.vet.recipient,
-            revision,
-        )
-        expect(res.success, 'API response should be a success').toBeTrue()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(res.body, 'Expected Response Body').toEqual({
-            balance: expect.stringMatching(HEX_REGEX),
-            energy: expect.stringMatching(HEX_REGEX),
-            hasCode: false,
-        })
-    })
+    it.each(revisions.valid(true))(
+        'valid revision %s',
+        async function (revision) {
+            const res = await Node1Client.getAccount(
+                transfer.vet.recipient,
+                revision,
+            )
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Expected Response Body').toEqual({
+                balance: expect.stringMatching(HEX_REGEX),
+                energy: expect.stringMatching(HEX_REGEX),
+                hasCode: false,
+            })
+        },
+    )
 
     it.each(invalidAddresses)('invalid address: %s', async (a) => {
         const res = await Node1Client.getAccount(a as string)

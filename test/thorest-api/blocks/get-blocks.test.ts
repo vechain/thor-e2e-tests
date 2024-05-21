@@ -20,6 +20,14 @@ describe('GET /blocks/{revision}', function () {
         transfer = await readRandomTransfer()
     })
 
+    test('gas limit it equal to 40_000_000', async function () {
+        const block = await Node1Client.getBlock(1, false)
+
+        expect(block.success, 'API response should be a success').toBeTrue()
+        expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(block.body?.gasLimit).toEqual(40_000_000)
+    })
+
     it.each(revisions.valid(true))(
         'can get block for revision: %s',
         async function (revision) {
@@ -72,7 +80,7 @@ describe('GET /blocks/{revision}', function () {
     )
 
     it('should be able get compressed blocks', async function () {
-        const res = await Node1Client.getBlock(transfer.meta?.blockID!, false)
+        const res = await Node1Client.getBlock(transfer.meta?.blockID, false)
 
         expect(res.success, 'API response should be a success').toBeTrue()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -81,7 +89,8 @@ describe('GET /blocks/{revision}', function () {
         const block = res.body as components['schemas']['GetBlockResponse']
 
         const relevantTx = block.transactions!.find(
-            // @ts-ignore
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
             (txID: string) => txID === transfer.meta.txID,
         )
 
@@ -99,7 +108,8 @@ describe('GET /blocks/{revision}', function () {
         const block = res.body as components['schemas']['GetBlockResponse']
 
         const relevantTx = block.transactions!.find(
-            // @ts-ignore
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
             (tx: components['schemas']['Tx']) => tx.id === transfer.meta.txID,
         )
 

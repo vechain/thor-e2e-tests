@@ -1,5 +1,4 @@
 import { Node1Client } from '../src/thor-client'
-import fs from 'fs'
 import {
     populatedDataExists,
     readPopulatedData,
@@ -8,7 +7,6 @@ import {
 } from '../src/populated-data'
 import { ThorWallet } from '../src/wallet'
 import 'jest-expect-message'
-import assert from 'node:assert'
 
 export const POPULATED_DATA_FILENAME = './.chain-data.json'
 

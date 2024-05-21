@@ -86,7 +86,9 @@ export const getTransferDetails = async () => {
             data.transfers.map(async (txId) => {
                 try {
                     return pollReceipt(txId, 10_000)
-                } catch {}
+                } catch {
+                    /* empty */
+                }
             }),
         )
     ).filter((t) => t) as Transfer[]

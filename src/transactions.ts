@@ -17,17 +17,24 @@ export const pollReceipt = async (
 ): Promise<components['schemas']['GetTxReceiptResponse']> => {
     return new Promise<components['schemas']['GetTxReceiptResponse']>(
         (resolve, reject) => {
-            setInterval(async () => {
+            const intervalId = setInterval(async () => {
                 const receipt = await Node1Client.getTransactionReceipt(txId)
 
                 if (receipt.success && receipt.body) {
+                    clearInterval(intervalId) // Clear the interval when the receipt is found
                     resolve(receipt.body)
                 }
             }, 1000)
 
-            setTimeout(() => {
+            const timeoutId = setTimeout(() => {
+                clearInterval(intervalId) // Clear the interval when the timeout occurs
                 reject('Timed out waiting for transaction to be mined: ' + txId)
             }, timeout)
+
+            // Clear the timeout when the promise is settled
+            Promise.race([intervalId, timeoutId]).finally(() => {
+                clearTimeout(timeoutId)
+            })
         },
     )
 }

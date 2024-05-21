@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { components } from './open-api-types'
 
@@ -51,11 +52,32 @@ class ThorClient {
                 resolve(data)
             })
 
-            setTimeout(() => {
+            const timeoutId = setTimeout(() => {
                 ws.unsubscribe()
                 reject(new Error('Timeout waiting for block'))
             }, 15000)
+
+            // Clear the timeout when the promise is settled
+            Promise.race([ws, timeoutId]).finally(() => {
+                clearTimeout(timeoutId)
+            })
         })
+    }
+
+    private openWebsocket<T>(url: string, callback: (data: T) => void) {
+        const ws = new WebSocket(url)
+        ws.onmessage = (event: any) => {
+            const data = JSON.parse(event.data)
+            callback(data)
+        }
+
+        this.subscriptions.push(() => ws.close())
+
+        return {
+            unsubscribe: () => {
+                ws.close()
+            },
+        }
     }
 
     // GET /accounts/{address}
@@ -137,7 +159,7 @@ class ThorClient {
         },
         options?: AxiosRequestConfig,
     ): Promise<Response<Schema['GetTxResponse'] | null>> {
-        let url = new URL(`${this.baseUrl}/transactions/${id}`)
+        const url = new URL(`${this.baseUrl}/transactions/${id}`)
 
         if (queryParams?.raw) {
             url.searchParams.append('raw', queryParams.raw.toString())
@@ -255,7 +277,7 @@ class ThorClient {
             pos?: string
         },
     ) {
-        let url = new URL(`${this.baseWsUrl}/subscriptions/event`)
+        const url = new URL(`${this.baseWsUrl}/subscriptions/event`)
 
         if (queryParameters?.addr) {
             url.searchParams.append('addr', queryParameters.addr)
@@ -294,7 +316,7 @@ class ThorClient {
         },
         callback: (data: Schema['SubscriptionTransferResponse']) => void,
     ) {
-        let url = new URL(`${this.baseWsUrl}/subscriptions/transfer`)
+        const url = new URL(`${this.baseWsUrl}/subscriptions/transfer`)
 
         if (queryParameters.pos) {
             url.searchParams.append('pos', queryParameters.pos)
@@ -421,7 +443,8 @@ class ThorClient {
             return undefined
         }
 
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
         const txIndex = block.body.transactions.indexOf(txId)
 
         return `${block.body.id}/${txIndex}`
@@ -455,22 +478,6 @@ class ThorClient {
         }
     }
 
-    private openWebsocket<T>(url: string, callback: (data: T) => void) {
-        const ws = new WebSocket(url)
-        ws.onmessage = (event: any) => {
-            const data = JSON.parse(event.data)
-            callback(data)
-        }
-
-        this.subscriptions.push(() => ws.close())
-
-        return {
-            unsubscribe: () => {
-                ws.close()
-            },
-        }
-    }
-
     private initBlockSubscription() {
         this.subscribeToBlocks(
             (data: Schema['SubscriptionBlockResponse']) => {},
@@ -498,8 +505,10 @@ class ThorClient {
     }
 }
 
-const Node1Client = new ThorClient('http://localhost:8669')
-const httpClient = new HttpClient('http://localhost:8669')
+const testURL = process.env.TEST_URL || 'http://localhost:8669'
+
+const Node1Client = new ThorClient(testURL)
+const httpClient = new HttpClient(testURL)
 const SDKClient = new _ThorClient(httpClient)
 
 export { Node1Client, SDKClient }

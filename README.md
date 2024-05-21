@@ -38,6 +38,13 @@ yarn test
 yarn test --group=accounts
 ```
 
+### Custom solo url
+```
+TEST_URL=http://localhost:8669
+```
+This is added to be able to configure the url of the client for future network hub integration. 
+We need to keep same genesis for now.
+
 ## Scripts
 
 ---

@@ -4,5 +4,6 @@ jest.retryTimes(3, { logErrorsBeforeRetry: false })
 
 afterAll(async () => {
     Node1Client.closeAllSubscriptions()
+    jest.clearAllTimers()
     SDKClient.destroy()
 })

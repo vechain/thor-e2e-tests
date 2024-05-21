@@ -1,6 +1,6 @@
 {
     "launchTime": 1703180212,
-    "gasLimit": 10000000,
+    "gasLimit": 40000000,
     "extraData": "My custom VeChain",
     "forkConfig": {
         "VIP191": 0,
