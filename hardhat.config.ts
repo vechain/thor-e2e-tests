@@ -1,12 +1,10 @@
 import { HardhatUserConfig } from 'hardhat/config'
+import '@typechain/hardhat'
+import '@nomicfoundation/hardhat-ethers'
+import '@nomicfoundation/hardhat-chai-matchers'
 import '@nomicfoundation/hardhat-toolbox'
-import '@nomiclabs/hardhat-truffle5'
-import '@vechain/sdk-hardhat-plugin'
-import 'hardhat-jest'
-import { faucetAccountLength, faucetMnemonic } from './src/constants'
 
 const config: HardhatUserConfig = {
-    defaultNetwork: 'vechain',
     solidity: {
         compilers: [
             {
@@ -26,17 +24,6 @@ const config: HardhatUserConfig = {
                 version: '0.5.16',
             },
         ],
-    },
-    networks: {
-        hardhat: {},
-        vechain: {
-            url: 'http://127.0.0.1:8669',
-            accounts: {
-                mnemonic: faucetMnemonic.join(' '),
-                count: faucetAccountLength,
-            },
-            gas: 10_000_000,
-        },
     },
 }
 
