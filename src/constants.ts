@@ -1,8 +1,6 @@
-const validRevisions = [
-    'best',
-    '1',
-    '0x000000014c9838232289435652214344b622140d1859b6281f9e80a910adc525',
-]
+import { getGenesisBlockId } from './populated-data'
+
+const validRevisions = ['best', '1', getGenesisBlockId()]
 
 const validRevisionsNotFound = [
     '123412341',

@@ -51,6 +51,11 @@ const formatTxReceipt = (
         meta: txReceipt.meta as Transfer['meta'],
     }
 }
+export const getGenesisBlockId = () => {
+    const data = readPopulatedData()
+
+    return data.genesisBlockId
+}
 
 export const readRandomTransfer = async (): Promise<Transfer> => {
     const data = readPopulatedData()

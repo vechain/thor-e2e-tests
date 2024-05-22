@@ -11,6 +11,7 @@ import 'jest-expect-message'
 export const POPULATED_DATA_FILENAME = './.chain-data.json'
 
 export type PopulatedChainData = {
+    genesisBlockId: string
     transfers: string[]
 }
 
@@ -73,9 +74,14 @@ const populate = async () => {
         removePopulatedData()
     }
 
+    console.log('\nGetting id of genesis block\n')
+    const genesisBlock = await Node1Client.getBlock(0)
+    const genesisBlockId = genesisBlock.body?.id || 'invalid'
+
     const transfers = await populateVetAndVtho()
 
     const data: PopulatedChainData = {
+        genesisBlockId,
         transfers,
     }
 
