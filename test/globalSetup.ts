@@ -1,5 +1,4 @@
 import { Node1Client } from '../src/thor-client'
-import fs from 'fs'
 import {
     populatedDataExists,
     readPopulatedData,
@@ -8,11 +7,11 @@ import {
 } from '../src/populated-data'
 import { ThorWallet } from '../src/wallet'
 import 'jest-expect-message'
-import assert from 'node:assert'
 
 export const POPULATED_DATA_FILENAME = './.chain-data.json'
 
 export type PopulatedChainData = {
+    genesisBlockId: string
     transfers: string[]
 }
 
@@ -75,9 +74,14 @@ const populate = async () => {
         removePopulatedData()
     }
 
+    console.log('\nGetting id of genesis block\n')
+    const genesisBlock = await Node1Client.getBlock(0)
+    const genesisBlockId = genesisBlock.body?.id || 'invalid'
+
     const transfers = await populateVetAndVtho()
 
     const data: PopulatedChainData = {
+        genesisBlockId,
         transfers,
     }
 

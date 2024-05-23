@@ -1,4 +1,4 @@
-import { Node1Client, Response, Schema } from '../../../src/thor-client'
+import { Node1Client } from '../../../src/thor-client'
 import {
     getTransferDetails,
     readRandomTransfer,
