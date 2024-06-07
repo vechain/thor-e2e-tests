@@ -128,6 +128,15 @@ class ThorWallet {
             tx = new Transaction(transaction.body, signature)
         }
 
+        return tx
+    }
+
+    public signAndEncodeTx = async (
+        transaction: Transaction,
+        delegationSignature?: Buffer,
+    ) => {
+        const tx = await this.signTransaction(transaction, delegationSignature)
+
         return tx.encoded.toString('hex')
     }
 
@@ -149,14 +158,14 @@ class ThorWallet {
 
         if (delegate) {
             const delegated = delegateTx(transaction, this.address)
-            encoded = await this.signTransaction(
+            encoded = await this.signAndEncodeTx(
                 delegated.transaction,
                 delegated.signature,
             )
         } else {
             const tx = new Transaction(transaction)
 
-            encoded = await this.signTransaction(tx)
+            encoded = await this.signAndEncodeTx(tx)
         }
 
         const res = await Node1Client.sendTransaction({
