@@ -4,7 +4,14 @@ import { pollReceipt } from "../../../src/transactions";
 import { Transaction } from "@vechain/sdk-core";
 import hexUtils from "../../../src/utils/hex-utils";
 
-class TransactionDataDrivenTest {
+/**
+ * Represents a data-driven test flow for transactions.
+ * This class is responsible for executing a series of test steps defined in a `TestCasePlan`.
+ * Each test step corresponds to a specific action related to transactions, such as posting a transaction,
+ * retrieving a transaction, retrieving a transaction receipt, or retrieving a transaction block.
+ * The `TestCasePlan` defines the expected results for each test step.
+ */
+class TransactionDataDrivenFlow {
     private readonly plan: TestCasePlan
 
     constructor(plan: TestCasePlan) {
@@ -187,10 +194,11 @@ export {
     compareSentTxWithCreatedTx,
     successfulReceipt,
     checkTxInclusionInBlock,
+
     PostTxExpectedResultBody,
     GetTxExpectedResultBody,
     GetTxReceiptExpectedResultBody,
     GetTxBlockExpectedResultBody,
     TestCasePlan,
-    TransactionDataDrivenTest
+    TransactionDataDrivenFlow
 }

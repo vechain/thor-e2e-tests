@@ -11,8 +11,8 @@ import {
     revertedPostTx,
     successfulPostTx,
     successfulReceipt,
-    TransactionDataDrivenTest
-} from './transaction-data-driven-test'
+    TransactionDataDrivenFlow
+} from './transaction-data-driven-flow'
 
 /**
  * @group api
@@ -77,7 +77,7 @@ describe('POST /transactions', function () {
             }
         };
 
-        const tddt = new TransactionDataDrivenTest(testPlan)
+        const tddt = new TransactionDataDrivenFlow(testPlan)
         await tddt.runTestFlow()
     })
 
@@ -99,7 +99,7 @@ describe('POST /transactions', function () {
             }
 
             // Run the test flow
-            const ddt = new TransactionDataDrivenTest(testPlan)
+            const ddt = new TransactionDataDrivenFlow(testPlan)
             await ddt.runTestFlow()
         })
 
@@ -127,7 +127,7 @@ describe('POST /transactions', function () {
             }
 
             // Run the test flow
-            const ddt = new TransactionDataDrivenTest(testPlan)
+            const ddt = new TransactionDataDrivenFlow(testPlan)
             await ddt.runTestFlow()
         })
 
@@ -160,7 +160,7 @@ describe('POST /transactions', function () {
             }
 
             // Run the test flow
-            const ddt = new TransactionDataDrivenTest(testPlan)
+            const ddt = new TransactionDataDrivenFlow(testPlan)
             await ddt.runTestFlow()
         })
     })
