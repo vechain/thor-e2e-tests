@@ -1,3 +1,4 @@
+import { Transaction } from "@vechain/sdk-core";
 import { components } from "../../../../src/open-api-types";
 import { Response, Schema } from "../../../../src/thor-client";
 
@@ -28,8 +29,9 @@ type PostTxExpectedResultBody = {
 }
 type GetTxExpectedResultBody = Response<Schema['GetTxResponse'] | null>
 type GetTxReceiptExpectedResultBody = components['schemas']['GetTxReceiptResponse']
+type BlockBody = Schema['Block'] & { transactions: Transaction[] }
 type GetTxBlockExpectedResultBody = {
-    block: Response<Schema['Block'] | null>,
+    block: Response<BlockBody | null>,
     txId: string
 }
 

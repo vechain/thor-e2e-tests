@@ -1,6 +1,6 @@
 import { secp256k1, Transaction } from "@vechain/sdk-core"
 import { ThorWallet } from "../../../src/wallet"
-import { successfulPostTx, compareSentTxWithCreatedTx, successfulReceipt, checkTxInclusionInBlock } from "./setup/asserts"
+import { successfulPostTx, compareSentTxWithCreatedTx, successfulReceipt, checkTxInclusionInBlock, checkDelegatedTransaction, checkDelegatedTransactionReceipt } from "./setup/asserts"
 import { TransactionDataDrivenFlow } from "./setup/transaction-data-driven-flow"
 import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-types'
 
@@ -45,16 +45,22 @@ it('should send a tx with delegated payer', async function () {
     const testPlan = {
         postTxStep: {
             rawTx: finalTx.encoded.toString('hex'),
-            expectedResult: (data: any) => successfulPostTx(data)
+            expectedResult: successfulPostTx
         },
         getTxStep: {
-            expectedResult: (sentTx: any) => compareSentTxWithCreatedTx(sentTx, finalTx)
+            expectedResult: (sentTx: any) => {
+                compareSentTxWithCreatedTx(sentTx, finalTx)
+                checkDelegatedTransaction(sentTx, finalTx)
+            }
         },
         getTxReceiptStep: {
-            expectedResult: (receipt: any) => successfulReceipt(receipt, finalTx)
+            expectedResult: (receipt: any) => {
+                successfulReceipt(receipt, finalTx)
+                checkDelegatedTransactionReceipt(receipt, finalTx)
+            }
         },
         getTxBlockStep: {
-            expectedResult: (input: any) => checkTxInclusionInBlock(input)
+            expectedResult: checkTxInclusionInBlock
         }
     };
 

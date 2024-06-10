@@ -36,21 +36,27 @@ const compareSentTxWithCreatedTx = (sentTx: Response<Schema['GetTxResponse'] | n
     expect(body?.dependsOn).toEqual(createdTx.body.dependsOn)
     const hexNonce = createdTx.body.nonce.toString(16)
     expect(body?.nonce).toEqual(hexUtils.addPrefix(hexNonce))
-    expect(body?.delegator).toEqualCaseInsensitive(createdTx.delegator)
     expect(body?.gasPriceCoef).toEqual(createdTx.body.gasPriceCoef)
+}
+
+const checkDelegatedTransaction = (sentTx: Response<Schema['GetTxResponse'] | null>, createdTx: Transaction) => {
+    expect(sentTx.body?.delegator).toEqualCaseInsensitive(createdTx.delegator)
 }
 
 const successfulReceipt = (receipt: components['schemas']['GetTxReceiptResponse'], createdTx: Transaction) => {
     expect(receipt.reverted).toBeFalse()
     expect(receipt.gasPayer).toBeDefined()
-    expect(receipt.gasPayer).toEqualCaseInsensitive(createdTx.delegator)
     expect(receipt.meta?.txID).toEqual(createdTx.id)
     expect(receipt.meta?.txOrigin).toEqualCaseInsensitive(createdTx.origin)
 }
 
+const checkDelegatedTransactionReceipt = (receipt: components['schemas']['GetTxReceiptResponse'], createdTx: Transaction) => {
+    expect(receipt.gasPayer).toEqualCaseInsensitive(createdTx.delegator)
+}
+
 const checkTxInclusionInBlock = (input: GetTxBlockExpectedResultBody) => {
     const { block, txId } = input
-    const { body, success, httpCode } = block
+    const { body, httpCode, success } = block
 
     expect(success).toBeTrue()
     expect(httpCode).toBe(200)
@@ -63,6 +69,8 @@ export {
     successfulPostTx,
     revertedPostTx,
     compareSentTxWithCreatedTx,
+    checkDelegatedTransaction,
     successfulReceipt,
+    checkDelegatedTransactionReceipt,
     checkTxInclusionInBlock
 }

@@ -1,7 +1,6 @@
 import { clauseBuilder, Transaction } from '@vechain/sdk-core'
 import { generateAddress, ThorWallet } from '../../../src/wallet'
 import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-types'
-// import { PostTxExpectedResultBody } from './setup/models'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
 import { revertedPostTx } from './setup/asserts'
 
