@@ -18,9 +18,11 @@ it('should send a tx with delegated payer', async function () {
     )
     expect(contract.address).toBeDefined()
 
+    const parisInterface = ParisCounter.createInterface()
+
     const clauses = [
         {
-            data: '0x8ada066e',
+            data: parisInterface.encodeFunctionData('incrementCounter'),
             value: '0x0',
             to: contract.address,
         },
