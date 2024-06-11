@@ -1,6 +1,9 @@
 import { Node1Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
-import { SimpleCounter__factory } from '../../../typechain-types'
+import {
+    GasEstimation__factory,
+    SimpleCounter__factory,
+} from '../../../typechain-types'
 import { interfaces } from '../../../src/contracts/hardhat'
 import { getBlockRef } from '../../../src/utils/block-utils'
 import { revisions } from '../../../src/constants'
@@ -360,5 +363,56 @@ describe('POST /accounts/*', function () {
             const amount = parseInt(res.body?.[0]?.data?.slice(2) ?? '0', 16)
             expect(amount).toEqual(expiration)
         })
+    })
+
+    it('should estimate correctly for the next block', async () => {
+        const factory = GasEstimation__factory
+
+        const gasInterface = factory.createInterface()
+
+        const contract = await wallet.deployContract(
+            factory.bytecode,
+            factory.abi,
+        )
+
+        const receipt = await contract.transact
+            .setNextBlock()
+            .then((tx) => tx.wait())
+
+        expect(receipt?.reverted).toBeFalse()
+
+        // Estimate the gas for the same block
+        const sameRevisionEstimation = await Node1Client.executeAccountBatch(
+            {
+                clauses: [
+                    {
+                        to: contract.address,
+                        value: '0x0',
+                        data: gasInterface.encodeFunctionData('setNextBlock'),
+                    },
+                ],
+            },
+            // explicitly set the revision to that of the previous transaction
+            receipt?.meta.blockID,
+        )
+
+        const nextBlockEstimation = await Node1Client.executeAccountBatch(
+            {
+                clauses: [
+                    {
+                        to: contract.address,
+                        value: '0x0',
+                        data: gasInterface.encodeFunctionData('setNextBlock'),
+                    },
+                ],
+            },
+            'next',
+        )
+
+        expect(sameRevisionEstimation.success).toBeTrue()
+        expect(nextBlockEstimation.success).toBeTrue()
+        expect(sameRevisionEstimation.body?.[0]?.gasUsed).toBeLessThan(
+            nextBlockEstimation?.body?.[0]?.gasUsed as number,
+        )
     })
 })

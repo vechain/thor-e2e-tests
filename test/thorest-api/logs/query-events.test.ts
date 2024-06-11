@@ -17,10 +17,10 @@ import {
     HEX_REGEX_64,
 } from '../../../src/utils/hex-utils'
 import { components } from '../../../src/open-api-types'
-import { EventsContract__factory as EventsContract } from '../../../typechain-types'
+import { EventsContract__factory } from '../../../typechain-types'
 import { Contract, TransactionReceipt } from '@vechain/sdk-network'
-import { randomFunder } from '../../../src/account-faucet'
 import { addAddressPadding } from '../../../src/utils/padding-utils'
+import { ThorWallet } from '../../../src/wallet'
 
 const buildRequestFromTransfer = (
     transfer: Transfer,
@@ -208,9 +208,7 @@ describe('POST /logs/event', () => {
 
     describe('query by "order"', () => {
         const runQueryEventLogsTest = async (order?: 'asc' | 'desc' | null) => {
-            const { firstBlock, lastBlock, transferCount } =
-                await getTransferDetails()
-
+            const { firstBlock, lastBlock } = await getTransferDetails()
             const response = await Node1Client.queryEventLogs({
                 range: {
                     from: firstBlock,
@@ -459,18 +457,22 @@ describe('POST /logs/event', () => {
 
     describe('query by "criteriaSet"', () => {
         const eventHash =
-            EventsContract.createInterface().getEvent('MyEvent').topicHash
+            EventsContract__factory.createInterface().getEvent(
+                'MyEvent',
+            ).topicHash
 
-        let contract: Contract
+        let contract: Contract<EventsContract__factory.abi>
         let receipt: TransactionReceipt
         let topics: string[]
         let range: any
 
         beforeAll(async () => {
+            const wallet = ThorWallet.new(true)
+            await wallet.waitForFunding()
             const contractFactory = SDKClient.contracts.createContractFactory(
                 EventsContract.abi,
                 EventsContract.bytecode,
-                randomFunder(),
+                wallet.signer,
             )
             await contractFactory.startDeployment()
             contract = await contractFactory.waitForDeployment()

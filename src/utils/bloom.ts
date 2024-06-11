@@ -5,7 +5,7 @@ export function newFilter(bits: Buffer, k: number) {
     const nBits = bits.length * 8
     return {
         contains(key: Buffer) {
-            let hash = blake2b256(key).readUInt32BE(0)
+            let hash = Buffer.from(blake2b256(key)).readUInt32BE(0)
             const delta = (hash >>> 17) | ((hash << 15) >>> 0)
             for (let i = 0; i < k; i++) {
                 const bitPos = hash % nBits

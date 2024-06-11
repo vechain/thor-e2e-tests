@@ -59,9 +59,8 @@ export const delegateTx = (txBody: TransactionBody, senderAddress: string) => {
 
     const encoded = transaction.getSignatureHash(senderAddress)
 
-    const signature = secp256k1.sign(
-        encoded,
-        Buffer.from(fundingAccount.privateKey, 'hex'),
+    const signature = Buffer.from(
+        secp256k1.sign(encoded, Buffer.from(fundingAccount.privateKey, 'hex')),
     )
 
     return {
