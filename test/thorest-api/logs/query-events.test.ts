@@ -461,7 +461,7 @@ describe('POST /logs/event', () => {
                 'MyEvent',
             ).topicHash
 
-        let contract: Contract<EventsContract__factory.abi>
+        let contract: Contract<typeof EventsContract__factory.abi>
         let receipt: TransactionReceipt
         let topics: string[]
         let range: any
@@ -470,8 +470,8 @@ describe('POST /logs/event', () => {
             const wallet = ThorWallet.new(true)
             await wallet.waitForFunding()
             const contractFactory = SDKClient.contracts.createContractFactory(
-                EventsContract.abi,
-                EventsContract.bytecode,
+                EventsContract__factory.abi,
+                EventsContract__factory.bytecode,
                 wallet.signer,
             )
             await contractFactory.startDeployment()
@@ -482,9 +482,8 @@ describe('POST /logs/event', () => {
                 throw new Error('Contract deployment failed')
             }
 
-            const eventAddresses = (
-                (await contract.read.getAddresses()) as string[][]
-            )[0]
+            const eventAddresses =
+                (await contract.read.getAddresses()) as unknown as string[]
             topics = eventAddresses.map(addAddressPadding)
 
             range = {
