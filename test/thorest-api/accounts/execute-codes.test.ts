@@ -396,6 +396,11 @@ describe('POST /accounts/*', function () {
             receipt?.meta.blockID,
         )
 
+        expect(
+            sameRevisionEstimation.success,
+            'Same revision should have a good response',
+        ).toBeTrue()
+
         const nextBlockEstimation = await Node1Client.executeAccountBatch(
             {
                 clauses: [
@@ -408,11 +413,14 @@ describe('POST /accounts/*', function () {
             },
             'next',
         )
+        expect(
+            nextBlockEstimation.success,
+            "'next' revision should have a good response",
+        ).toBeTrue()
 
-        expect(sameRevisionEstimation.success).toBeTrue()
-        expect(nextBlockEstimation.success).toBeTrue()
-        expect(sameRevisionEstimation.body?.[0]?.gasUsed).toBeLessThan(
-            nextBlockEstimation?.body?.[0]?.gasUsed as number,
-        )
+        expect(
+            sameRevisionEstimation.body?.[0]?.gasUsed,
+            "'next' revision should have a higher gas cost",
+        ).toBeLessThan(nextBlockEstimation?.body?.[0]?.gasUsed as number)
     })
 })
