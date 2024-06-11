@@ -483,8 +483,8 @@ describe('POST /logs/event', () => {
             }
 
             const eventAddresses =
-                (await contract.read.getAddresses()) as unknown as string[]
-            topics = eventAddresses.map(addAddressPadding)
+                (await contract.read.getAddresses()) as unknown as string[][]
+            topics = eventAddresses[0].map(addAddressPadding)
 
             range = {
                 to: receipt.meta.blockNumber,
