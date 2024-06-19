@@ -17,7 +17,7 @@ permissions:
 jobs:
     e2e_tests:
         name: Run E2E Tests
-        runs-on: codebuild-ThorGHA-${{ github.run_id }}-${{ github.run_attempt }}
+        runs-on: codebuild-ThorE2E-GHA-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-2xlarge
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -30,17 +30,13 @@ jobs:
             - name: Install Node Modules
               run: yarn install
 
-            - name: Start Private Network
-              working-directory: ./network
-              run: docker compose up -d --wait
-
             - name: Run Tests
-              run: yarn test:fast
+              run: yarn test
 
             - name: Publish Results
               uses: dorny/test-reporter@v1
               id: test-reporter
-              if: success() || failure() # run this step even if previous step failed
+              if: ${{ github.repository == 'vechain/thor-e2e-tests' && (success() || failure()) }}
               with:
                   name: E2E Test Report
                   only-summary: 'false'
