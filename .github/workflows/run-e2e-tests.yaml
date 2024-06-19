@@ -17,7 +17,8 @@ permissions:
 jobs:
     e2e_tests:
         name: Run E2E Tests
-        runs-on: codebuild-ThorE2E-GHA-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-2xlarge
+        # https://docs.aws.amazon.com/codebuild/latest/userguide/action-runner.html#sample-github-action-runners-create-project
+        runs-on: codebuild-ThorE2E-GHA-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-medium
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
