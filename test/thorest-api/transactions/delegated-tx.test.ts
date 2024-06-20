@@ -1,7 +1,14 @@
-import { secp256k1, Transaction } from "@vechain/sdk-core"
-import { ThorWallet } from "../../../src/wallet"
-import { successfulPostTx, compareSentTxWithCreatedTx, successfulReceipt, checkTxInclusionInBlock, checkDelegatedTransaction, checkDelegatedTransactionReceipt } from "./setup/asserts"
-import { TransactionDataDrivenFlow } from "./setup/transaction-data-driven-flow"
+import { secp256k1, Transaction } from '@vechain/sdk-core'
+import { ThorWallet } from '../../../src/wallet'
+import {
+    successfulPostTx,
+    compareSentTxWithCreatedTx,
+    successfulReceipt,
+    checkTxInclusionInBlock,
+    checkDelegatedTransaction,
+    checkDelegatedTransactionReceipt,
+} from './setup/asserts'
+import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
 import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-types'
 
 /**
@@ -32,37 +39,31 @@ it('should send a tx with delegated payer', async function () {
     const tx = new Transaction(txBody)
 
     const sigHash = tx.getSignatureHash(emptyWallet.address)
-    const signature = secp256k1.sign(
-        sigHash,
-        wallet.privateKey
-    )
+    const signature = secp256k1.sign(sigHash, wallet.privateKey)
 
-    const finalTx = await emptyWallet.signTransaction(
-        tx,
-        signature,
-    )
+    const finalTx = await emptyWallet.signTransaction(tx, signature)
 
     const testPlan = {
         postTxStep: {
             rawTx: finalTx.encoded.toString('hex'),
-            expectedResult: successfulPostTx
+            expectedResult: successfulPostTx,
         },
         getTxStep: {
             expectedResult: (sentTx: any) => {
                 compareSentTxWithCreatedTx(sentTx, finalTx)
                 checkDelegatedTransaction(sentTx, finalTx)
-            }
+            },
         },
         getTxReceiptStep: {
             expectedResult: (receipt: any) => {
                 successfulReceipt(receipt, finalTx)
                 checkDelegatedTransactionReceipt(receipt, finalTx)
-            }
+            },
         },
         getTxBlockStep: {
-            expectedResult: checkTxInclusionInBlock
-        }
-    };
+            expectedResult: checkTxInclusionInBlock,
+        },
+    }
 
     const tddt = new TransactionDataDrivenFlow(testPlan)
     await tddt.runTestFlow()

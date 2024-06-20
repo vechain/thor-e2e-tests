@@ -1,4 +1,4 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { testBloomForAddress } from '../../../src/utils/bloom'
 import assert from 'node:assert'
 import { ThorWallet } from '../../../src/wallet'
@@ -12,7 +12,7 @@ describe('WS /subscriptions/beat2', () => {
     it('should be able to subscribe', async () => {
         const beats: components['schemas']['SubscriptionBeat2Response'][] = []
 
-        Node1Client.subscribeToBeats2((newBlock) => {
+        Client.raw.subscribeToBeats2((newBlock) => {
             beats.push(newBlock)
         })
 

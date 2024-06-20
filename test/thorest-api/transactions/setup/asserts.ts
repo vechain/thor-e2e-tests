@@ -1,26 +1,39 @@
-import { Transaction } from "@vechain/sdk-core"
-import { components } from "../../../../src/open-api-types"
-import { Response, Schema } from "../../../../src/thor-client"
-import hexUtils from "../../../../src/utils/hex-utils"
-import { GetTxBlockExpectedResultBody, PostTxExpectedResultBody } from "./models"
+import { Transaction } from '@vechain/sdk-core'
+import { components } from '../../../../src/open-api-types'
+import { Response, Schema } from '../../../../src/thor-client'
+import hexUtils from '../../../../src/utils/hex-utils'
+import {
+    GetTxBlockExpectedResultBody,
+    PostTxExpectedResultBody,
+} from './models'
 
 /**
  * Functions to be used in the test plan
  */
-const successfulPostTx = ({ success, body, httpCode }: PostTxExpectedResultBody) => {
+const successfulPostTx = ({
+    success,
+    body,
+    httpCode,
+}: PostTxExpectedResultBody) => {
     expect(success).toBeTrue()
     expect(httpCode).toBe(200)
     expect(body?.id).toBeDefined()
 }
 
-const revertedPostTx = ({ success, body, httpCode, httpMessage }: PostTxExpectedResultBody, expectedErrorMsg: string) => {
+const revertedPostTx = (
+    { success, body, httpCode, httpMessage }: PostTxExpectedResultBody,
+    expectedErrorMsg: string,
+) => {
     expect(success).toBeFalse()
     expect(httpCode).toBe(400)
     expect(httpMessage?.trimEnd()).toEqualCaseInsensitive(expectedErrorMsg)
     expect(body).toBeUndefined()
 }
 
-const compareSentTxWithCreatedTx = (sentTx: Response<Schema['GetTxResponse'] | null>, createdTx: Transaction) => {
+const compareSentTxWithCreatedTx = (
+    sentTx: Response<Schema['GetTxResponse'] | null>,
+    createdTx: Transaction,
+) => {
     expect(sentTx.body).toBeDefined()
     expect(sentTx.success).toBeTrue()
     expect(sentTx.httpCode).toBe(200)
@@ -39,18 +52,27 @@ const compareSentTxWithCreatedTx = (sentTx: Response<Schema['GetTxResponse'] | n
     expect(body?.gasPriceCoef).toEqual(createdTx.body.gasPriceCoef)
 }
 
-const checkDelegatedTransaction = (sentTx: Response<Schema['GetTxResponse'] | null>, createdTx: Transaction) => {
+const checkDelegatedTransaction = (
+    sentTx: Response<Schema['GetTxResponse'] | null>,
+    createdTx: Transaction,
+) => {
     expect(sentTx.body?.delegator).toEqualCaseInsensitive(createdTx.delegator)
 }
 
-const successfulReceipt = (receipt: components['schemas']['GetTxReceiptResponse'], createdTx: Transaction) => {
+const successfulReceipt = (
+    receipt: components['schemas']['GetTxReceiptResponse'],
+    createdTx: Transaction,
+) => {
     expect(receipt.reverted).toBeFalse()
     expect(receipt.gasPayer).toBeDefined()
     expect(receipt.meta?.txID).toEqual(createdTx.id)
     expect(receipt.meta?.txOrigin).toEqualCaseInsensitive(createdTx.origin)
 }
 
-const checkDelegatedTransactionReceipt = (receipt: components['schemas']['GetTxReceiptResponse'], createdTx: Transaction) => {
+const checkDelegatedTransactionReceipt = (
+    receipt: components['schemas']['GetTxReceiptResponse'],
+    createdTx: Transaction,
+) => {
     expect(receipt.gasPayer).toEqualCaseInsensitive(createdTx.delegator)
 }
 
@@ -72,5 +94,5 @@ export {
     checkDelegatedTransaction,
     successfulReceipt,
     checkDelegatedTransactionReceipt,
-    checkTxInclusionInBlock
+    checkTxInclusionInBlock,
 }

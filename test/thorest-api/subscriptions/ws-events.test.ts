@@ -1,4 +1,4 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { interfaces } from '../../../src/contracts/hardhat'
 import { fundAccount } from '../../../src/account-faucet'
@@ -15,7 +15,7 @@ describe('WS /subscriptions/event', () => {
         const events: components['schemas']['SubscriptionEventResponse'][] = []
         const account = generateAddress()
 
-        Node1Client.subscribeToEvents(
+        Client.raw.subscribeToEvents(
             (event) => {
                 events.push(event)
             },

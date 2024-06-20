@@ -1,11 +1,10 @@
-import { Node1Client } from '../../../src/thor-client'
-import {
-    getTransferDetails,
-    readRandomTransfer,
-    Transfer,
-} from '../../../src/populated-data'
+import { Client } from '../../../src/thor-client'
 import { components } from '../../../src/open-api-types'
 import { HEX_REGEX_64 } from '../../../src/utils/hex-utils'
+import { Transfer } from '../../../src/types'
+import { getRandomTransfer } from '../../../src/logs/query-logs'
+import { populatedData } from '../../../src/populated-data'
+import { testCase } from '../../../src/test-case'
 
 const buildRequestFromTransfer = (
     transfer: Transfer,
@@ -37,14 +36,14 @@ type TransferLogFilterRequest =
  * @group events
  */
 describe('POST /logs/transfers', () => {
-    const transferDetails = getTransferDetails()
+    const transferDetails = populatedData.read().transferDetails
 
     it('should find a log with all parameters set', async () => {
-        const transfer = await readRandomTransfer()
+        const transfer = await getRandomTransfer()
 
         const request = buildRequestFromTransfer(transfer)
 
-        const response = await Node1Client.queryTransferLogs(request)
+        const response = await Client.raw.queryTransferLogs(request)
 
         const relevantLog = response.body?.find(
             (log) => log?.meta?.txID === transfer.meta.txID,
@@ -69,24 +68,30 @@ describe('POST /logs/transfers', () => {
         })
     })
 
-    it('should be able to omit all the parameters', async () => {
-        const transfer = await readRandomTransfer()
+    testCase(['default-private', 'solo'])(
+        'should be able to omit all the parameters',
+        async () => {
+            const transfer = await getRandomTransfer()
 
-        const response = await Node1Client.queryTransferLogs({
-            range: null,
-            options: null,
-            criteriaSet: null,
-        })
+            const response = await Client.raw.queryTransferLogs({
+                range: null,
+                options: null,
+                criteriaSet: null,
+            })
 
-        expect(response.success, 'API response should be a success').toBeTrue()
-        expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(
-            response.body?.some(
-                (log) => log?.meta?.txID === transfer.meta.txID,
-            ),
-            'The response body some contain the relevant log',
-        ).toBeTrue()
-    })
+            expect(
+                response.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                response.body?.some(
+                    (log) => log?.meta?.txID === transfer.meta.txID,
+                ),
+                'The response body some contain the relevant log',
+            ).toBeTrue()
+        },
+    )
 
     const runTransferLogsTest = async (
         modifyRequest: (
@@ -94,12 +99,12 @@ describe('POST /logs/transfers', () => {
             transfer: Transfer,
         ) => TransferLogFilterRequest,
     ) => {
-        const transfer = await readRandomTransfer()
+        const transfer = await getRandomTransfer()
         const request = buildRequestFromTransfer(transfer)
 
         const modifiedRequest = modifyRequest(request, transfer)
 
-        const response = await Node1Client.queryTransferLogs(modifiedRequest)
+        const response = await Client.raw.queryTransferLogs(modifiedRequest)
 
         const relevantLog = response.body?.find(
             (log) => log?.meta?.txID === transfer.meta.txID,
@@ -209,7 +214,7 @@ describe('POST /logs/transfers', () => {
                 },
             }
 
-            const transferLogs = await Node1Client.queryTransferLogs(request)
+            const transferLogs = await Client.raw.queryTransferLogs(request)
 
             expect(
                 transferLogs.success,
@@ -219,23 +224,26 @@ describe('POST /logs/transfers', () => {
             expect(transferLogs.body?.length).toEqual(0)
         })
 
-        it('should have no maximum "limit"', async () => {
-            const request = {
-                options: {
-                    offset: 0,
-                    limit: Number.MAX_SAFE_INTEGER,
-                },
-            }
+        testCase(['default-private', 'solo'])(
+            'should have no maximum "limit"',
+            async () => {
+                const request = {
+                    options: {
+                        offset: 0,
+                        limit: Number.MAX_SAFE_INTEGER,
+                    },
+                }
 
-            const transferLogs = await Node1Client.queryTransferLogs(request)
+                const transferLogs = await Client.raw.queryTransferLogs(request)
 
-            expect(
-                transferLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(transferLogs.body?.length).toBeGreaterThan(0)
-        })
+                expect(
+                    transferLogs.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(transferLogs.body?.length).toBeGreaterThan(0)
+            },
+        )
 
         it('should have no minimum "limit"', async () => {
             const request = {
@@ -245,7 +253,7 @@ describe('POST /logs/transfers', () => {
                 },
             }
 
-            const transferLogs = await Node1Client.queryTransferLogs(request)
+            const transferLogs = await Client.raw.queryTransferLogs(request)
 
             expect(
                 transferLogs.success,
@@ -263,7 +271,7 @@ describe('POST /logs/transfers', () => {
             const totalTransfers = pages * amountPerPage
 
             const query = async (offset: number, limit: number) =>
-                Node1Client.queryTransferLogs({
+                Client.raw.queryTransferLogs({
                     range: {
                         from: firstBlock,
                         to: lastBlock,
@@ -409,9 +417,10 @@ describe('POST /logs/transfers', () => {
 
     describe('query by "order"', () => {
         const queryTransferLogsTest = async (order?: 'asc' | 'desc' | null) => {
-            const { firstBlock, lastBlock } = await getTransferDetails()
+            const { firstBlock, lastBlock } =
+                populatedData.read().transferDetails
 
-            const response = await Node1Client.queryTransferLogs({
+            const response = await Client.raw.queryTransferLogs({
                 range: {
                     from: firstBlock,
                     to: lastBlock,

@@ -1,5 +1,5 @@
 import { TransactionClause } from '@vechain/sdk-core'
-import { Node1Client } from './thor-client'
+import { Client } from './thor-client'
 import { components } from './open-api-types'
 
 export const generateNonce = (): number => {
@@ -18,7 +18,7 @@ export const pollReceipt = async (
     return new Promise<components['schemas']['GetTxReceiptResponse']>(
         (resolve, reject) => {
             const intervalId = setInterval(async () => {
-                const receipt = await Node1Client.getTransactionReceipt(txId)
+                const receipt = await Client.raw.getTransactionReceipt(txId)
 
                 if (receipt.success && receipt.body) {
                     clearInterval(intervalId) // Clear the interval when the receipt is found
@@ -64,7 +64,7 @@ export const warnIfSimulationFails = async (
         }
     })
 
-    const simulation = await Node1Client.executeAccountBatch({
+    const simulation = await Client.raw.executeAccountBatch({
         clauses: _clauses,
         caller,
     })

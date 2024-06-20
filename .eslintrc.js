@@ -1,4 +1,4 @@
-/* eslint-env node */
+/* eslint-testEnv node */
 module.exports = {
     extends: [
         'eslint:recommended',

@@ -1,16 +1,6 @@
 /// <reference types="jest-extended" />
-import {
-    Node1Client,
-    Response,
-    Schema,
-    SDKClient,
-} from '../../../src/thor-client'
+import { Client, Response, Schema } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
-import {
-    getTransferDetails,
-    readRandomTransfer,
-    Transfer,
-} from '../../../src/populated-data'
 import {
     HEX_REGEX,
     HEX_REGEX_40,
@@ -21,6 +11,10 @@ import { EventsContract__factory as EventsContract } from '../../../typechain-ty
 import { Contract, TransactionReceipt } from '@vechain/sdk-network'
 import { randomFunder } from '../../../src/account-faucet'
 import { addAddressPadding } from '../../../src/utils/padding-utils'
+import { Transfer } from '../../../src/types'
+import { getRandomTransfer } from '../../../src/logs/query-logs'
+import { populatedData } from '../../../src/populated-data'
+import { describeCases, testCase } from '../../../src/test-case'
 
 const buildRequestFromTransfer = (
     transfer: Transfer,
@@ -50,14 +44,14 @@ type EventLogFilterRequest = components['schemas']['EventLogFilterRequest']
  * @group events
  */
 describe('POST /logs/event', () => {
-    const transferDetails = getTransferDetails()
+    const transferDetails = populatedData.read().transferDetails
 
     it('should find a log with all parameters set', async () => {
-        const transfer = await readRandomTransfer()
+        const transfer = await getRandomTransfer()
 
         const request = buildRequestFromTransfer(transfer)
 
-        const eventLogs = await Node1Client.queryEventLogs(request)
+        const eventLogs = await Client.raw.queryEventLogs(request)
 
         expect(eventLogs.success, 'API response should be a success').toBeTrue()
         expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -81,19 +75,25 @@ describe('POST /logs/event', () => {
         })
     })
 
-    it('should be able to omit all the parameters', async () => {
-        const transfer = await readRandomTransfer()
-        const response = await Node1Client.queryEventLogs({})
+    testCase(['default-private', 'solo'])(
+        'should be able to omit all the parameters',
+        async () => {
+            const transfer = await getRandomTransfer()
+            const response = await Client.raw.queryEventLogs({})
 
-        expect(response.success, 'API response should be a success').toBeTrue()
-        expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(
-            response.body?.some(
-                (log) => log?.meta?.txID === transfer.meta.txID,
-            ),
-            'The response should contain the relevant event log',
-        ).toBeTrue()
-    })
+            expect(
+                response.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                response.body?.some(
+                    (log) => log?.meta?.txID === transfer.meta.txID,
+                ),
+                'The response should contain the relevant event log',
+            ).toBeTrue()
+        },
+    )
 
     const runEventLogsTest = async (
         modifyRequest: (
@@ -101,13 +101,13 @@ describe('POST /logs/event', () => {
             transfer: Transfer,
         ) => EventLogFilterRequest,
     ) => {
-        const transfer = await readRandomTransfer()
+        const transfer = await getRandomTransfer()
         const request = modifyRequest(
             buildRequestFromTransfer(transfer),
             transfer,
         )
 
-        const response = await Node1Client.queryEventLogs(request)
+        const response = await Client.raw.queryEventLogs(request)
         const relevantLog = response.body?.find((log) => {
             return log?.meta?.txID === transfer.meta.txID
         })
@@ -134,17 +134,20 @@ describe('POST /logs/event', () => {
     }
 
     describe('query by "range"', () => {
-        it('should be able to omit the "from" field', async () => {
-            await runEventLogsTest((request) => {
-                return {
-                    ...request,
-                    range: {
-                        ...request.range,
-                        from: undefined,
-                    },
-                }
-            })
-        })
+        testCase(['default-private', 'solo'])(
+            'should be able to omit the "from" field',
+            async () => {
+                await runEventLogsTest((request) => {
+                    return {
+                        ...request,
+                        range: {
+                            ...request.range,
+                            from: undefined,
+                        },
+                    }
+                })
+            },
+        )
 
         it('should be able to omit the "to" field', async () => {
             await runEventLogsTest((request) => {
@@ -196,22 +199,24 @@ describe('POST /logs/event', () => {
             })
         })
 
-        it('should be able to set the range to null', async () => {
-            await runEventLogsTest((request) => {
-                return {
-                    ...request,
-                    range: null,
-                }
-            })
-        })
+        testCase(['default-private', 'solo'])(
+            'should be able to set the range to null',
+            async () => {
+                await runEventLogsTest((request) => {
+                    return {
+                        ...request,
+                        range: null,
+                    }
+                })
+            },
+        )
     })
 
     describe('query by "order"', () => {
         const runQueryEventLogsTest = async (order?: 'asc' | 'desc' | null) => {
-            const { firstBlock, lastBlock, transferCount } =
-                await getTransferDetails()
+            const { firstBlock, lastBlock } = transferDetails
 
-            const response = await Node1Client.queryEventLogs({
+            const response = await Client.raw.queryEventLogs({
                 range: {
                     from: firstBlock,
                     to: lastBlock,
@@ -311,7 +316,7 @@ describe('POST /logs/event', () => {
                 },
             }
 
-            const eventLogs = await Node1Client.queryEventLogs(request)
+            const eventLogs = await Client.raw.queryEventLogs(request)
 
             expect(
                 eventLogs.success,
@@ -321,23 +326,26 @@ describe('POST /logs/event', () => {
             expect(eventLogs.body?.length).toEqual(0)
         })
 
-        it('should have no maximum "limit"', async () => {
-            const request = {
-                options: {
-                    offset: 0,
-                    limit: Number.MAX_SAFE_INTEGER,
-                },
-            }
+        testCase(['default-private', 'solo'])(
+            'should have no maximum "limit"',
+            async () => {
+                const request = {
+                    options: {
+                        offset: 0,
+                        limit: Number.MAX_SAFE_INTEGER,
+                    },
+                }
 
-            const eventLogs = await Node1Client.queryEventLogs(request)
+                const eventLogs = await Client.raw.queryEventLogs(request)
 
-            expect(
-                eventLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(eventLogs.body?.length).toBeGreaterThan(0)
-        })
+                expect(
+                    eventLogs.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(eventLogs.body?.length).toBeGreaterThan(0)
+            },
+        )
 
         it('should have no minimum "limit"', async () => {
             const request = {
@@ -347,7 +355,7 @@ describe('POST /logs/event', () => {
                 },
             }
 
-            const eventLogs = await Node1Client.queryEventLogs(request)
+            const eventLogs = await Client.raw.queryEventLogs(request)
 
             expect(
                 eventLogs.success,
@@ -365,7 +373,7 @@ describe('POST /logs/event', () => {
             const totalElements = pages * amountPerPage
 
             const query = async (offset: number, limit: number) =>
-                Node1Client.queryEventLogs({
+                Client.raw.queryEventLogs({
                     range: {
                         from: firstBlock,
                         to: lastBlock,
@@ -429,48 +437,58 @@ describe('POST /logs/event', () => {
             ).toEqual(paginatedElements)
         })
 
-        it('should be empty when pagination exceeds the total amount', async () => {
-            // First, we need to make sure there are events
-            const res1 = await Node1Client.queryEventLogs({
-                options: {
-                    offset: 0,
-                    limit: 10_000,
-                },
-            })
+        testCase(['solo', 'default-private'])(
+            'should be empty when pagination exceeds the total amount',
+            async () => {
+                // First, we need to make sure there are events
+                const res1 = await Client.raw.queryEventLogs({
+                    options: {
+                        offset: 0,
+                        limit: 10_000,
+                    },
+                })
 
-            expect(res1.success, 'API response should be a success').toBeTrue()
-            expect(res1.body?.length, 'Expected Response Body').toBeGreaterThan(
-                0,
-            )
+                expect(
+                    res1.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(
+                    res1.body?.length,
+                    'Expected Response Body',
+                ).toBeGreaterThan(0)
 
-            // Then, we can set a large offset and check that there are no results
-            const res2 = await Node1Client.queryEventLogs({
-                options: {
-                    offset: 100_000,
-                    limit: 10_000,
-                },
-            })
+                // Then, we can set a large offset and check that there are no results
+                const res2 = await Client.raw.queryEventLogs({
+                    options: {
+                        offset: 100_000,
+                        limit: 10_000,
+                    },
+                })
 
-            expect(res2.success, 'API response should be a success').toBeTrue()
-            expect(res2.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(res2.body, 'Expected Response Body').toEqual([])
-        })
+                expect(
+                    res2.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(res2.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(res2.body, 'Expected Response Body').toEqual([])
+            },
+        )
     })
 
-    describe('query by "criteriaSet"', () => {
+    describeCases(['solo', 'default-private'])('query by "criteriaSet"', () => {
         const eventHash =
             EventsContract.createInterface().getEvent('MyEvent').topicHash
 
-        let contract: Contract
+        let contract: Contract<typeof EventsContract.abi>
         let receipt: TransactionReceipt
         let topics: string[]
         let range: any
 
         beforeAll(async () => {
-            const contractFactory = SDKClient.contracts.createContractFactory(
+            const contractFactory = Client.sdk.contracts.createContractFactory(
                 EventsContract.abi,
                 EventsContract.bytecode,
-                randomFunder(),
+                randomFunder().signer,
             )
             await contractFactory.startDeployment()
             contract = await contractFactory.waitForDeployment()
@@ -480,9 +498,8 @@ describe('POST /logs/event', () => {
                 throw new Error('Contract deployment failed')
             }
 
-            const eventAddresses = (
-                (await contract.read.getAddresses()) as string[][]
-            )[0]
+            const eventAddresses =
+                (await contract.read.getAddresses()) as unknown as string[]
             topics = eventAddresses.map(addAddressPadding)
 
             range = {
@@ -521,7 +538,7 @@ describe('POST /logs/event', () => {
         }
 
         it('should be able query by contract address', async () => {
-            const res = await Node1Client.queryEventLogs({
+            const res = await Client.raw.queryEventLogs({
                 criteriaSet: [
                     {
                         address: contract.address,
@@ -534,7 +551,7 @@ describe('POST /logs/event', () => {
         })
 
         it('should be able query by topic0 address', async () => {
-            const res = await Node1Client.queryEventLogs({
+            const res = await Client.raw.queryEventLogs({
                 criteriaSet: [
                     {
                         topic0: eventHash,
@@ -549,7 +566,7 @@ describe('POST /logs/event', () => {
         it.each([1, 2, 3])(
             `should be able query by topic%d`,
             async (topicIndex) => {
-                const res = await Node1Client.queryEventLogs({
+                const res = await Client.raw.queryEventLogs({
                     criteriaSet: [
                         {
                             [`topic${topicIndex}`]: topics[topicIndex - 1],
@@ -563,7 +580,7 @@ describe('POST /logs/event', () => {
         )
 
         it('should be able query by all topics', async () => {
-            const res = await Node1Client.queryEventLogs({
+            const res = await Client.raw.queryEventLogs({
                 criteriaSet: [
                     {
                         topic0: eventHash,
@@ -579,7 +596,7 @@ describe('POST /logs/event', () => {
         })
 
         it('should be able query by all topics and address', async () => {
-            const res = await Node1Client.queryEventLogs({
+            const res = await Client.raw.queryEventLogs({
                 criteriaSet: [
                     {
                         address: contract.address,
@@ -596,7 +613,7 @@ describe('POST /logs/event', () => {
         })
 
         it('should be empty for matching topics and non-matching address', async () => {
-            const res = await Node1Client.queryEventLogs({
+            const res = await Client.raw.queryEventLogs({
                 criteriaSet: [
                     {
                         address: contractAddresses.energy,
@@ -615,7 +632,7 @@ describe('POST /logs/event', () => {
         })
 
         it('should be empty for non-matching topics and matching address', async () => {
-            const res = await Node1Client.queryEventLogs({
+            const res = await Client.raw.queryEventLogs({
                 criteriaSet: [
                     {
                         address: contract.address,

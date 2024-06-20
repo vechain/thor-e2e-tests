@@ -1,4 +1,4 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { generateAddress, ThorWallet } from '../../../src/wallet'
 
 /**
@@ -11,7 +11,7 @@ describe('WS /subscriptions/txpool', () => {
 
         const wallet = ThorWallet.new(true)
 
-        Node1Client.subscribeToTxPool((txId) => {
+        Client.raw.subscribeToTxPool((txId) => {
             txs.push(txId)
         })
 

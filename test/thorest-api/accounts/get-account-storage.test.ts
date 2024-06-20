@@ -1,4 +1,4 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { SimpleCounter__factory } from '../../../typechain-types'
 import { addUintPadding } from '../../../src/utils/padding-utils'
 import { revisions } from '../../../src/constants'
@@ -59,7 +59,7 @@ describe('GET /accounts/{address}/storage', function () {
 
         await setSimpleStorage(simpleStorageAddress, amount, wallet)
 
-        const res = await Node1Client.getAccountStorage(
+        const res = await Client.raw.getAccountStorage(
             simpleStorageAddress,
             SIMPLE_STORAGE_KEY,
         )
@@ -72,7 +72,7 @@ describe('GET /accounts/{address}/storage', function () {
     })
 
     it('should be able to query history storage values', async () => {
-        const contractState = await Node1Client.getAccountStorage(
+        const contractState = await Client.raw.getAccountStorage(
             simpleStorageAddress,
             SIMPLE_STORAGE_KEY,
         )
@@ -87,7 +87,7 @@ describe('GET /accounts/{address}/storage', function () {
             wallet,
         )
 
-        const res = await Node1Client.getAccountStorage(
+        const res = await Client.raw.getAccountStorage(
             simpleStorageAddress,
             SIMPLE_STORAGE_KEY,
         )
@@ -100,7 +100,7 @@ describe('GET /accounts/{address}/storage', function () {
         })
 
         // Check the storage position before the transaction
-        const historic = await Node1Client.getAccountStorage(
+        const historic = await Client.raw.getAccountStorage(
             simpleStorageAddress,
             SIMPLE_STORAGE_KEY,
             `${(tx.meta?.blockNumber ?? 1) - 1}`,
@@ -114,7 +114,7 @@ describe('GET /accounts/{address}/storage', function () {
     })
 
     it.each(revisions.valid())('valid revision %s', async function (revision) {
-        const res = await Node1Client.getAccountStorage(
+        const res = await Client.raw.getAccountStorage(
             simpleStorageAddress,
             SIMPLE_STORAGE_KEY,
             revision,
@@ -127,7 +127,7 @@ describe('GET /accounts/{address}/storage', function () {
     })
 
     it.each(revisions.invalid)('invalid revision: %s', async (r) => {
-        const res = await Node1Client.getAccountStorage(
+        const res = await Client.raw.getAccountStorage(
             simpleStorageAddress,
             SIMPLE_STORAGE_KEY,
             r,

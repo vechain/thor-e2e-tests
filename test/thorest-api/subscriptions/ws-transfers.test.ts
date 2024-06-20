@@ -1,4 +1,4 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { fundAccount } from '../../../src/account-faucet'
 import { components } from '../../../src/open-api-types'
 import { generateAddress } from '../../../src/wallet'
@@ -13,7 +13,7 @@ describe('WS /subscriptions/transfer', () => {
             []
         const account = generateAddress()
 
-        Node1Client.subscribeToTransfers(
+        Client.raw.subscribeToTransfers(
             {
                 recipient: account,
             },

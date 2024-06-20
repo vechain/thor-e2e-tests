@@ -1,9 +1,10 @@
-import { Node1Client, SDKClient } from '../src/thor-client'
+import 'dotenv/config'
+import { Client } from '../src/thor-client'
 
 jest.retryTimes(3, { logErrorsBeforeRetry: false })
 
 afterAll(async () => {
-    Node1Client.closeAllSubscriptions()
+    Client.raw.closeAllSubscriptions()
     jest.clearAllTimers()
-    SDKClient.destroy()
+    Client.sdk.destroy()
 })

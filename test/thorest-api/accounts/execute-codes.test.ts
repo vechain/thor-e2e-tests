@@ -1,4 +1,4 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { SimpleCounter__factory } from '../../../typechain-types'
 import { interfaces } from '../../../src/contracts/hardhat'
@@ -54,7 +54,7 @@ describe('POST /accounts/*', function () {
 
         const tokenAmount = '0x100000'
 
-        const res = await Node1Client.executeAccountBatch({
+        const res = await Client.raw.executeAccountBatch({
             clauses: [
                 // VET Transfer
                 {
@@ -141,7 +141,7 @@ describe('POST /accounts/*', function () {
         }
 
         // generated wallet had no funds configured in genesis, so this should be reverted
-        const historicCall = await Node1Client.executeAccountBatch(request, '0')
+        const historicCall = await Client.raw.executeAccountBatch(request, '0')
 
         expect(
             historicCall.success,
@@ -154,7 +154,7 @@ describe('POST /accounts/*', function () {
         ).toEqual(true)
 
         // generated wallet was funded, so this should be successful
-        const currentCall = await Node1Client.executeAccountBatch(
+        const currentCall = await Client.raw.executeAccountBatch(
             request,
             'best',
         )
@@ -172,7 +172,7 @@ describe('POST /accounts/*', function () {
 
     it('should be able to call read only contract methods', async () => {
         const request = READ_ONLY_REQUEST(wallet.address)
-        const historicCall = await Node1Client.executeAccountBatch(request, '0')
+        const historicCall = await Client.raw.executeAccountBatch(request, '0')
         expect(
             historicCall.success,
             'API response should be a success',
@@ -190,7 +190,7 @@ describe('POST /accounts/*', function () {
         'should be able to call read only contract methods with valid revision: %s',
         async (revision) => {
             const request = READ_ONLY_REQUEST(wallet.address)
-            const res = await Node1Client.executeAccountBatch(request, revision)
+            const res = await Client.raw.executeAccountBatch(request, revision)
             expect(res.success, 'API response should be a success').toBeTrue()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(res.body?.[0]?.reverted).toEqual(false)
@@ -201,7 +201,7 @@ describe('POST /accounts/*', function () {
     it.each(revisions.valid())(
         'should be able execute clauses for valid revision: %s',
         async (revision) => {
-            const res = await Node1Client.executeAccountBatch(
+            const res = await Client.raw.executeAccountBatch(
                 {
                     clauses: [SEND_VTHO_CLAUSE],
                     caller: wallet.address,
@@ -217,7 +217,7 @@ describe('POST /accounts/*', function () {
     it.each(revisions.validNotFound)(
         'valid revisions not found: %s',
         async function (revision) {
-            const res = await Node1Client.executeAccountBatch(
+            const res = await Client.raw.executeAccountBatch(
                 {
                     clauses: [SEND_VTHO_CLAUSE],
                     caller: wallet.address,
@@ -234,7 +234,7 @@ describe('POST /accounts/*', function () {
         it('should return the correct block ref', async () => {
             const blockRef = await getBlockRef('1')
 
-            const res = await Node1Client.executeAccountBatch({
+            const res = await Client.raw.executeAccountBatch({
                 clauses: [
                     {
                         to: contractAddresses.extension,
@@ -277,7 +277,7 @@ describe('POST /accounts/*', function () {
                 gasPayer: GAS_PAYER,
             }
 
-            const res = await Node1Client.executeAccountBatch(requestBody)
+            const res = await Client.raw.executeAccountBatch(requestBody)
 
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(res.success, 'API response should be a success').toBeTrue()
@@ -296,7 +296,7 @@ describe('POST /accounts/*', function () {
         it('should return the correct proved work', async () => {
             const provedWork = '191923'
 
-            const res = await Node1Client.executeAccountBatch({
+            const res = await Client.raw.executeAccountBatch({
                 clauses: [
                     {
                         to: contractAddresses.extension,
@@ -330,7 +330,7 @@ describe('POST /accounts/*', function () {
         it('should return the correct expiration', async () => {
             const expiration = 13627
 
-            const res = await Node1Client.executeAccountBatch({
+            const res = await Client.raw.executeAccountBatch({
                 clauses: [
                     {
                         to: contractAddresses.extension,

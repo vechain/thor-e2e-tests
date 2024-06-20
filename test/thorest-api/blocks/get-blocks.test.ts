@@ -1,4 +1,4 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { components } from '../../../src/open-api-types'
 import {
     HEX_REGEX,
@@ -7,7 +7,9 @@ import {
     HEX_REGEX_64,
 } from '../../../src/utils/hex-utils'
 import { revisions } from '../../../src/constants'
-import { readRandomTransfer, Transfer } from '../../../src/populated-data'
+import { testCase, testCaseEach } from '../../../src/test-case'
+import { Transfer } from '../../../src/types'
+import { getRandomTransfer } from '../../../src/logs/query-logs'
 
 /**
  * @group api
@@ -17,21 +19,22 @@ describe('GET /blocks/{revision}', function () {
     let transfer: Transfer
 
     beforeAll(async () => {
-        transfer = await readRandomTransfer()
+        transfer = await getRandomTransfer()
     })
 
-    test('gas limit it equal to 40_000_000', async function () {
-        const block = await Node1Client.getBlock(1, false)
+    testCase('all')('gas limit it equal to 40_000_000', async function () {
+        const block = await Client.raw.getBlock(1, false)
 
         expect(block.success, 'API response should be a success').toBeTrue()
         expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(block.body?.gasLimit).toEqual(40_000_000)
     })
 
-    it.each(revisions.valid(true))(
+    testCaseEach('all')(
         'can get block for revision: %s',
+        revisions.valid(true),
         async function (revision) {
-            const block = await Node1Client.getBlock(revision, false)
+            const block = await Client.raw.getBlock(revision, false)
 
             expect(block.success, 'API response should be a success').toBeTrue()
             expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -58,10 +61,11 @@ describe('GET /blocks/{revision}', function () {
         },
     )
 
-    it.each(revisions.validNotFound)(
+    testCaseEach('all')(
         'valid revisions not found: %s',
+        revisions.validNotFound,
         async function (revision) {
-            const block = await Node1Client.getBlock(revision, false)
+            const block = await Client.raw.getBlock(revision, false)
 
             expect(block.success, 'API response should be a success').toBeTrue()
             expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -69,18 +73,19 @@ describe('GET /blocks/{revision}', function () {
         },
     )
 
-    it.each(revisions.invalid)(
+    testCaseEach('all')(
         'invalid revisions: %s',
+        revisions.invalid,
         async function (revision) {
-            const block = await Node1Client.getBlock(revision, false)
+            const block = await Client.raw.getBlock(revision, false)
 
             expect(block.success, 'API Call should fail').toBeFalse()
             expect(block.httpCode, 'Expected HTTP Code').toEqual(400)
         },
     )
 
-    it('should be able get compressed blocks', async function () {
-        const res = await Node1Client.getBlock(transfer.meta?.blockID, false)
+    testCase('all')('should be able get compressed blocks', async function () {
+        const res = await Client.raw.getBlock(transfer.meta?.blockID, false)
 
         expect(res.success, 'API response should be a success').toBeTrue()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -98,8 +103,8 @@ describe('GET /blocks/{revision}', function () {
         expect(relevantTx).toEqual(transfer.meta?.txID)
     })
 
-    it('should be able get expanded blocks', async function () {
-        const res = await Node1Client.getBlock(transfer.meta.blockID, true)
+    testCase('all')('should be able get expanded blocks', async function () {
+        const res = await Client.raw.getBlock(transfer.meta.blockID, true)
 
         expect(res.success, 'API response should be a success').toBeTrue()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)

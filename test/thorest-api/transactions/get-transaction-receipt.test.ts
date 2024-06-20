@@ -1,4 +1,4 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import assert from 'node:assert'
 import { readRandomTransfer } from '../../../src/populated-data'
 
@@ -10,7 +10,7 @@ describe('GET /transactions/{id}/receipt', function () {
     it('should get transaction receipt', async function () {
         const transfer = await readRandomTransfer()
 
-        const tx = await Node1Client.getTransactionReceipt(transfer.meta.txID)
+        const tx = await Client.raw.getTransactionReceipt(transfer.meta.txID)
 
         assert(tx.success, 'Failed to get transaction receipt')
         assert(tx.body != null, 'Failed to get transaction receipt body')

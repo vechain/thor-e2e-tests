@@ -4,7 +4,7 @@ import {
     IndividualOpCodes__factory as Opcodes,
     SimpleCounterShanghai__factory as ShanghaiCounter,
 } from '../../typechain-types'
-import { Node1Client } from '../../src/thor-client'
+import { Client } from '../../src/thor-client'
 import {
     addAddressPadding,
     addUintPadding,
@@ -48,7 +48,7 @@ describe('Individual OpCodes', () => {
             data,
         }
 
-        const debugged = await Node1Client.traceContractCall({
+        const debugged = await Client.raw.traceContractCall({
             ...clause,
             caller,
             gas: 1_000_000,
@@ -64,7 +64,7 @@ describe('Individual OpCodes', () => {
     }
 
     const simulateContractCall = async (data: string) => {
-        const simulated = await Node1Client.executeAccountBatch({
+        const simulated = await Client.raw.executeAccountBatch({
             clauses: [
                 {
                     to: opcodes.address,
@@ -491,7 +491,7 @@ describe('Individual OpCodes', () => {
         expect(receipt.reverted).toBe(true)
 
         // 0x5f is the PUSH0 opcode
-        const simulation = await Node1Client.executeAccountBatch({
+        const simulation = await Client.raw.executeAccountBatch({
             clauses,
             caller,
         })
