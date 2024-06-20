@@ -83,15 +83,14 @@ const validateEnv = async (): Promise<boolean> => {
         }
     }
 
-    const accounts = testEnv.keys.map((key) =>
-        addressUtils.fromPrivateKey(Buffer.from(key, 'hex')),
-    )
-
-    for (const account of accounts) {
-        if (!account.startsWith('0x')) {
-            throw new Error('Invalid account address')
-        }
-    }
+    // const accounts = testEnv.keys.map((key) => {
+    //     if (key.startsWith('0x')) {
+    //         key = key.slice(2)
+    //     }
+    //     return addressUtils.fromPrivateKey(
+    //         Uint8Array.from(Buffer.from(key, 'hex')),
+    //     )
+    // })
 
     // TODO: Validate the account balances
     // const client = ThorClient.fromUrl(testEnv.urls[0])

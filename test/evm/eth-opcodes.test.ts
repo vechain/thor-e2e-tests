@@ -20,8 +20,8 @@ import {
     OpCodes__factory as Opcodes,
 } from '../../typechain-types'
 import { Contract } from '@vechain/sdk-network'
-import { Client } from '../../src/thor-client'
 import { fundingAmounts } from '../../src/account-faucet'
+import { testCase } from '../../src/test-case'
 
 /**
  * @notice - Copied from: https://github.com/ethereum/go-ethereum/blob/master/tests/solidity/test/opCodes.js
@@ -41,16 +41,24 @@ describe('EVM Opcodes', () => {
         opcodes = await wallet.deployContract(Opcodes.bytecode, Opcodes.abi)
     })
 
-    it('Should run without errors the majority of opcodes', async () => {
-        await opcodes.transact.test()
-        await opcodes.transact.test_stop()
-    })
+    testCase(['solo', 'default-private'])(
+        'Should run without errors the majority of opcodes',
+        async () => {
+            await opcodes.transact.test()
+            await opcodes.transact.test_stop()
+        },
+    )
 
-    it('Should throw invalid op code', async () => {
-        await expect(() => opcodes.transact.test_invalid()).rejects.toThrow()
-    })
+    testCase(['solo', 'default-private'])(
+        'Should throw invalid op code',
+        async () => {
+            await expect(() =>
+                opcodes.transact.test_invalid(),
+            ).rejects.toThrow()
+        },
+    )
 
-    it('Should revert', async () => {
+    testCase(['solo', 'default-private'])('Should revert', async () => {
         const { wait } = await opcodes.transact.test_revert()
 
         const tx = await wait()

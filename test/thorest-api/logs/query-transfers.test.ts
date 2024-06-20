@@ -38,35 +38,38 @@ type TransferLogFilterRequest =
 describe('POST /logs/transfers', () => {
     const transferDetails = populatedData.read().transferDetails
 
-    it('should find a log with all parameters set', async () => {
-        const transfer = await getRandomTransfer()
+    testCase(['solo', 'default-private'])(
+        'should find a log with all parameters set',
+        async () => {
+            const transfer = await getRandomTransfer()
 
-        const request = buildRequestFromTransfer(transfer)
+            const request = buildRequestFromTransfer(transfer)
 
-        const response = await Client.raw.queryTransferLogs(request)
+            const response = await Client.raw.queryTransferLogs(request)
 
-        const relevantLog = response.body?.find(
-            (log) => log?.meta?.txID === transfer.meta.txID,
-        )
+            const relevantLog = response.body?.find(
+                (log) => log?.meta?.txID === transfer.meta.txID,
+            )
 
-        expect(relevantLog, 'Transfer event should be found').toBeDefined()
-        expect(
-            relevantLog,
-            'Transfer event should have the correct response body',
-        ).toEqual({
-            sender: transfer.vet.sender,
-            recipient: transfer.vet.recipient,
-            amount: transfer.vet.amount,
-            meta: {
-                blockID: expect.stringMatching(HEX_REGEX_64),
-                blockNumber: expect.any(Number),
-                blockTimestamp: expect.any(Number),
-                txID: expect.stringMatching(HEX_REGEX_64),
-                txOrigin: transfer.meta.txOrigin,
-                clauseIndex: 0,
-            },
-        })
-    })
+            expect(relevantLog, 'Transfer event should be found').toBeDefined()
+            expect(
+                relevantLog,
+                'Transfer event should have the correct response body',
+            ).toEqual({
+                sender: transfer.vet.sender,
+                recipient: transfer.vet.recipient,
+                amount: transfer.vet.amount,
+                meta: {
+                    blockID: expect.stringMatching(HEX_REGEX_64),
+                    blockNumber: expect.any(Number),
+                    blockTimestamp: expect.any(Number),
+                    txID: expect.stringMatching(HEX_REGEX_64),
+                    txOrigin: transfer.meta.txOrigin,
+                    clauseIndex: 0,
+                },
+            })
+        },
+    )
 
     testCase(['default-private', 'solo'])(
         'should be able to omit all the parameters',
@@ -129,100 +132,127 @@ describe('POST /logs/transfers', () => {
     }
 
     describe('query by "range"', () => {
-        it('should be able set the range to null', async () => {
-            await runTransferLogsTest((request) => ({
-                ...request,
-                range: null,
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able set the range to null',
+            async () => {
+                await runTransferLogsTest((request) => ({
+                    ...request,
+                    range: null,
+                }))
+            },
+        )
 
-        it('should be able to omit the "from" field', async () => {
-            await runTransferLogsTest((request) => ({
-                ...request,
-                range: {
-                    ...request.range,
-                    from: undefined,
-                },
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able to omit the "from" field',
+            async () => {
+                await runTransferLogsTest((request) => ({
+                    ...request,
+                    range: {
+                        ...request.range,
+                        from: undefined,
+                    },
+                }))
+            },
+        )
 
-        it('should be able to omit the "to" field', async () => {
-            await runTransferLogsTest((request) => ({
-                ...request,
-                range: {
-                    ...request.range,
-                    to: undefined,
-                },
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able to omit the "to" field',
+            async () => {
+                await runTransferLogsTest((request) => ({
+                    ...request,
+                    range: {
+                        ...request.range,
+                        to: undefined,
+                    },
+                }))
+            },
+        )
 
-        it('should be omit the "unit" field', async () => {
-            await runTransferLogsTest((request) => ({
-                ...request,
-                range: {
-                    ...request.range,
-                    unit: undefined,
-                },
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be omit the "unit" field',
+            async () => {
+                await runTransferLogsTest((request) => ({
+                    ...request,
+                    range: {
+                        ...request.range,
+                        unit: undefined,
+                    },
+                }))
+            },
+        )
 
-        it('should be able query by time', async () => {
-            await runTransferLogsTest((request, transfer) => ({
-                ...request,
-                range: {
-                    to: transfer.meta.blockTimestamp + 1000,
-                    from: transfer.meta.blockTimestamp - 1000,
-                    unit: 'time',
-                },
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able query by time',
+            async () => {
+                await runTransferLogsTest((request, transfer) => ({
+                    ...request,
+                    range: {
+                        to: transfer.meta.blockTimestamp + 1000,
+                        from: transfer.meta.blockTimestamp - 1000,
+                        unit: 'time',
+                    },
+                }))
+            },
+        )
 
-        it('should be able query by block', async () => {
-            await runTransferLogsTest((request, transfer) => ({
-                ...request,
-                range: {
-                    to: transfer.meta.blockNumber,
-                    from: transfer.meta.blockNumber,
-                    unit: 'block',
-                },
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able query by block',
+            async () => {
+                await runTransferLogsTest((request, transfer) => ({
+                    ...request,
+                    range: {
+                        to: transfer.meta.blockNumber,
+                        from: transfer.meta.blockNumber,
+                        unit: 'block',
+                    },
+                }))
+            },
+        )
     })
 
     describe('query by "options"', () => {
-        it('should be able omit all the options', async () => {
-            await runTransferLogsTest((request) => ({
-                ...request,
-                options: null,
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able omit all the options',
+            async () => {
+                await runTransferLogsTest((request) => ({
+                    ...request,
+                    options: null,
+                }))
+            },
+        )
 
-        it('should be able to omit the "offset" field', async () => {
-            await runTransferLogsTest((request) => ({
-                ...request,
-                options: {
-                    limit: 10_000,
-                    offset: undefined,
-                },
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able to omit the "offset" field',
+            async () => {
+                await runTransferLogsTest((request) => ({
+                    ...request,
+                    options: {
+                        limit: 10_000,
+                        offset: undefined,
+                    },
+                }))
+            },
+        )
 
-        it('should be able to omit the "limit" field', async () => {
-            const request = {
-                options: {
-                    offset: 0,
-                },
-            }
+        testCase(['solo', 'default-private'])(
+            'should be able to omit the "limit" field',
+            async () => {
+                const request = {
+                    options: {
+                        offset: 0,
+                    },
+                }
 
-            const transferLogs = await Client.raw.queryTransferLogs(request)
+                const transferLogs = await Client.raw.queryTransferLogs(request)
 
-            expect(
-                transferLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(transferLogs.body?.length).toEqual(0)
-        })
+                expect(
+                    transferLogs.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(transferLogs.body?.length).toEqual(0)
+            },
+        )
 
         testCase(['default-private', 'solo'])(
             'should have no maximum "limit"',
@@ -245,174 +275,206 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        it('should have no minimum "limit"', async () => {
-            const request = {
-                options: {
-                    offset: 0,
-                    limit: 0,
-                },
-            }
-
-            const transferLogs = await Client.raw.queryTransferLogs(request)
-
-            expect(
-                transferLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(transferLogs.body?.length).toEqual(0)
-        })
-
-        it('should be able paginate requests', async () => {
-            const { firstBlock, lastBlock } = await transferDetails
-
-            const pages = 5
-            const amountPerPage = 10
-            const totalTransfers = pages * amountPerPage
-
-            const query = async (offset: number, limit: number) =>
-                Client.raw.queryTransferLogs({
-                    range: {
-                        from: firstBlock,
-                        to: lastBlock,
-                        unit: 'block',
-                    },
+        testCase(['solo', 'default-private'])(
+            'should have no minimum "limit"',
+            async () => {
+                const request = {
                     options: {
-                        offset,
-                        limit,
+                        offset: 0,
+                        limit: 0,
                     },
-                    criteriaSet: [],
-                })
+                }
 
-            const allElements = await query(0, totalTransfers)
-
-            expect(
-                allElements.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(allElements.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(allElements.body?.length).toEqual(totalTransfers)
-
-            const paginatedTransfers: components['schemas']['TransferLogsResponse'][] =
-                []
-
-            for (let i = 0; i < pages; i++) {
-                const paginatedResponse = await query(
-                    paginatedTransfers.length,
-                    amountPerPage,
-                )
+                const transferLogs = await Client.raw.queryTransferLogs(request)
 
                 expect(
-                    paginatedResponse.success,
+                    transferLogs.success,
                     'API response should be a success',
                 ).toBeTrue()
+                expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(transferLogs.body?.length).toEqual(0)
+            },
+        )
+
+        testCase(['solo', 'default-private'])(
+            'should be able paginate requests',
+            async () => {
+                const { firstBlock, lastBlock } = await transferDetails
+
+                const pages = 5
+                const amountPerPage = 10
+                const totalTransfers = pages * amountPerPage
+
+                const query = async (offset: number, limit: number) =>
+                    Client.raw.queryTransferLogs({
+                        range: {
+                            from: firstBlock,
+                            to: lastBlock,
+                            unit: 'block',
+                        },
+                        options: {
+                            offset,
+                            limit,
+                        },
+                        criteriaSet: [],
+                    })
+
+                const allElements = await query(0, totalTransfers)
+
                 expect(
-                    paginatedResponse.httpCode,
-                    'Expected HTTP Code',
-                ).toEqual(200)
-                expect(paginatedResponse.body?.length).toEqual(amountPerPage)
+                    allElements.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(allElements.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(allElements.body?.length).toEqual(totalTransfers)
 
-                const elements =
-                    paginatedResponse.body as components['schemas']['TransferLogsResponse'][]
+                const paginatedTransfers: components['schemas']['TransferLogsResponse'][] =
+                    []
 
-                paginatedTransfers.push(...elements)
-            }
+                for (let i = 0; i < pages; i++) {
+                    const paginatedResponse = await query(
+                        paginatedTransfers.length,
+                        amountPerPage,
+                    )
 
-            expect(allElements.body, 'Expected Response Body').toEqual(
-                paginatedTransfers,
-            )
-        })
+                    expect(
+                        paginatedResponse.success,
+                        'API response should be a success',
+                    ).toBeTrue()
+                    expect(
+                        paginatedResponse.httpCode,
+                        'Expected HTTP Code',
+                    ).toEqual(200)
+                    expect(paginatedResponse.body?.length).toEqual(
+                        amountPerPage,
+                    )
+
+                    const elements =
+                        paginatedResponse.body as components['schemas']['TransferLogsResponse'][]
+
+                    paginatedTransfers.push(...elements)
+                }
+
+                expect(allElements.body, 'Expected Response Body').toEqual(
+                    paginatedTransfers,
+                )
+            },
+        )
     })
 
     describe('query by "criteriaSet"', () => {
-        it('should be able query by "sender"', async () => {
-            await runTransferLogsTest((request, transfer) => ({
-                ...request,
-                criteriaSet: [
-                    {
-                        sender: transfer.vet.sender,
-                    },
-                ],
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able query by "sender"',
+            async () => {
+                await runTransferLogsTest((request, transfer) => ({
+                    ...request,
+                    criteriaSet: [
+                        {
+                            sender: transfer.vet.sender,
+                        },
+                    ],
+                }))
+            },
+        )
 
-        it('should be able query by "recipient"', async () => {
-            await runTransferLogsTest((request, transfer) => ({
-                ...request,
-                criteriaSet: [
-                    {
-                        recipient: transfer.vet.recipient,
-                    },
-                ],
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able query by "recipient"',
+            async () => {
+                await runTransferLogsTest((request, transfer) => ({
+                    ...request,
+                    criteriaSet: [
+                        {
+                            recipient: transfer.vet.recipient,
+                        },
+                    ],
+                }))
+            },
+        )
 
-        it('should be able query by "txOrigin"', async () => {
-            await runTransferLogsTest((request, transfer) => ({
-                ...request,
-                criteriaSet: [
-                    {
-                        txOrigin: transfer.meta.txOrigin,
-                    },
-                ],
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able query by "txOrigin"',
+            async () => {
+                await runTransferLogsTest((request, transfer) => ({
+                    ...request,
+                    criteriaSet: [
+                        {
+                            txOrigin: transfer.meta.txOrigin,
+                        },
+                    ],
+                }))
+            },
+        )
 
-        it('should be able query by "sender" and "recipient"', async () => {
-            await runTransferLogsTest((request, transfer) => ({
-                ...request,
-                criteriaSet: [
-                    {
-                        sender: transfer.vet.sender,
-                        recipient: transfer.vet.recipient,
-                    },
-                ],
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able query by "sender" and "recipient"',
+            async () => {
+                await runTransferLogsTest((request, transfer) => ({
+                    ...request,
+                    criteriaSet: [
+                        {
+                            sender: transfer.vet.sender,
+                            recipient: transfer.vet.recipient,
+                        },
+                    ],
+                }))
+            },
+        )
 
-        it('should be able query by "sender" and "txOrigin"', async () => {
-            await runTransferLogsTest((request, transfer) => ({
-                ...request,
-                criteriaSet: [
-                    {
-                        sender: transfer.vet.sender,
-                        txOrigin: transfer.meta.txOrigin,
-                    },
-                ],
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able query by "sender" and "txOrigin"',
+            async () => {
+                await runTransferLogsTest((request, transfer) => ({
+                    ...request,
+                    criteriaSet: [
+                        {
+                            sender: transfer.vet.sender,
+                            txOrigin: transfer.meta.txOrigin,
+                        },
+                    ],
+                }))
+            },
+        )
 
-        it('should be able query by "recipient" and "txOrigin"', async () => {
-            await runTransferLogsTest((request, transfer) => ({
-                ...request,
-                criteriaSet: [
-                    {
-                        recipient: transfer.vet.recipient,
-                        txOrigin: transfer.meta.txOrigin,
-                    },
-                ],
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able query by "recipient" and "txOrigin"',
+            async () => {
+                await runTransferLogsTest((request, transfer) => ({
+                    ...request,
+                    criteriaSet: [
+                        {
+                            recipient: transfer.vet.recipient,
+                            txOrigin: transfer.meta.txOrigin,
+                        },
+                    ],
+                }))
+            },
+        )
 
-        it('should be able query by all criteria', async () => {
-            await runTransferLogsTest((request, transfer) => ({
-                ...request,
-                criteriaSet: [
-                    {
-                        sender: transfer.vet.sender,
-                        recipient: transfer.vet.recipient,
-                        txOrigin: transfer.meta.txOrigin,
-                    },
-                ],
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able query by all criteria',
+            async () => {
+                await runTransferLogsTest((request, transfer) => ({
+                    ...request,
+                    criteriaSet: [
+                        {
+                            sender: transfer.vet.sender,
+                            recipient: transfer.vet.recipient,
+                            txOrigin: transfer.meta.txOrigin,
+                        },
+                    ],
+                }))
+            },
+        )
 
-        it('should be able to omit the "criteriaSet" field', async () => {
-            await runTransferLogsTest((request) => ({
-                ...request,
-                criteriaSet: null,
-            }))
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able to omit the "criteriaSet" field',
+            async () => {
+                await runTransferLogsTest((request) => ({
+                    ...request,
+                    criteriaSet: null,
+                }))
+            },
+        )
     })
 
     describe('query by "order"', () => {
@@ -467,20 +529,32 @@ describe('POST /logs/transfers', () => {
             )
         }
 
-        it('events should be ordered by DESC', async () => {
-            await queryTransferLogsTest('desc')
-        })
+        testCase(['solo', 'default-private'])(
+            'events should be ordered by DESC',
+            async () => {
+                await queryTransferLogsTest('desc')
+            },
+        )
 
-        it('events should be ordered by ASC', async () => {
-            await queryTransferLogsTest('asc')
-        })
+        testCase(['solo', 'default-private'])(
+            'events should be ordered by ASC',
+            async () => {
+                await queryTransferLogsTest('asc')
+            },
+        )
 
-        it('default should be asc', async () => {
-            await queryTransferLogsTest(undefined)
-        })
+        testCase(['solo', 'default-private'])(
+            'default should be asc',
+            async () => {
+                await queryTransferLogsTest(undefined)
+            },
+        )
 
-        it('default should be asc', async () => {
-            await queryTransferLogsTest(null)
-        })
+        testCase(['solo', 'default-private'])(
+            'default should be asc',
+            async () => {
+                await queryTransferLogsTest(null)
+            },
+        )
     })
 })

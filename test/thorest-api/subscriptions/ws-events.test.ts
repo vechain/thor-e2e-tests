@@ -5,38 +5,43 @@ import { fundAccount, fundingAmounts } from '../../../src/account-faucet'
 import { addAddressPadding } from '../../../src/utils/padding-utils'
 import { components } from '../../../src/open-api-types'
 import { generateAddress } from '../../../src/wallet'
+import { testCase } from '../../../src/test-case'
 
 /**
  * @group api
  * @group websockets
  */
 describe('WS /subscriptions/event', () => {
-    it('should be able to subscribe', async () => {
-        const events: components['schemas']['SubscriptionEventResponse'][] = []
-        const account = generateAddress()
+    testCase(['solo', 'default-private'])(
+        'should be able to subscribe',
+        async () => {
+            const events: components['schemas']['SubscriptionEventResponse'][] =
+                []
+            const account = generateAddress()
 
-        Client.raw.subscribeToEvents(
-            (event) => {
-                events.push(event)
-            },
-            {
-                addr: contractAddresses.energy,
-                t0: interfaces.energy.getEvent('Transfer').topicHash,
-                t2: addAddressPadding(account),
-            },
-        )
-        const { receipt } = await fundAccount(
-            account,
-            fundingAmounts.noVetTinyVtho,
-        )
+            Client.raw.subscribeToEvents(
+                (event) => {
+                    events.push(event)
+                },
+                {
+                    addr: contractAddresses.energy,
+                    t0: interfaces.energy.getEvent('Transfer').topicHash,
+                    t2: addAddressPadding(account),
+                },
+            )
+            const { receipt } = await fundAccount(
+                account,
+                fundingAmounts.noVetTinyVtho,
+            )
 
-        //sleep for 1 sec to ensure the beat is received
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+            //sleep for 1 sec to ensure the beat is received
+            await new Promise((resolve) => setTimeout(resolve, 1000))
 
-        const relevantEvent = events.find((event) => {
-            return event.meta?.txID === receipt.meta?.txID
-        })
+            const relevantEvent = events.find((event) => {
+                return event.meta?.txID === receipt.meta?.txID
+            })
 
-        expect(relevantEvent).not.toBeUndefined()
-    })
+            expect(relevantEvent).not.toBeUndefined()
+        },
+    )
 })

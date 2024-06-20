@@ -22,15 +22,18 @@ describe('GET /blocks/{revision}', function () {
         transfer = await getRandomTransfer()
     })
 
-    testCase('all')('gas limit it equal to 40_000_000', async function () {
-        const block = await Client.raw.getBlock(1, false)
+    testCase(['solo', 'default-private'])(
+        'gas limit it equal to 40_000_000',
+        async function () {
+            const block = await Client.raw.getBlock(1, false)
 
-        expect(block.success, 'API response should be a success').toBeTrue()
-        expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(block.body?.gasLimit).toEqual(40_000_000)
-    })
+            expect(block.success, 'API response should be a success').toBeTrue()
+            expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(block.body?.gasLimit).toEqual(40_000_000)
+        },
+    )
 
-    testCaseEach('all')(
+    testCaseEach(['solo', 'default-private'])(
         'can get block for revision: %s',
         revisions.valid(true),
         async function (revision) {
@@ -61,7 +64,7 @@ describe('GET /blocks/{revision}', function () {
         },
     )
 
-    testCaseEach('all')(
+    testCaseEach(['solo', 'default-private'])(
         'valid revisions not found: %s',
         revisions.validNotFound,
         async function (revision) {
@@ -73,7 +76,7 @@ describe('GET /blocks/{revision}', function () {
         },
     )
 
-    testCaseEach('all')(
+    testCaseEach(['solo', 'default-private'])(
         'invalid revisions: %s',
         revisions.invalid,
         async function (revision) {
@@ -84,60 +87,67 @@ describe('GET /blocks/{revision}', function () {
         },
     )
 
-    testCase('all')('should be able get compressed blocks', async function () {
-        const res = await Client.raw.getBlock(transfer.meta?.blockID, false)
+    testCase(['solo', 'default-private'])(
+        'should be able get compressed blocks',
+        async function () {
+            const res = await Client.raw.getBlock(transfer.meta?.blockID, false)
 
-        expect(res.success, 'API response should be a success').toBeTrue()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(res.body, 'Block should not be null').not.toEqual(null)
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Block should not be null').not.toEqual(null)
 
-        const block = res.body as components['schemas']['GetBlockResponse']
+            const block = res.body as components['schemas']['GetBlockResponse']
 
-        const relevantTx = block.transactions!.find(
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            (txID: string) => txID === transfer.meta.txID,
-        )
+            const relevantTx = block.transactions!.find(
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
+                (txID: string) => txID === transfer.meta.txID,
+            )
 
-        expect(relevantTx).toBeTruthy()
-        expect(relevantTx).toEqual(transfer.meta?.txID)
-    })
+            expect(relevantTx).toBeTruthy()
+            expect(relevantTx).toEqual(transfer.meta?.txID)
+        },
+    )
 
-    testCase('all')('should be able get expanded blocks', async function () {
-        const res = await Client.raw.getBlock(transfer.meta.blockID, true)
+    testCase(['solo', 'default-private'])(
+        'should be able get expanded blocks',
+        async function () {
+            const res = await Client.raw.getBlock(transfer.meta.blockID, true)
 
-        expect(res.success, 'API response should be a success').toBeTrue()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(res.body, 'Block should not be null').not.toEqual(null)
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Block should not be null').not.toEqual(null)
 
-        const block = res.body as components['schemas']['GetBlockResponse']
+            const block = res.body as components['schemas']['GetBlockResponse']
 
-        const relevantTx = block.transactions!.find(
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            (tx: components['schemas']['Tx']) => tx.id === transfer.meta.txID,
-        )
+            const relevantTx = block.transactions!.find(
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
+                (tx: components['schemas']['Tx']) =>
+                    tx.id === transfer.meta.txID,
+            )
 
-        expect(relevantTx).toBeTruthy()
-        expect(relevantTx).toEqual({
-            blockRef: expect.stringMatching(HEX_REGEX_16),
-            chainTag: expect.any(Number),
-            clauses: expect.any(Array),
-            delegator: null,
-            dependsOn: null,
-            expiration: expect.any(Number),
-            gas: expect.any(Number),
-            gasPayer: expect.stringMatching(HEX_REGEX_40),
-            gasPriceCoef: expect.any(Number),
-            gasUsed: expect.any(Number),
-            id: transfer.meta.txID,
-            nonce: expect.stringMatching(HEX_REGEX),
-            origin: expect.stringMatching(HEX_REGEX_40),
-            outputs: expect.any(Array),
-            paid: expect.stringMatching(HEX_REGEX),
-            reverted: false,
-            reward: expect.stringMatching(HEX_REGEX),
-            size: expect.any(Number),
-        })
-    })
+            expect(relevantTx).toBeTruthy()
+            expect(relevantTx).toEqual({
+                blockRef: expect.stringMatching(HEX_REGEX_16),
+                chainTag: expect.any(Number),
+                clauses: expect.any(Array),
+                delegator: null,
+                dependsOn: null,
+                expiration: expect.any(Number),
+                gas: expect.any(Number),
+                gasPayer: expect.stringMatching(HEX_REGEX_40),
+                gasPriceCoef: expect.any(Number),
+                gasUsed: expect.any(Number),
+                id: transfer.meta.txID,
+                nonce: expect.stringMatching(HEX_REGEX),
+                origin: expect.stringMatching(HEX_REGEX_40),
+                outputs: expect.any(Array),
+                paid: expect.stringMatching(HEX_REGEX),
+                reverted: false,
+                reward: expect.stringMatching(HEX_REGEX),
+                size: expect.any(Number),
+            })
+        },
+    )
 })

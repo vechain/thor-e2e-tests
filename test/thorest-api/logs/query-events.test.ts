@@ -14,7 +14,7 @@ import { addAddressPadding } from '../../../src/utils/padding-utils'
 import { Transfer } from '../../../src/types'
 import { getRandomTransfer } from '../../../src/logs/query-logs'
 import { populatedData } from '../../../src/populated-data'
-import { describeCases, testCase } from '../../../src/test-case'
+import { describeCases, testCase, testCaseEach } from '../../../src/test-case'
 
 const buildRequestFromTransfer = (
     transfer: Transfer,
@@ -46,34 +46,40 @@ type EventLogFilterRequest = components['schemas']['EventLogFilterRequest']
 describe('POST /logs/event', () => {
     const transferDetails = populatedData.read().transferDetails
 
-    it('should find a log with all parameters set', async () => {
-        const transfer = await getRandomTransfer()
+    testCase(['solo', 'default-private'])(
+        'should find a log with all parameters set',
+        async () => {
+            const transfer = await getRandomTransfer()
 
-        const request = buildRequestFromTransfer(transfer)
+            const request = buildRequestFromTransfer(transfer)
 
-        const eventLogs = await Client.raw.queryEventLogs(request)
+            const eventLogs = await Client.raw.queryEventLogs(request)
 
-        expect(eventLogs.success, 'API response should be a success').toBeTrue()
-        expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                eventLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
 
-        const relevantLog = eventLogs.body?.find((log) => {
-            return log?.meta?.txID === transfer.meta.txID
-        })
+            const relevantLog = eventLogs.body?.find((log) => {
+                return log?.meta?.txID === transfer.meta.txID
+            })
 
-        expect(relevantLog, 'Expected event log response format').toEqual({
-            address: contractAddresses.energy,
-            topics: transfer.vtho.topics,
-            data: expect.stringMatching(HEX_REGEX_64),
-            meta: {
-                blockID: expect.stringMatching(HEX_REGEX_64),
-                blockNumber: expect.any(Number),
-                blockTimestamp: expect.any(Number),
-                txID: expect.stringMatching(HEX_REGEX_64),
-                txOrigin: transfer.meta.txOrigin,
-                clauseIndex: expect.any(Number),
-            },
-        })
-    })
+            expect(relevantLog, 'Expected event log response format').toEqual({
+                address: contractAddresses.energy,
+                topics: transfer.vtho.topics,
+                data: expect.stringMatching(HEX_REGEX_64),
+                meta: {
+                    blockID: expect.stringMatching(HEX_REGEX_64),
+                    blockNumber: expect.any(Number),
+                    blockTimestamp: expect.any(Number),
+                    txID: expect.stringMatching(HEX_REGEX_64),
+                    txOrigin: transfer.meta.txOrigin,
+                    clauseIndex: expect.any(Number),
+                },
+            })
+        },
+    )
 
     testCase(['default-private', 'solo'])(
         'should be able to omit all the parameters',
@@ -149,55 +155,67 @@ describe('POST /logs/event', () => {
             },
         )
 
-        it('should be able to omit the "to" field', async () => {
-            await runEventLogsTest((request) => {
-                return {
-                    ...request,
-                    range: {
-                        ...request.range,
-                        to: undefined,
-                    },
-                }
-            })
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able to omit the "to" field',
+            async () => {
+                await runEventLogsTest((request) => {
+                    return {
+                        ...request,
+                        range: {
+                            ...request.range,
+                            to: undefined,
+                        },
+                    }
+                })
+            },
+        )
 
-        it('should be omit the "unit" field', async () => {
-            await runEventLogsTest((request) => {
-                return {
-                    ...request,
-                    range: {
-                        ...request.range,
-                        unit: undefined,
-                    },
-                }
-            })
-        })
+        testCase(['solo', 'default-private'])(
+            'should be omit the "unit" field',
+            async () => {
+                await runEventLogsTest((request) => {
+                    return {
+                        ...request,
+                        range: {
+                            ...request.range,
+                            unit: undefined,
+                        },
+                    }
+                })
+            },
+        )
 
-        it('should be able query by time', async () => {
-            await runEventLogsTest((request, transfer) => {
-                return {
-                    ...request,
-                    range: {
-                        to: transfer.meta.blockTimestamp + 1000,
-                        from: transfer.meta.blockTimestamp - 1000,
-                        unit: 'time',
-                    },
-                }
-            })
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able query by time',
+            async () => {
+                await runEventLogsTest((request, transfer) => {
+                    return {
+                        ...request,
+                        range: {
+                            to: transfer.meta.blockTimestamp + 1000,
+                            from: transfer.meta.blockTimestamp - 1000,
+                            unit: 'time',
+                        },
+                    }
+                })
+            },
+        )
 
-        it('should be able query by block', async () => {
-            await runEventLogsTest((request, transfer) => {
-                return {
-                    ...request,
-                    range: {
-                        to: transfer.meta.blockNumber,
-                        from: transfer.meta.blockNumber,
-                        unit: 'block',
-                    },
-                }
-            })
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able query by block',
+            async () => {
+                await runEventLogsTest((request, transfer) => {
+                    return {
+                        ...request,
+                        range: {
+                            to: transfer.meta.blockNumber,
+                            from: transfer.meta.blockNumber,
+                            unit: 'block',
+                        },
+                    }
+                })
+            },
+        )
 
         testCase(['default-private', 'solo'])(
             'should be able to set the range to null',
@@ -270,61 +288,82 @@ describe('POST /logs/event', () => {
             )
         }
 
-        it('events should be ordered by DESC', async () => {
-            await runQueryEventLogsTest('desc')
-        })
+        testCase(['solo', 'default-private'])(
+            'events should be ordered by DESC',
+            async () => {
+                await runQueryEventLogsTest('desc')
+            },
+        )
 
-        it('events should be ordered by ASC', async () => {
-            await runQueryEventLogsTest('asc')
-        })
+        testCase(['solo', 'default-private'])(
+            'events should be ordered by ASC',
+            async () => {
+                await runQueryEventLogsTest('asc')
+            },
+        )
 
-        it('default should be asc', async () => {
-            await runQueryEventLogsTest(undefined)
-        })
+        testCase(['solo', 'default-private'])(
+            'default should be asc',
+            async () => {
+                await runQueryEventLogsTest(undefined)
+            },
+        )
 
-        it('should be able to set the order to null', async () => {
-            await runQueryEventLogsTest(null)
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able to set the order to null',
+            async () => {
+                await runQueryEventLogsTest(null)
+            },
+        )
     })
 
     describe('query by "options"', () => {
-        it('should be able omit all the options', async () => {
-            await runEventLogsTest((request) => {
-                return {
-                    ...request,
-                    options: null,
-                }
-            })
-        })
+        testCase(['solo', 'default-private'])(
+            'should be able omit all the options',
+            async () => {
+                await runEventLogsTest((request) => {
+                    return {
+                        ...request,
+                        options: null,
+                    }
+                })
+            },
+        )
 
-        it('should be able to omit the "offset" field', async () => {
-            await runEventLogsTest((request) => {
-                return {
-                    ...request,
+        testCase(['solo', 'default-private'])(
+            'should be able to omit the "offset" field',
+            async () => {
+                await runEventLogsTest((request) => {
+                    return {
+                        ...request,
+                        options: {
+                            limit: 10_000,
+                            offset: undefined,
+                        },
+                    }
+                })
+            },
+        )
+
+        testCase(['solo', 'default-private'])(
+            'should be able to omit the "limit" field',
+            async () => {
+                const request = {
                     options: {
-                        limit: 10_000,
-                        offset: undefined,
+                        offset: 0,
                     },
                 }
-            })
-        })
 
-        it('should be able to omit the "limit" field', async () => {
-            const request = {
-                options: {
-                    offset: 0,
-                },
-            }
+                const eventLogs = await Client.raw.queryEventLogs(request)
 
-            const eventLogs = await Client.raw.queryEventLogs(request)
-
-            expect(
-                eventLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(eventLogs.body?.length).toEqual(0)
-        })
+                expect(
+                    eventLogs.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(eventLogs.body?.length).toEqual(0)
+            },
+        )
 
         testCase(['default-private', 'solo'])(
             'should have no maximum "limit"',
@@ -347,95 +386,101 @@ describe('POST /logs/event', () => {
             },
         )
 
-        it('should have no minimum "limit"', async () => {
-            const request = {
-                options: {
-                    offset: 0,
-                    limit: 0,
-                },
-            }
-
-            const eventLogs = await Client.raw.queryEventLogs(request)
-
-            expect(
-                eventLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(eventLogs.body?.length).toEqual(0)
-        })
-
-        it('should be able paginate requests', async () => {
-            const { firstBlock, lastBlock } = await transferDetails
-
-            const pages = 5
-            const amountPerPage = 10
-            const totalElements = pages * amountPerPage
-
-            const query = async (offset: number, limit: number) =>
-                Client.raw.queryEventLogs({
-                    range: {
-                        from: firstBlock,
-                        to: lastBlock,
-                        unit: 'block',
-                    },
+        testCase(['solo', 'default-private'])(
+            'should have no minimum "limit"',
+            async () => {
+                const request = {
                     options: {
-                        offset,
-                        limit,
+                        offset: 0,
+                        limit: 0,
                     },
-                    criteriaSet: [
-                        {
-                            address: contractAddresses.energy,
-                        },
-                    ],
-                })
+                }
 
-            const allElements = await query(0, totalElements)
-
-            expect(
-                allElements.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(allElements.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(
-                allElements.body?.length,
-                'Should be able to query for all elements',
-            ).toEqual(totalElements)
-
-            const paginatedElements: components['schemas']['EventLogsResponse'][] =
-                []
-
-            for (let i = 0; i < pages; i++) {
-                const paginatedResponse = await query(
-                    paginatedElements.length,
-                    amountPerPage,
-                )
+                const eventLogs = await Client.raw.queryEventLogs(request)
 
                 expect(
-                    paginatedResponse.success,
+                    eventLogs.success,
                     'API response should be a success',
                 ).toBeTrue()
+                expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(eventLogs.body?.length).toEqual(0)
+            },
+        )
+
+        testCase(['solo', 'default-private'])(
+            'should be able paginate requests',
+            async () => {
+                const { firstBlock, lastBlock } = await transferDetails
+
+                const pages = 5
+                const amountPerPage = 10
+                const totalElements = pages * amountPerPage
+
+                const query = async (offset: number, limit: number) =>
+                    Client.raw.queryEventLogs({
+                        range: {
+                            from: firstBlock,
+                            to: lastBlock,
+                            unit: 'block',
+                        },
+                        options: {
+                            offset,
+                            limit,
+                        },
+                        criteriaSet: [
+                            {
+                                address: contractAddresses.energy,
+                            },
+                        ],
+                    })
+
+                const allElements = await query(0, totalElements)
+
                 expect(
-                    paginatedResponse.httpCode,
-                    'Expected HTTP Code',
-                ).toEqual(200)
+                    allElements.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(allElements.httpCode, 'Expected HTTP Code').toEqual(200)
                 expect(
-                    paginatedResponse.body?.length,
-                    'Should be able to query for a paginated amount',
-                ).toEqual(amountPerPage)
+                    allElements.body?.length,
+                    'Should be able to query for all elements',
+                ).toEqual(totalElements)
 
-                const elements = paginatedResponse.body?.filter(
-                    (it) => it !== undefined,
-                ) as components['schemas']['EventLogsResponse'][]
+                const paginatedElements: components['schemas']['EventLogsResponse'][] =
+                    []
 
-                paginatedElements.push(...elements)
-            }
+                for (let i = 0; i < pages; i++) {
+                    const paginatedResponse = await query(
+                        paginatedElements.length,
+                        amountPerPage,
+                    )
 
-            expect(
-                allElements.body,
-                'Paginated items should equal all elements',
-            ).toEqual(paginatedElements)
-        })
+                    expect(
+                        paginatedResponse.success,
+                        'API response should be a success',
+                    ).toBeTrue()
+                    expect(
+                        paginatedResponse.httpCode,
+                        'Expected HTTP Code',
+                    ).toEqual(200)
+                    expect(
+                        paginatedResponse.body?.length,
+                        'Should be able to query for a paginated amount',
+                    ).toEqual(amountPerPage)
+
+                    const elements = paginatedResponse.body?.filter(
+                        (it) => it !== undefined,
+                    ) as components['schemas']['EventLogsResponse'][]
+
+                    paginatedElements.push(...elements)
+                }
+
+                expect(
+                    allElements.body,
+                    'Paginated items should equal all elements',
+                ).toEqual(paginatedElements)
+            },
+        )
 
         testCase(['solo', 'default-private'])(
             'should be empty when pagination exceeds the total amount',
@@ -537,34 +582,41 @@ describe('POST /logs/event', () => {
             })
         }
 
-        it('should be able query by contract address', async () => {
-            const res = await Client.raw.queryEventLogs({
-                criteriaSet: [
-                    {
-                        address: contract.address,
-                    },
-                ],
-                range,
-            })
+        testCase(['solo', 'default-private'])(
+            'should be able query by contract address',
+            async () => {
+                const res = await Client.raw.queryEventLogs({
+                    criteriaSet: [
+                        {
+                            address: contract.address,
+                        },
+                    ],
+                    range,
+                })
 
-            await expectOriginalEvent(res)
-        })
+                await expectOriginalEvent(res)
+            },
+        )
 
-        it('should be able query by topic0 address', async () => {
-            const res = await Client.raw.queryEventLogs({
-                criteriaSet: [
-                    {
-                        topic0: eventHash,
-                    },
-                ],
-                range,
-            })
+        testCase(['solo', 'default-private'])(
+            'should be able query by topic0 address',
+            async () => {
+                const res = await Client.raw.queryEventLogs({
+                    criteriaSet: [
+                        {
+                            topic0: eventHash,
+                        },
+                    ],
+                    range,
+                })
 
-            await expectOriginalEvent(res)
-        })
+                await expectOriginalEvent(res)
+            },
+        )
 
-        it.each([1, 2, 3])(
+        testCaseEach(['solo', 'default-private'])(
             `should be able query by topic%d`,
+            [1, 2, 3],
             async (topicIndex) => {
                 const res = await Client.raw.queryEventLogs({
                     criteriaSet: [
@@ -579,75 +631,93 @@ describe('POST /logs/event', () => {
             },
         )
 
-        it('should be able query by all topics', async () => {
-            const res = await Client.raw.queryEventLogs({
-                criteriaSet: [
-                    {
-                        topic0: eventHash,
-                        topic1: topics[0],
-                        topic2: topics[1],
-                        topic3: topics[2],
-                    },
-                ],
-                range,
-            })
+        testCase(['solo', 'default-private'])(
+            'should be able query by all topics',
+            async () => {
+                const res = await Client.raw.queryEventLogs({
+                    criteriaSet: [
+                        {
+                            topic0: eventHash,
+                            topic1: topics[0],
+                            topic2: topics[1],
+                            topic3: topics[2],
+                        },
+                    ],
+                    range,
+                })
 
-            await expectOriginalEvent(res)
-        })
+                await expectOriginalEvent(res)
+            },
+        )
 
-        it('should be able query by all topics and address', async () => {
-            const res = await Client.raw.queryEventLogs({
-                criteriaSet: [
-                    {
-                        address: contract.address,
-                        topic0: eventHash,
-                        topic1: topics[0],
-                        topic2: topics[1],
-                        topic3: topics[2],
-                    },
-                ],
-                range,
-            })
+        testCase(['solo', 'default-private'])(
+            'should be able query by all topics and address',
+            async () => {
+                const res = await Client.raw.queryEventLogs({
+                    criteriaSet: [
+                        {
+                            address: contract.address,
+                            topic0: eventHash,
+                            topic1: topics[0],
+                            topic2: topics[1],
+                            topic3: topics[2],
+                        },
+                    ],
+                    range,
+                })
 
-            await expectOriginalEvent(res)
-        })
+                await expectOriginalEvent(res)
+            },
+        )
 
-        it('should be empty for matching topics and non-matching address', async () => {
-            const res = await Client.raw.queryEventLogs({
-                criteriaSet: [
-                    {
-                        address: contractAddresses.energy,
-                        topic0: eventHash,
-                        topic1: topics[0],
-                        topic2: topics[1],
-                        topic3: topics[2],
-                    },
-                ],
-                range,
-            })
+        testCase(['solo', 'default-private'])(
+            'should be empty for matching topics and non-matching address',
+            async () => {
+                const res = await Client.raw.queryEventLogs({
+                    criteriaSet: [
+                        {
+                            address: contractAddresses.energy,
+                            topic0: eventHash,
+                            topic1: topics[0],
+                            topic2: topics[1],
+                            topic3: topics[2],
+                        },
+                    ],
+                    range,
+                })
 
-            expect(res.success, 'API response should be a success').toBeTrue()
-            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(res.body, 'Expected Response Body').toEqual([])
-        })
+                expect(
+                    res.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(res.body, 'Expected Response Body').toEqual([])
+            },
+        )
 
-        it('should be empty for non-matching topics and matching address', async () => {
-            const res = await Client.raw.queryEventLogs({
-                criteriaSet: [
-                    {
-                        address: contract.address,
-                        topic0: eventHash,
-                        topic1: topics[0],
-                        topic2: topics[1],
-                        topic3: topics[1],
-                    },
-                ],
-                range,
-            })
+        testCase(['solo', 'default-private'])(
+            'should be empty for non-matching topics and matching address',
+            async () => {
+                const res = await Client.raw.queryEventLogs({
+                    criteriaSet: [
+                        {
+                            address: contract.address,
+                            topic0: eventHash,
+                            topic1: topics[0],
+                            topic2: topics[1],
+                            topic3: topics[1],
+                        },
+                    ],
+                    range,
+                })
 
-            expect(res.success, 'API response should be a success').toBeTrue()
-            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(res.body, 'Expected Response Body').toEqual([])
-        })
+                expect(
+                    res.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(res.body, 'Expected Response Body').toEqual([])
+            },
+        )
     })
 })

@@ -4,6 +4,7 @@ import { HEX_REGEX } from '../../../src/utils/hex-utils'
 import { revisions } from '../../../src/constants'
 import { Transfer } from '../../../src/types'
 import { getRandomTransfer } from '../../../src/logs/query-logs'
+import { testCase, testCaseEach } from '../../../src/test-case'
 
 /**
  * @group api
@@ -23,7 +24,7 @@ describe('GET /accounts/{address}', function () {
         transfer = await getRandomTransfer()
     })
 
-    it('correct balance', async function () {
+    testCase(['solo', 'default-private'])('correct balance', async function () {
         const res = await Client.raw.getAccount(transfer.vet.recipient)
 
         expect(res.success, 'API response should be a success').toBeTrue()
@@ -35,42 +36,61 @@ describe('GET /accounts/{address}', function () {
         })
     })
 
-    it('contract account hasCode', async function () {
-        const addr = contractAddresses.energy
-        const res = await Client.raw.getAccount(addr)
+    testCase(['solo', 'default-private'])(
+        'contract account hasCode',
+        async function () {
+            const addr = contractAddresses.energy
+            const res = await Client.raw.getAccount(addr)
 
-        expect(res.success, 'API response should be a success').toBeTrue()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(res.body, 'Expected Response Body').toEqual({
-            balance: expect.stringMatching(HEX_REGEX),
-            energy: expect.stringMatching(HEX_REGEX),
-            hasCode: true,
-        })
-    })
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Expected Response Body').toEqual({
+                balance: expect.stringMatching(HEX_REGEX),
+                energy: expect.stringMatching(HEX_REGEX),
+                hasCode: true,
+            })
+        },
+    )
 
-    it.each(revisions.valid())('valid revision %s', async function (revision) {
-        const res = await Client.raw.getAccount(
-            transfer.vet.recipient,
-            revision,
-        )
-        expect(res.success, 'API response should be a success').toBeTrue()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(res.body, 'Expected Response Body').toEqual({
-            balance: expect.stringMatching(HEX_REGEX),
-            energy: expect.stringMatching(HEX_REGEX),
-            hasCode: false,
-        })
-    })
+    testCaseEach(['solo', 'default-private'])(
+        'valid revision %s',
+        revisions.valid(),
+        async function (revision) {
+            const res = await Client.raw.getAccount(
+                transfer.vet.recipient,
+                revision,
+            )
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Expected Response Body').toEqual({
+                balance: expect.stringMatching(HEX_REGEX),
+                energy: expect.stringMatching(HEX_REGEX),
+                hasCode: false,
+            })
+        },
+    )
 
-    it.each(invalidAddresses)('invalid address: %s', async (a) => {
-        const res = await Client.raw.getAccount(a as string)
-        expect(res.success, 'API Call should fail').toBeFalse()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
-    })
+    testCaseEach(['solo', 'default-private'])(
+        'invalid address %s',
+        invalidAddresses,
+        async function (addr) {
+            const res = await Client.raw.getAccount(addr as string)
 
-    it.each(revisions.invalid)('invalid revision: %s', async (r) => {
-        const res = await Client.raw.getAccount(transfer.vet.recipient, r)
-        expect(res.success, 'API Call should fail').toBeFalse()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
-    })
+            expect(res.success, 'API Call should fail').toBeFalse()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
+        },
+    )
+
+    testCaseEach(['solo', 'default-private'])(
+        'invalid revision %s',
+        revisions.invalid,
+        async function (revision) {
+            const res = await Client.raw.getAccount(
+                transfer.vet.recipient,
+                revision,
+            )
+            expect(res.success, 'API Call should fail').toBeFalse()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
+        },
+    )
 })
