@@ -9,5 +9,8 @@
         "resolveJsonModule": true
     },
     "include": ["./scripts", "./test", "./typechain-types"],
-    "files": ["./hardhat.config.ts"]
+    "files": [
+        "./hardhat.config.ts",
+        "./test/thorest-api/transactions/newFile.ts"
+    ]
 }

@@ -1,9 +1,6 @@
-import { Node1Client } from "../../../../src/thor-client";
-import { pollReceipt } from "../../../../src/transactions";
-import {
-    TestCasePlan,
-    TestCasePlanStepError
-} from "./models";
+import { Node1Client } from '../../../../src/thor-client'
+import { pollReceipt } from '../../../../src/transactions'
+import { TestCasePlan, TestCasePlanStepError } from './models'
 
 /**
  * Represents a data-driven test flow for transactions.
@@ -31,9 +28,10 @@ class TransactionDataDrivenFlow {
 
     private async postTransaction(): Promise<string | undefined> {
         const { rawTx, expectedResult } = this.plan.postTxStep
-        const { success, body, httpCode, httpMessage } = await Node1Client.sendTransaction({
-            raw: `0x${rawTx}`,
-        })
+        const { success, body, httpCode, httpMessage } =
+            await Node1Client.sendTransaction({
+                raw: `0x${rawTx}`,
+            })
 
         expectedResult({ success, body, httpCode, httpMessage })
 
@@ -47,7 +45,9 @@ class TransactionDataDrivenFlow {
 
         const { expectedResult } = this.plan.getTxStep
         if (!txId) {
-            throw new TestCasePlanStepError('getTransaction step expected to execute, but txId is not defined')
+            throw new TestCasePlanStepError(
+                'getTransaction step expected to execute, but txId is not defined',
+            )
         }
 
         const tx = await Node1Client.getTransaction(txId, {
@@ -57,14 +57,18 @@ class TransactionDataDrivenFlow {
         expectedResult(tx)
     }
 
-    private async getTransactionReceipt(txId?: string): Promise<string | undefined> {
+    private async getTransactionReceipt(
+        txId?: string,
+    ): Promise<string | undefined> {
         if (!this.plan.getTxReceiptStep) {
             return
         }
 
         const { expectedResult } = this.plan.getTxReceiptStep
         if (!txId) {
-            throw new TestCasePlanStepError('getTransactionReceipt step expected to execute, but txId is not defined')
+            throw new TestCasePlanStepError(
+                'getTransactionReceipt step expected to execute, but txId is not defined',
+            )
         }
 
         const receipt = await pollReceipt(txId)
@@ -74,14 +78,19 @@ class TransactionDataDrivenFlow {
         return receipt.meta?.blockID
     }
 
-    private async getTransactionBlock(blockId: string | undefined, txId: string | undefined) {
+    private async getTransactionBlock(
+        blockId: string | undefined,
+        txId: string | undefined,
+    ) {
         if (!this.plan.getTxBlockStep) {
             return
         }
 
         const { expectedResult } = this.plan.getTxBlockStep
         if (!blockId || !txId) {
-            throw new TestCasePlanStepError('getTransactionBlock step expected to execute, but txId or blockId are not defined')
+            throw new TestCasePlanStepError(
+                'getTransactionBlock step expected to execute, but txId or blockId are not defined',
+            )
         }
 
         const block = await Node1Client.getBlock(blockId)
@@ -90,6 +99,4 @@ class TransactionDataDrivenFlow {
     }
 }
 
-export {
-    TransactionDataDrivenFlow
-}
+export { TransactionDataDrivenFlow }

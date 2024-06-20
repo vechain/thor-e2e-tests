@@ -13,7 +13,9 @@ describe('send tx with not enough gas', function () {
 
     it('should fail when making a contract deployment', async function () {
         // Prepare the transaction
-        const deployContractClause = clauseBuilder.deployContract(ParisCounter.bytecode)
+        const deployContractClause = clauseBuilder.deployContract(
+            ParisCounter.bytecode,
+        )
         const txBody = await wallet.buildTransaction([deployContractClause])
         txBody.gas = 0
         const tx = new Transaction(txBody)
@@ -23,8 +25,12 @@ describe('send tx with not enough gas', function () {
         const testPlan = {
             postTxStep: {
                 rawTx,
-                expectedResult: (data: any) => revertedPostTx(data, 'bad tx: intrinsic gas exceeds provided gas')
-            }
+                expectedResult: (data: any) =>
+                    revertedPostTx(
+                        data,
+                        'bad tx: intrinsic gas exceeds provided gas',
+                    ),
+            },
         }
 
         // Run the test flow
@@ -51,8 +57,12 @@ describe('send tx with not enough gas', function () {
         const testPlan = {
             postTxStep: {
                 rawTx,
-                expectedResult: (data: any) => revertedPostTx(data, 'bad tx: intrinsic gas exceeds provided gas')
-            }
+                expectedResult: (data: any) =>
+                    revertedPostTx(
+                        data,
+                        'bad tx: intrinsic gas exceeds provided gas',
+                    ),
+            },
         }
 
         // Run the test flow
@@ -85,8 +95,12 @@ describe('send tx with not enough gas', function () {
         const testPlan = {
             postTxStep: {
                 rawTx,
-                expectedResult: (data: any) => revertedPostTx(data, 'bad tx: intrinsic gas exceeds provided gas')
-            }
+                expectedResult: (data: any) =>
+                    revertedPostTx(
+                        data,
+                        'bad tx: intrinsic gas exceeds provided gas',
+                    ),
+            },
         }
 
         // Run the test flow
