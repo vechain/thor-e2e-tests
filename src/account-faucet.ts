@@ -10,6 +10,16 @@ type FundingAmounts = {
     vtho: number | string
 }
 
+const fundingAmounts = {
+    tinyVetTinyVtho: { vet: '0x1', vtho: '0x1' },
+    tinyVetNoVtho: { vet: '0x1', vtho: '0x0' },
+    tinyVetBigVtho: { vet: '0x1', vtho: 50e18 },
+    noVetBigVtho: { vet: '0x0', vtho: 100e18 },
+    noVetMassiveVtho: { vet: '0x0', vtho: 1000e18 },
+    noVetSmallVtho: { vet: '0x0', vtho: 5e18 },
+    noVetTinyVtho: { vet: '0x0', vtho: '0x1' },
+}
+
 const randomFunder = () => {
     const randomIndex = Math.floor(Math.random() * testEnv.keys.length)
     return new ThorWallet(Buffer.from(testEnv.keys[randomIndex], 'hex'))
@@ -21,10 +31,7 @@ const parseAmount = (amount: number | string): number => {
     }
 
     return parseInt(amount)
-} /**
- * Fund an account using the faucet. VET and VTHO will be sent to the account
- * @param account
- */
+}
 
 const fundAccount = async (account: string, amounts: FundingAmounts) => {
     const wallet = randomFunder()
@@ -34,7 +41,7 @@ const fundAccount = async (account: string, amounts: FundingAmounts) => {
     if (vetAmount > 0) {
         clauses.push({
             to: account,
-            value: vetAmount,
+            value: vetAmount.toString(16),
             data: '0x',
         })
     }
@@ -46,7 +53,7 @@ const fundAccount = async (account: string, amounts: FundingAmounts) => {
             value: '0x0',
             data: interfaces.energy.encodeFunctionData('transfer', [
                 account,
-                vthoAmount,
+                BigInt(vthoAmount),
             ]),
         })
     }
@@ -79,4 +86,4 @@ export const delegateTx = (txBody: TransactionBody, senderAddress: string) => {
     }
 }
 
-export { randomFunder, fundAccount, FundingAmounts }
+export { randomFunder, fundAccount, FundingAmounts, fundingAmounts }

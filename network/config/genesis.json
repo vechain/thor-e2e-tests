@@ -90,7 +90,7 @@
     ],
     "params": {
         "rewardRatio": 300000000000000000,
-        "baseGasPrice": 1000000000000000,
+        "baseGasPrice": 10000000000000,
         "proposerEndorsement": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
         "executorAddress": "0x0000000000000000000000004578656375746f72"
     },

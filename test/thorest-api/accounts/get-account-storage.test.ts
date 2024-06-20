@@ -4,6 +4,7 @@ import { addUintPadding } from '../../../src/utils/padding-utils'
 import { revisions } from '../../../src/constants'
 import { HEX_REGEX_64 } from '../../../src/utils/hex-utils'
 import { ThorWallet } from '../../../src/wallet'
+import { fundingAmounts } from '../../../src/account-faucet'
 
 const SIMPLE_STORAGE_KEY =
     '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -35,7 +36,7 @@ const setSimpleStorage = async (
  * @group accounts
  */
 describe('GET /accounts/{address}/storage', function () {
-    const wallet = ThorWallet.new(true)
+    const wallet = ThorWallet.withFunds({ vet: '0x0', vtho: 2500e18 })
     let simpleStorageAddress: string
 
     beforeAll(async () => {

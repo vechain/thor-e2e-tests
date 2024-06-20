@@ -1,6 +1,7 @@
 import { ThorWallet } from '../../src/wallet'
 import { Contract } from '@vechain/sdk-network'
 import {
+    IndividualOpCodes__factory,
     IndividualOpCodes__factory as Opcodes,
     SimpleCounterShanghai__factory as ShanghaiCounter,
 } from '../../typechain-types'
@@ -10,6 +11,7 @@ import {
     addUintPadding,
 } from '../../src/utils/padding-utils'
 import { pollReceipt } from '../../src/transactions'
+import { fundingAmounts } from '../../src/account-faucet'
 
 const opcodesInterface = Opcodes.createInterface()
 
@@ -27,13 +29,15 @@ const opcodesInterface = Opcodes.createInterface()
  * @group evm
  */
 describe('Individual OpCodes', () => {
-    let wallet: ThorWallet
-    let opcodes: Contract
+    const wallet: ThorWallet = ThorWallet.withFunds({
+        vet: '0x0',
+        vtho: 6000e18,
+    })
+    let opcodes: Contract<typeof IndividualOpCodes__factory.abi>
     const caller = '0xf077b491b355e64048ce21e3a6fc4751eeea77fa'
     const paddedCaller = addAddressPadding(caller) //remove 0x
         .slice(2)
     beforeAll(async () => {
-        wallet = ThorWallet.new(true)
         opcodes = await wallet.deployContract(Opcodes.bytecode, Opcodes.abi)
     })
 

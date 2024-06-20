@@ -15,8 +15,13 @@
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
 
 import { ThorWallet } from '../../src/wallet'
-import { OpCodes__factory as Opcodes } from '../../typechain-types'
+import {
+    OpCodes__factory,
+    OpCodes__factory as Opcodes,
+} from '../../typechain-types'
 import { Contract } from '@vechain/sdk-network'
+import { Client } from '../../src/thor-client'
+import { fundingAmounts } from '../../src/account-faucet'
 
 /**
  * @notice - Copied from: https://github.com/ethereum/go-ethereum/blob/master/tests/solidity/test/opCodes.js
@@ -27,11 +32,12 @@ import { Contract } from '@vechain/sdk-network'
  * @group evm
  */
 describe('EVM Opcodes', () => {
-    let wallet: ThorWallet
-    let opcodes: Contract
+    const wallet: ThorWallet = ThorWallet.withFunds(
+        fundingAmounts.noVetMassiveVtho,
+    )
+    let opcodes: Contract<typeof OpCodes__factory.abi>
 
     beforeAll(async () => {
-        wallet = ThorWallet.new(true)
         opcodes = await wallet.deployContract(Opcodes.bytecode, Opcodes.abi)
     })
 

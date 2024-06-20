@@ -38,6 +38,8 @@ const populate = async () => {
         transfersIds: txIds,
         transferDetails: details,
     })
+
+    console.log('Populated data')
 }
 
 const setup = async () => {

@@ -7,12 +7,13 @@
 import { Client } from '../thor-client'
 import { ThorWallet } from '../wallet'
 import { TransferDetails } from '../types'
+import { fundingAmounts } from '../account-faucet'
 
 const writeTransferTransactions = async (): Promise<TransferDetails> => {
     console.log('\n')
 
     const transferCount = 20
-    const iterations = 1
+    const iterations = 5
     let firstBlock = 0
     let lastBlock = 0
 
@@ -23,7 +24,9 @@ const writeTransferTransactions = async (): Promise<TransferDetails> => {
 
         const res = await Promise.all(
             Array.from({ length: 20 }, () => {
-                return ThorWallet.new(true).waitForFunding()
+                return ThorWallet.withFunds(
+                    fundingAmounts.tinyVetTinyVtho,
+                ).waitForFunding()
             }),
         )
 

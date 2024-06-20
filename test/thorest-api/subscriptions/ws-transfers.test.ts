@@ -1,5 +1,5 @@
 import { Client } from '../../../src/thor-client'
-import { fundAccount } from '../../../src/account-faucet'
+import { fundAccount, fundingAmounts } from '../../../src/account-faucet'
 import { components } from '../../../src/open-api-types'
 import { generateAddress } from '../../../src/wallet'
 
@@ -22,7 +22,10 @@ describe('WS /subscriptions/transfer', () => {
             },
         )
 
-        const { receipt } = await fundAccount(account)
+        const { receipt } = await fundAccount(
+            account,
+            fundingAmounts.tinyVetNoVtho,
+        )
         const sender = receipt.outputs?.[0].transfers?.[0].sender
 
         //sleep for 1 sec to ensure the beat is received

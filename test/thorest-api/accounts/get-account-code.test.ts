@@ -4,6 +4,7 @@ import { HEX_AT_LEAST_1 } from '../../../src/utils/hex-utils'
 import { SimpleCounter__factory } from '../../../typechain-types'
 import { revisions } from '../../../src/constants'
 import { generateAddresses, ThorWallet } from '../../../src/wallet'
+import { fundingAmounts } from '../../../src/account-faucet'
 
 /**
  * @group api
@@ -12,7 +13,7 @@ import { generateAddresses, ThorWallet } from '../../../src/wallet'
 describe('GET /accounts/{address}/code', function () {
     const accountAddress = generateAddresses(4)
 
-    const wallet = ThorWallet.new(true)
+    const wallet = ThorWallet.withFunds(fundingAmounts.noVetBigVtho)
 
     it.each(accountAddress)(
         'should return no code for newly created address: %s',

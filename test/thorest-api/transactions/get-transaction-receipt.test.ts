@@ -1,6 +1,6 @@
 import { Client } from '../../../src/thor-client'
 import assert from 'node:assert'
-import { readRandomTransfer } from '../../../src/populated-data'
+import { getRandomTransfer } from '../../../src/logs/query-logs'
 
 /**
  * @group api
@@ -8,7 +8,7 @@ import { readRandomTransfer } from '../../../src/populated-data'
  */
 describe('GET /transactions/{id}/receipt', function () {
     it('should get transaction receipt', async function () {
-        const transfer = await readRandomTransfer()
+        const transfer = await getRandomTransfer()
 
         const tx = await Client.raw.getTransactionReceipt(transfer.meta.txID)
 

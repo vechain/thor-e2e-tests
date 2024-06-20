@@ -3,13 +3,14 @@ import { generateAddress, ThorWallet } from '../../../src/wallet'
 import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-types'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
 import { revertedPostTx } from './setup/asserts'
+import { fundingAmounts } from '../../../src/account-faucet'
 
 /**
  * @group api
  * @group transactions
  */
 describe('send tx with not enough gas', function () {
-    const wallet = ThorWallet.new(true)
+    const wallet = ThorWallet.withFunds(fundingAmounts.noVetBigVtho)
 
     it('should fail when making a contract deployment', async function () {
         // Prepare the transaction

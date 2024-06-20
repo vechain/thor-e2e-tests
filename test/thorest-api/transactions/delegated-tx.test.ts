@@ -10,14 +10,15 @@ import {
 } from './setup/asserts'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
 import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-types'
+import { fundingAmounts } from '../../../src/account-faucet'
 
 /**
  * @group api
  * @group transactions
  */
 it('should send a tx with delegated payer', async function () {
-    const wallet = ThorWallet.new(true)
-    const emptyWallet = ThorWallet.new(false)
+    const wallet = ThorWallet.withFunds(fundingAmounts.noVetBigVtho)
+    const emptyWallet = ThorWallet.empty()
 
     const contract = await wallet.deployContract(
         ParisCounter.bytecode,

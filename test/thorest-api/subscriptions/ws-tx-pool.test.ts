@@ -1,5 +1,8 @@
 import { Client } from '../../../src/thor-client'
 import { generateAddress, ThorWallet } from '../../../src/wallet'
+import { fundAccount, fundingAmounts } from '../../../src/account-faucet'
+import { interfaces } from '../../../src/contracts/hardhat'
+import { contractAddresses } from '../../../src/contracts/addresses'
 
 /**
  * @group api
@@ -9,8 +12,6 @@ describe('WS /subscriptions/txpool', () => {
     it('should be able to subscribe', async () => {
         const txs: { id: string }[] = []
 
-        const wallet = ThorWallet.new(true)
-
         Client.raw.subscribeToTxPool((txId) => {
             txs.push(txId)
         })
@@ -18,31 +19,18 @@ describe('WS /subscriptions/txpool', () => {
         const account1 = generateAddress()
         const account2 = generateAddress()
 
-        const sentTxs = await Promise.all([
-            wallet.sendClauses(
-                [
-                    {
-                        to: account1,
-                        value: 1,
-                        data: '0x',
-                    },
-                ],
-                true,
-            ),
-            wallet.sendClauses(
-                [
-                    {
-                        to: account2,
-                        value: 1,
-                        data: '0x',
-                    },
-                ],
-                true,
-            ),
-        ])
+        const tx1 = fundAccount(account1, fundingAmounts.noVetTinyVtho)
+        const tx2 = fundAccount(account2, fundingAmounts.noVetTinyVtho)
+
+        const receipt1 = await tx1
+        const receipt2 = await tx2
 
         expect(txs.length).toBeGreaterThanOrEqual(2)
-        expect(txs.some((tx) => tx.id === sentTxs[0].meta?.txID)).toBeTruthy()
-        expect(txs.some((tx) => tx.id === sentTxs[1].meta?.txID)).toBeTruthy()
+        expect(
+            txs.some((tx) => tx.id === receipt1.receipt.meta?.txID),
+        ).toBeTruthy()
+        expect(
+            txs.some((tx) => tx.id === receipt2.receipt.meta?.txID),
+        ).toBeTruthy()
     })
 })

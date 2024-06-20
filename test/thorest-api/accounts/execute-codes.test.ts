@@ -5,6 +5,7 @@ import { interfaces } from '../../../src/contracts/hardhat'
 import { getBlockRef } from '../../../src/utils/block-utils'
 import { revisions } from '../../../src/constants'
 import { generateAddress, ThorWallet } from '../../../src/wallet'
+import { fundingAmounts } from '../../../src/account-faucet'
 
 const CALLER_ADDR = '0x435933c8064b4Ae76bE665428e0307eF2cCFBD68'
 const GAS_PAYER = '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed'
@@ -43,7 +44,7 @@ const READ_ONLY_REQUEST = (address: string) => {
  * @group accounts
  */
 describe('POST /accounts/*', function () {
-    const wallet = ThorWallet.new(true)
+    const wallet = ThorWallet.withFunds(fundingAmounts.tinyVetBigVtho)
 
     beforeAll(async () => {
         await wallet.waitForFunding()
@@ -52,7 +53,7 @@ describe('POST /accounts/*', function () {
     it('should execute an array of clauses', async function () {
         const to = generateAddress()
 
-        const tokenAmount = '0x100000'
+        const tokenAmount = '0x1'
 
         const res = await Client.raw.executeAccountBatch({
             clauses: [
@@ -107,7 +108,7 @@ describe('POST /accounts/*', function () {
                             `0x000000000000000000000000${wallet.address.slice(2)}`,
                             `0x000000000000000000000000${to.slice(2)}`,
                         ],
-                        data: `0x0000000000000000000000000000000000000000000000000000000000${tokenAmount.slice(2)}`,
+                        data: `0x000000000000000000000000000000000000000000000000000000000000000${tokenAmount.slice(2)}`,
                     },
                 ],
                 transfers: [],

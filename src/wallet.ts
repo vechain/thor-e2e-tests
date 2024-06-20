@@ -1,12 +1,11 @@
 import {
     addressUtils,
-    type InterfaceAbi,
     secp256k1,
     Transaction,
     TransactionBody,
     TransactionClause,
 } from '@vechain/sdk-core'
-import { delegateTx, fundAccount } from './account-faucet'
+import { delegateTx, fundAccount, FundingAmounts } from './account-faucet'
 import {
     generateNonce,
     pollReceipt,
@@ -69,16 +68,16 @@ class ThorWallet {
         )
     }
 
-    public static new(requireFunds: boolean, funding = { vet: 0, vtho: 1 }) {
-        const privateKey = secp256k1.generatePrivateKey()
+    public static empty() {
+        return new ThorWallet(secp256k1.generatePrivateKey())
+    }
 
-        if (!requireFunds) {
-            return new ThorWallet(privateKey)
-        }
+    public static withFunds(amounts: FundingAmounts) {
+        const privateKey = secp256k1.generatePrivateKey()
 
         const addr = addressFromPrivateKey(privateKey)
 
-        const receipt = fundAccount(addr, funding).then((res) => res.receipt)
+        const receipt = fundAccount(addr, amounts).then((res) => res.receipt)
 
         return new ThorWallet(privateKey, () => receipt)
     }

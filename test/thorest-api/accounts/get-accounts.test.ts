@@ -2,7 +2,6 @@ import { Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { HEX_REGEX } from '../../../src/utils/hex-utils'
 import { revisions } from '../../../src/constants'
-import { FAUCET_AMOUNT_HEX } from '../../../src/account-faucet'
 import { Transfer } from '../../../src/types'
 import { getRandomTransfer } from '../../../src/logs/query-logs'
 
@@ -30,7 +29,7 @@ describe('GET /accounts/{address}', function () {
         expect(res.success, 'API response should be a success').toBeTrue()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(res.body, 'Expected Response Body').toEqual({
-            balance: FAUCET_AMOUNT_HEX,
+            balance: transfer.vet.amount,
             energy: expect.stringMatching(HEX_REGEX),
             hasCode: false,
         })

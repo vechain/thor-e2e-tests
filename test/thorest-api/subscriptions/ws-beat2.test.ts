@@ -3,6 +3,7 @@ import { testBloomForAddress } from '../../../src/utils/bloom'
 import assert from 'node:assert'
 import { ThorWallet } from '../../../src/wallet'
 import { components } from '../../../src/open-api-types'
+import { fundingAmounts } from '../../../src/account-faucet'
 
 /**
  * @group api
@@ -16,11 +17,9 @@ describe('WS /subscriptions/beat2', () => {
             beats.push(newBlock)
         })
 
-        const wallet = ThorWallet.new(true)
+        const wallet = ThorWallet.withFunds(fundingAmounts.noVetTinyVtho)
 
         const fundReceipt = await wallet.waitForFunding()
-
-        const sender = fundReceipt?.outputs?.[0].transfers?.[0].sender
 
         //sleep for 1 sec to ensure the beat is received
         await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -31,12 +30,11 @@ describe('WS /subscriptions/beat2', () => {
 
         assert(relevantBeat?.bloom, 'Beat not found')
         assert(relevantBeat?.k, 'Beat not found')
-        assert(sender, 'Sender not found')
 
         const result = testBloomForAddress(
             relevantBeat.bloom,
             relevantBeat.k,
-            sender,
+            wallet.address,
         )
 
         expect(result).toEqual(true)
