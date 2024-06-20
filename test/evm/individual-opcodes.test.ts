@@ -11,7 +11,6 @@ import {
     addUintPadding,
 } from '../../src/utils/padding-utils'
 import { pollReceipt } from '../../src/transactions'
-import { fundingAmounts } from '../../src/account-faucet'
 import { testCase, testCaseEach } from '../../src/test-case'
 
 const opcodesInterface = Opcodes.createInterface()
@@ -354,8 +353,10 @@ describe('Individual OpCodes', () => {
 
     testCaseEach(['solo', 'default-private'])(
         'should give the correct output for opcode: %s',
+        //@ts-expect-error
         Object.entries(reusableTests),
-        async ([name, { input, expected }]) => {
+        async (name: string, params: { input: any[]; expected: string }) => {
+            const { input, expected } = params
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData(name as any, input as any),
                 name,
@@ -416,9 +417,9 @@ describe('Individual OpCodes', () => {
     testCaseEach(['solo', 'default-private'])(
         'should give the correct output for opcode: %s',
         Object.entries(logTests),
-        async ([logN, input]) => {
+        async (logN: string, params: bigint[]) => {
             const debugged = await traceContractCall(
-                opcodesInterface.encodeFunctionData(logN as any, input as any),
+                opcodesInterface.encodeFunctionData(logN as any, params as any),
                 logN,
             )
 
@@ -429,12 +430,12 @@ describe('Individual OpCodes', () => {
             expect(relevantStructLogs.length).toBeGreaterThan(0)
 
             const simulation = await simulateContractCall(
-                opcodesInterface.encodeFunctionData(logN as any, input as any),
+                opcodesInterface.encodeFunctionData(logN as any, params as any),
             )
             const relevantEvent = simulation?.[0]?.events?.[0]
 
             expect(relevantEvent).toBeDefined()
-            expect(relevantEvent?.topics?.length).toBe(input.length - 2)
+            expect(relevantEvent?.topics?.length).toBe(params.length - 2)
         },
     )
 

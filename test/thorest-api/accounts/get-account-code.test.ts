@@ -30,14 +30,14 @@ describe('GET /accounts/{address}/code', function () {
         },
     )
 
-    const noPrefix = Object.entries(contractAddresses).map(
-        ([name, address]) => [name, address.slice(2)],
+    const noPrefix = Object.values(contractAddresses).map((address) =>
+        address.slice(2),
     )
 
     testCaseEach(['solo', 'default-private'])(
-        'should return the code for %s: %s',
-        [...Object.entries(contractAddresses), ...noPrefix],
-        async function ([, address]) {
+        'should return the code for %s',
+        [...Object.values(contractAddresses), ...noPrefix],
+        async function (address: string) {
             const res = await Client.raw.getAccountCode(address)
 
             expect(res.success, 'API response should be a success').toBeTrue()
