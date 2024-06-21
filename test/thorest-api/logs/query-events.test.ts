@@ -33,7 +33,7 @@ const buildRequestFromTransfer = (
         },
         options: {
             offset: 0,
-            limit: 10_000,
+            limit: 1_000,
         },
         criteriaSet: [
             {
@@ -208,8 +208,7 @@ describe('POST /logs/event', () => {
 
     describe('query by "order"', () => {
         const runQueryEventLogsTest = async (order?: 'asc' | 'desc' | null) => {
-            const { firstBlock, lastBlock, transferCount } =
-                await getTransferDetails()
+            const { firstBlock, lastBlock } = await getTransferDetails()
 
             const response = await Node1Client.queryEventLogs({
                 range: {
@@ -219,7 +218,7 @@ describe('POST /logs/event', () => {
                 },
                 options: {
                     offset: 0,
-                    limit: 10_000,
+                    limit: 1_000,
                 },
                 criteriaSet: [
                     {
@@ -297,7 +296,7 @@ describe('POST /logs/event', () => {
                 return {
                     ...request,
                     options: {
-                        limit: 10_000,
+                        limit: 1_000,
                         offset: undefined,
                     },
                 }
@@ -321,22 +320,18 @@ describe('POST /logs/event', () => {
             expect(eventLogs.body?.length).toEqual(0)
         })
 
-        it('should have no maximum "limit"', async () => {
+        it('should have default maximum of 1000', async () => {
             const request = {
                 options: {
                     offset: 0,
-                    limit: Number.MAX_SAFE_INTEGER,
+                    limit: 1001,
                 },
             }
 
             const eventLogs = await Node1Client.queryEventLogs(request)
 
-            expect(
-                eventLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(eventLogs.body?.length).toBeGreaterThan(0)
+            expect(eventLogs.success, 'API response should fail').toBeFalse()
+            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(403)
         })
 
         it('should have no minimum "limit"', async () => {
@@ -434,7 +429,7 @@ describe('POST /logs/event', () => {
             const res1 = await Node1Client.queryEventLogs({
                 options: {
                     offset: 0,
-                    limit: 10_000,
+                    limit: 1_000,
                 },
             })
 
@@ -447,7 +442,7 @@ describe('POST /logs/event', () => {
             const res2 = await Node1Client.queryEventLogs({
                 options: {
                     offset: 100_000,
-                    limit: 10_000,
+                    limit: 1_000,
                 },
             })
 

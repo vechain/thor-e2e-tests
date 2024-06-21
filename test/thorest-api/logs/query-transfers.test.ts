@@ -18,7 +18,7 @@ const buildRequestFromTransfer = (
         },
         options: {
             offset: 0,
-            limit: 10_000,
+            limit: 1_000,
         },
         criteriaSet: [
             {
@@ -196,7 +196,7 @@ describe('POST /logs/transfers', () => {
             await runTransferLogsTest((request) => ({
                 ...request,
                 options: {
-                    limit: 10_000,
+                    limit: 1_000,
                     offset: undefined,
                 },
             }))
@@ -219,11 +219,11 @@ describe('POST /logs/transfers', () => {
             expect(transferLogs.body?.length).toEqual(0)
         })
 
-        it('should have no maximum "limit"', async () => {
+        it('should have default maximum of 1000', async () => {
             const request = {
                 options: {
                     offset: 0,
-                    limit: Number.MAX_SAFE_INTEGER,
+                    limit: 1001,
                 },
             }
 
@@ -419,7 +419,7 @@ describe('POST /logs/transfers', () => {
                 },
                 options: {
                     offset: 0,
-                    limit: 10_000,
+                    limit: 1_000,
                 },
                 criteriaSet: [],
                 order: order,
