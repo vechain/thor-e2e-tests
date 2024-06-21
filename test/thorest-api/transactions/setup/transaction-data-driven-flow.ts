@@ -1,9 +1,7 @@
-import { Node1Client } from "../../../../src/thor-client";
-import { pollReceipt } from "../../../../src/transactions";
-import {
-    TestCasePlan,
-    TestCasePlanStepError
-} from "./models";
+import { components } from '../../../../src/open-api-types'
+import { Node1Client } from '../../../../src/thor-client'
+import { pollReceipt } from '../../../../src/transactions'
+import { TestCasePlan, TestCasePlanStepError } from './models'
 
 /**
  * Represents a data-driven test flow for transactions.
@@ -24,20 +22,23 @@ class TransactionDataDrivenFlow {
 
         await this.getTransaction(txId)
 
-        const blockId = await this.getTransactionReceipt(txId)
+        const block = await this.getTransactionReceipt(txId)
 
-        await this.getTransactionBlock(blockId, txId)
+        await this.getLogTransfer(block)
+
+        await this.getTransactionBlock(block?.blockID, txId)
     }
 
     private async postTransaction(): Promise<string | undefined> {
         const { rawTx, expectedResult } = this.plan.postTxStep
-        const { success, body, httpCode, httpMessage } = await Node1Client.sendTransaction({
-            raw: `0x${rawTx}`,
-        })
+        const sendTxResponse =
+            await Node1Client.sendTransaction({
+                raw: `0x${rawTx}`,
+            })
 
-        expectedResult({ success, body, httpCode, httpMessage })
+        expectedResult(sendTxResponse)
 
-        return body?.id
+        return sendTxResponse.body?.id
     }
 
     private async getTransaction(txId?: string) {
@@ -45,10 +46,13 @@ class TransactionDataDrivenFlow {
             return
         }
 
-        const { expectedResult } = this.plan.getTxStep
         if (!txId) {
-            throw new TestCasePlanStepError('getTransaction step expected to execute, but txId is not defined')
+            throw new TestCasePlanStepError(
+                'getTransaction step expected to execute, but txId is not defined',
+            )
         }
+
+        const { expectedResult } = this.plan.getTxStep
 
         const tx = await Node1Client.getTransaction(txId, {
             pending: true,
@@ -57,32 +61,65 @@ class TransactionDataDrivenFlow {
         expectedResult(tx)
     }
 
-    private async getTransactionReceipt(txId?: string): Promise<string | undefined> {
+    private async getTransactionReceipt(
+        txId?: string,
+    ): Promise<components['schemas']['ReceiptMeta'] | undefined> {
         if (!this.plan.getTxReceiptStep) {
             return
         }
 
-        const { expectedResult } = this.plan.getTxReceiptStep
         if (!txId) {
-            throw new TestCasePlanStepError('getTransactionReceipt step expected to execute, but txId is not defined')
+            throw new TestCasePlanStepError(
+                'getTransactionReceipt step expected to execute, but txId is not defined',
+            )
         }
+
+        const { expectedResult } = this.plan.getTxReceiptStep
 
         const receipt = await pollReceipt(txId)
 
         expectedResult(receipt)
 
-        return receipt.meta?.blockID
+        return receipt.meta
     }
 
-    private async getTransactionBlock(blockId: string | undefined, txId: string | undefined) {
+    private async getLogTransfer(
+        block: components['schemas']['ReceiptMeta'] | undefined
+    ) {
+        if (!this.plan.getLogTransferStep) {
+            return
+        }
+
+        if (!block) {
+            throw new TestCasePlanStepError(
+                'getLogTransfer step expected to execute, but block is not defined',
+            )
+        }
+
+        const { blockNumber } = block
+        const { expectedResult, logFilters } = this.plan.getLogTransferStep
+        const request = logFilters ?? createDefaultLogFilterRequest(blockNumber)
+
+        const logsResponse = await Node1Client.queryTransferLogs(request)
+
+        expectedResult(logsResponse, block)
+    }
+
+    private async getTransactionBlock(
+        blockId: string | undefined,
+        txId: string | undefined,
+    ) {
         if (!this.plan.getTxBlockStep) {
             return
         }
 
-        const { expectedResult } = this.plan.getTxBlockStep
         if (!blockId || !txId) {
-            throw new TestCasePlanStepError('getTransactionBlock step expected to execute, but txId or blockId are not defined')
+            throw new TestCasePlanStepError(
+                'getTransactionBlock step expected to execute, but txId or blockId are not defined',
+            )
         }
+
+        const { expectedResult } = this.plan.getTxBlockStep
 
         const block = await Node1Client.getBlock(blockId)
 
@@ -90,6 +127,18 @@ class TransactionDataDrivenFlow {
     }
 }
 
-export {
-    TransactionDataDrivenFlow
+function createDefaultLogFilterRequest(
+    blockNumber: number | undefined
+): components['schemas']['TransferLogFilterRequest'] {
+    return {
+        range: {
+            to: blockNumber,
+            from: blockNumber,
+            unit: 'block',
+        },
+        options: null,
+        criteriaSet: null,
+    }
 }
+
+export { TransactionDataDrivenFlow }
