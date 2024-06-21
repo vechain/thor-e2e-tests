@@ -1,6 +1,5 @@
 import {
     addressUtils,
-    type InterfaceAbi,
     secp256k1,
     Transaction,
     TransactionBody,
@@ -15,6 +14,12 @@ import {
 import { getBlockRef } from './utils/block-utils'
 import { components } from './open-api-types'
 import { Node1Client, SDKClient } from './thor-client'
+import { Abi } from 'abitype'
+import {
+    ProviderInternalBaseWallet,
+    VeChainPrivateKeySigner,
+    VeChainProvider,
+} from '@vechain/sdk-network'
 
 export const generateAddress = () => {
     return generateEmptyWallet().address
@@ -25,15 +30,12 @@ export const generateAddresses = (count: number) => {
 }
 
 export const addressFromPrivateKey = (privateKey: Buffer) => {
-    const publicKey = secp256k1.derivePublicKey(privateKey)
-
-    return addressUtils.fromPublicKey(publicKey).toLowerCase()
+    return addressUtils.fromPrivateKey(privateKey).toLowerCase()
 }
 
 const generateEmptyWallet = () => {
-    const privateKey = secp256k1.generatePrivateKey()
-    const publicKey = secp256k1.derivePublicKey(privateKey)
-    const addr = addressUtils.fromPublicKey(publicKey).toLowerCase()
+    const privateKey = Buffer.from(secp256k1.generatePrivateKey())
+    const addr = addressUtils.fromPrivateKey(privateKey).toLowerCase()
 
     return {
         privateKey: privateKey.toString('hex'),
@@ -50,6 +52,9 @@ class ThorWallet {
     public readonly privateKey: Buffer
     public readonly waitForFunding: WaitForFunding
 
+    public provider: VeChainProvider
+    public signer: VeChainPrivateKeySigner
+
     constructor(privateKey: Buffer, waitForFunding?: WaitForFunding) {
         this.privateKey = privateKey
         this.address = addressFromPrivateKey(privateKey)
@@ -58,29 +63,45 @@ class ThorWallet {
         } else {
             this.waitForFunding = () => Promise.resolve(undefined)
         }
+        this.provider = new VeChainProvider(
+            SDKClient,
+            new ProviderInternalBaseWallet([
+                {
+                    address: this.address,
+                    privateKey: this.privateKey,
+                },
+            ]),
+        )
+        this.signer = new VeChainPrivateKeySigner(
+            this.privateKey,
+            this.provider,
+        )
     }
 
     public static new(requireFunds: boolean) {
         const privateKey = secp256k1.generatePrivateKey()
 
         if (!requireFunds) {
-            return new ThorWallet(privateKey)
+            return new ThorWallet(Buffer.from(privateKey))
         }
 
-        const addr = addressFromPrivateKey(privateKey)
+        const addr = addressUtils.fromPrivateKey(privateKey)
 
         const receipt = fundAccount(addr).then((res) => res.receipt)
 
-        return new ThorWallet(privateKey, () => receipt)
+        return new ThorWallet(Buffer.from(privateKey), () => receipt)
     }
 
-    public deployContract = async (bytecode: string, abi: InterfaceAbi) => {
+    public deployContract = async <TAbi extends Abi>(
+        bytecode: string,
+        abi: TAbi,
+    ) => {
         await this.waitForFunding()
 
         const factory = SDKClient.contracts.createContractFactory(
             abi,
             bytecode,
-            this.privateKey.toString('hex'),
+            this.signer,
         )
 
         await factory.startDeployment()
@@ -115,7 +136,9 @@ class ThorWallet {
         delegationSignature?: Buffer,
     ) => {
         const signingHash = transaction.getSignatureHash()
-        const signature = secp256k1.sign(signingHash, this.privateKey)
+        const signature = Buffer.from(
+            secp256k1.sign(signingHash, this.privateKey),
+        )
 
         let tx: Transaction
 
