@@ -31,14 +31,14 @@ class TransactionDataDrivenFlow {
 
     private async postTransaction(): Promise<string | undefined> {
         const { rawTx, expectedResult } = this.plan.postTxStep
-        const { success, body, httpCode, httpMessage } =
+        const sendTxResponse =
             await Node1Client.sendTransaction({
                 raw: `0x${rawTx}`,
             })
 
-        expectedResult({ success, body, httpCode, httpMessage })
+        expectedResult(sendTxResponse)
 
-        return body?.id
+        return sendTxResponse.body?.id
     }
 
     private async getTransaction(txId?: string) {

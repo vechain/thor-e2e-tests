@@ -25,12 +25,7 @@ type TestCasePlan = {
     }
 }
 
-type PostTxExpectedResultBody = {
-    success: boolean
-    body: any
-    httpCode: number | undefined
-    httpMessage: string | undefined
-}
+type PostTxExpectedResultBody = Response<Schema['TXID']>
 type GetTxExpectedResultBody = Response<Schema['GetTxResponse'] | null>
 type GetTxReceiptExpectedResultBody =
     components['schemas']['GetTxReceiptResponse']
@@ -39,12 +34,7 @@ type GetTxBlockExpectedResultBody = {
     block: Response<BlockBody | null>
     txId: string
 }
-type GetTxLogBody = {
-    success: boolean
-    body: any
-    httpCode: number | undefined
-    httpMessage: string | undefined
-}
+type GetTxLogBody = Response<Schema['TransferLogsResponse']>
 
 /**
  * Custom error class

@@ -117,19 +117,19 @@ const checkTransactionLogSuccess = (
 
     expect(body).toHaveLength(transferClauses.length)
 
-    for (let i = 0; i < transferClauses.length; i++) {
-        expect(body[i].sender).toEqualCaseInsensitive(tx.origin)
-        expect(body[i].recipient).toEqualCaseInsensitive(transferClauses[0].to!)
-        const hexAmount = transferClauses[0].value.toString(16)
-        expect(body[i].amount).toEqual(hexUtils.addPrefix(hexAmount))
+    body?.forEach((log, index) => {
+        expect(log?.sender).toEqualCaseInsensitive(tx.origin)
+        expect(log?.recipient).toEqualCaseInsensitive(transferClauses[index].to!)
+        const hexAmount = transferClauses[index].value.toString(16)
+        expect(log?.amount).toEqual(hexUtils.addPrefix(hexAmount))
 
-        const meta = body[i].meta
-        expect(meta.blockID).toEqual(block.blockID)
-        expect(meta.blockNumber).toEqual(block.blockNumber)
-        expect(meta.blockTimestamp).toEqual(block.blockTimestamp)
-        expect(meta.txID).toEqual(tx.id)
-        expect(meta.txOrigin).toEqualCaseInsensitive(tx.origin)
-    }
+        const meta = log?.meta
+        expect(meta?.blockID).toEqual(block.blockID)
+        expect(meta?.blockNumber).toEqual(block.blockNumber)
+        expect(meta?.blockTimestamp).toEqual(block.blockTimestamp)
+        expect(meta?.txID).toEqual(tx.id)
+        expect(meta?.txOrigin).toEqualCaseInsensitive(tx.origin)
+    })
 }
 
 export {
