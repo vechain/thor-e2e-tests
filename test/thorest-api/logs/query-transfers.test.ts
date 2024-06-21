@@ -229,12 +229,8 @@ describe('POST /logs/transfers', () => {
 
             const transferLogs = await Node1Client.queryTransferLogs(request)
 
-            expect(
-                transferLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(transferLogs.body?.length).toBeGreaterThan(0)
+            expect(transferLogs.success, 'API response should fail').toBeFalse()
+            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(403)
         })
 
         it('should have no minimum "limit"', async () => {
