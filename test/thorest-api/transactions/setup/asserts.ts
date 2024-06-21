@@ -1,9 +1,10 @@
-import { Transaction } from '@vechain/sdk-core'
+import { Transaction, TransactionClause } from '@vechain/sdk-core'
 import { components } from '../../../../src/open-api-types'
 import { Response, Schema } from '../../../../src/thor-client'
 import hexUtils from '../../../../src/utils/hex-utils'
 import {
     GetTxBlockExpectedResultBody,
+    GetTxLogBody,
     PostTxExpectedResultBody,
 } from './models'
 
@@ -42,7 +43,7 @@ const compareSentTxWithCreatedTx = (
     expect(body?.id).toEqual(createdTx.id)
     expect(body?.origin).toEqualCaseInsensitive(createdTx.origin)
     expect(body?.gas).toEqual(createdTx.body.gas)
-    expect(body?.clauses).toEqual(createdTx.body.clauses)
+    compareClauses(body?.clauses, createdTx.body.clauses)
     expect(body?.chainTag).toEqual(createdTx.body.chainTag)
     expect(body?.blockRef).toEqual(createdTx.body.blockRef)
     expect(body?.expiration).toEqual(createdTx.body.expiration)
@@ -50,6 +51,21 @@ const compareSentTxWithCreatedTx = (
     const hexNonce = createdTx.body.nonce.toString(16)
     expect(body?.nonce).toEqual(hexUtils.addPrefix(hexNonce))
     expect(body?.gasPriceCoef).toEqual(createdTx.body.gasPriceCoef)
+}
+
+const compareClauses = (
+    sentClauses: components['schemas']['Clause'][] | undefined,
+    createdClauses: Transaction['body']['clauses'],
+) => {
+    expect(sentClauses).toBeDefined()
+    expect(sentClauses).toHaveLength(createdClauses.length)
+
+    sentClauses?.forEach((clause, index) => {
+        expect(clause.to).toEqualCaseInsensitive(createdClauses[index].to!)
+        expect(clause.data).toEqual(createdClauses[index].data.toString())
+        const hexValue = createdClauses[index].value.toString(16)
+        expect(clause.value).toEqual(hexUtils.addPrefix(hexValue))
+    })
 }
 
 const checkDelegatedTransaction = (
@@ -87,6 +103,35 @@ const checkTxInclusionInBlock = (input: GetTxBlockExpectedResultBody) => {
     expect(body?.transactions).toContain(txId)
 }
 
+const checkTransactionLogSuccess = (
+    input: GetTxLogBody,
+    block: components['schemas']['ReceiptMeta'],
+    tx: Transaction,
+    transferClauses: TransactionClause[],
+) => {
+    const { success, httpCode, body } = input
+
+    expect(success).toBeTrue()
+    expect(httpCode).toBe(200)
+    expect(body).toBeDefined()
+
+    expect(body).toHaveLength(transferClauses.length)
+
+    for (let i = 0; i < transferClauses.length; i++) {
+        expect(body[i].sender).toEqualCaseInsensitive(tx.origin)
+        expect(body[i].recipient).toEqualCaseInsensitive(transferClauses[0].to!)
+        const hexAmount = transferClauses[0].value.toString(16)
+        expect(body[i].amount).toEqual(hexUtils.addPrefix(hexAmount))
+
+        const meta = body[i].meta
+        expect(meta.blockID).toEqual(block.blockID)
+        expect(meta.blockNumber).toEqual(block.blockNumber)
+        expect(meta.blockTimestamp).toEqual(block.blockTimestamp)
+        expect(meta.txID).toEqual(tx.id)
+        expect(meta.txOrigin).toEqualCaseInsensitive(tx.origin)
+    }
+}
+
 export {
     successfulPostTx,
     revertedPostTx,
@@ -95,4 +140,5 @@ export {
     successfulReceipt,
     checkDelegatedTransactionReceipt,
     checkTxInclusionInBlock,
+    checkTransactionLogSuccess
 }

@@ -15,7 +15,11 @@ type TestCasePlan = {
     }
     getTxReceiptStep?: {
         expectedResult: (input: any) => void
-    }
+    },
+    getLogTransferStep?: {
+        logFilters?: components['schemas']['TransferLogFilterRequest']
+        expectedResult: (input: any, block: any) => void
+    },
     getTxBlockStep?: {
         expectedResult: (input: any) => void
     }
@@ -35,6 +39,12 @@ type GetTxBlockExpectedResultBody = {
     block: Response<BlockBody | null>
     txId: string
 }
+type GetTxLogBody = {
+    success: boolean
+    body: any
+    httpCode: number | undefined
+    httpMessage: string | undefined
+}
 
 /**
  * Custom error class
@@ -53,6 +63,7 @@ export {
     GetTxExpectedResultBody,
     GetTxReceiptExpectedResultBody,
     GetTxBlockExpectedResultBody,
+    GetTxLogBody,
     TestCasePlanStepError,
     TestCasePlan,
 }
