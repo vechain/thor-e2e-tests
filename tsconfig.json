@@ -10,7 +10,6 @@
     },
     "include": ["./scripts", "./test", "./typechain-types"],
     "files": [
-        "./hardhat.config.ts",
-        "./test/thorest-api/transactions/newFile.ts"
+        "./hardhat.config.ts"
     ]
 }
