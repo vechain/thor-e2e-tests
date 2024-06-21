@@ -115,9 +115,10 @@ const checkTransactionLogSuccess = (
     expect(httpCode).toBe(200)
     expect(body).toBeDefined()
 
-    expect(body).toHaveLength(transferClauses.length)
+    const transferLogs = body?.filter((log) => log?.meta?.txID === tx.id)
+    expect(transferLogs).toHaveLength(transferClauses.length)
 
-    body?.forEach((log, index) => {
+    transferLogs?.forEach((log, index) => {
         expect(log?.sender).toEqualCaseInsensitive(tx.origin)
         expect(log?.recipient).toEqualCaseInsensitive(transferClauses[index].to!)
         const hexAmount = transferClauses[index].value.toString(16)
