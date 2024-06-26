@@ -1,10 +1,12 @@
-import { Node1Client } from '../../../src/thor-client'
+//import { Client.raw } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { SimpleCounter__factory } from '../../../typechain-types'
 import { interfaces } from '../../../src/contracts/hardhat'
 import { getBlockRef } from '../../../src/utils/block-utils'
 import { revisions } from '../../../src/constants'
 import { generateAddress, ThorWallet } from '../../../src/wallet'
+import { fundingAmounts } from '../../../src/account-faucet'
 import { testCase, testCaseEach } from '../../../src/test-case'
 
 const CALLER_ADDR = '0x435933c8064b4Ae76bE665428e0307eF2cCFBD68'
@@ -44,7 +46,7 @@ const READ_ONLY_REQUEST = (address: string) => {
  * @group accounts
  */
 describe('POST /accounts/*', function() {
-    const wallet = ThorWallet.new(true)
+    const wallet = ThorWallet.withFunds(fundingAmounts.tinyVetBigVtho)
 
     beforeAll(async () => {
         await wallet.waitForFunding()
@@ -55,9 +57,9 @@ describe('POST /accounts/*', function() {
         async function() {
             const to = generateAddress()
 
-            const tokenAmount = '0x100000'
+            const tokenAmount = '0x1'
 
-            const res = await Node1Client.executeAccountBatch({
+            const res = await Client.raw.executeAccountBatch({
                 clauses: [
                     // VET Transfer
                     {
@@ -111,7 +113,7 @@ describe('POST /accounts/*', function() {
                                 `0x000000000000000000000000${wallet.address.slice(2)}`,
                                 `0x000000000000000000000000${to.slice(2)}`,
                             ],
-                            data: `0x0000000000000000000000000000000000000000000000000000000000${tokenAmount.slice(2)}`,
+                            data: `0x000000000000000000000000000000000000000000000000000000000000000${tokenAmount.slice(2)}`,
                         },
                     ],
                     transfers: [],
@@ -148,7 +150,7 @@ describe('POST /accounts/*', function() {
             }
 
             // generated wallet had no funds configured in genesis, so this should be reverted
-            const historicCall = await Node1Client.executeAccountBatch(
+            const historicCall = await Client.raw.executeAccountBatch(
                 request,
                 '0',
             )
@@ -164,7 +166,7 @@ describe('POST /accounts/*', function() {
             ).toEqual(true)
 
             // generated wallet was funded, so this should be successful
-            const currentCall = await Node1Client.executeAccountBatch(
+            const currentCall = await Client.raw.executeAccountBatch(
                 request,
                 'best',
             )
@@ -185,7 +187,7 @@ describe('POST /accounts/*', function() {
         'should be able to call read only contract methods',
         async () => {
             const request = READ_ONLY_REQUEST(wallet.address)
-            const historicCall = await Node1Client.executeAccountBatch(
+            const historicCall = await Client.raw.executeAccountBatch(
                 request,
                 '0',
             )
@@ -211,7 +213,7 @@ describe('POST /accounts/*', function() {
         revisions.valid(),
         async (revision) => {
             const request = READ_ONLY_REQUEST(wallet.address)
-            const res = await Node1Client.executeAccountBatch(request, revision)
+            const res = await Client.raw.executeAccountBatch(request, revision)
             expect(res.success, 'API response should be a success').toBeTrue()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(res.body?.[0]?.reverted).toEqual(false)
@@ -223,7 +225,7 @@ describe('POST /accounts/*', function() {
         'should be able execute clauses for valid revision: %s',
         revisions.valid(),
         async (revision) => {
-            const res = await Node1Client.executeAccountBatch(
+            const res = await Client.raw.executeAccountBatch(
                 {
                     clauses: [SEND_VTHO_CLAUSE],
                     caller: wallet.address,
@@ -240,7 +242,7 @@ describe('POST /accounts/*', function() {
         'valid revisions not found: %s',
         revisions.validNotFound,
         async function(revision) {
-            const res = await Node1Client.executeAccountBatch(
+            const res = await Client.raw.executeAccountBatch(
                 {
                     clauses: [SEND_VTHO_CLAUSE],
                     caller: wallet.address,
@@ -259,7 +261,7 @@ describe('POST /accounts/*', function() {
             async () => {
                 const blockRef = await getBlockRef('1')
 
-                const res = await Node1Client.executeAccountBatch({
+                const res = await Client.raw.executeAccountBatch({
                     clauses: [
                         {
                             to: contractAddresses.extension,
@@ -308,7 +310,7 @@ describe('POST /accounts/*', function() {
                     gasPayer: GAS_PAYER,
                 }
 
-                const res = await Node1Client.executeAccountBatch(requestBody)
+                const res = await Client.raw.executeAccountBatch(requestBody)
 
                 expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
                 expect(
@@ -333,7 +335,7 @@ describe('POST /accounts/*', function() {
             async () => {
                 const provedWork = '191923'
 
-                const res = await Node1Client.executeAccountBatch({
+                const res = await Client.raw.executeAccountBatch({
                     clauses: [
                         {
                             to: contractAddresses.extension,
@@ -376,7 +378,7 @@ describe('POST /accounts/*', function() {
             async () => {
                 const expiration = 13627
 
-                const res = await Node1Client.executeAccountBatch({
+                const res = await Client.raw.executeAccountBatch({
                     clauses: [
                         {
                             to: contractAddresses.extension,

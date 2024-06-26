@@ -30,7 +30,7 @@ describe('GET /accounts/{address}', function() {
         expect(res.success, 'API response should be a success').toBeTrue()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(res.body, 'Expected Response Body').toEqual({
-            balance: FAUCET_AMOUNT_HEX,
+            balance: transfer.vet.amount,
             energy: expect.stringMatching(HEX_REGEX),
             hasCode: false,
         })

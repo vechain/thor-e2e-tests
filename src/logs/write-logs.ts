@@ -33,6 +33,7 @@ const writeTransferTransactions = async (): Promise<TransferDetails> => {
             }),
         )
 
+        // TODO: move check outside of the loop
         if (!firstBlock) {
             firstBlock = res[0]!.meta!.blockNumber as number
         }
