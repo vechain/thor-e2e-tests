@@ -6,7 +6,7 @@ import {
     TransactionBody,
     TransactionClause,
 } from '@vechain/sdk-core'
-import { delegateTx, fundAccount } from './account-faucet'
+import { delegateTx, fundAccount, FundingAmounts } from './account-faucet'
 import {
     generateNonce,
     pollReceipt,
@@ -67,9 +67,23 @@ class ThorWallet {
             return new ThorWallet(privateKey)
         }
 
+        //const addr = addressFromPrivateKey(privateKey)
+
+        //const receipt = fundAccount(addr).then((res) => res.receipt)
+
+        return new ThorWallet(privateKey)
+    }
+
+    public static empty() {
+        return new ThorWallet(secp256k1.generatePrivateKey())
+    }
+
+    public static withFunds(amounts: FundingAmounts) {
+        const privateKey = secp256k1.generatePrivateKey()
+
         const addr = addressFromPrivateKey(privateKey)
 
-        const receipt = fundAccount(addr).then((res) => res.receipt)
+        const receipt = fundAccount(addr, amounts).then((res) => res.receipt)
 
         return new ThorWallet(privateKey, () => receipt)
     }
@@ -146,8 +160,8 @@ class ThorWallet {
         delegate?: boolean,
     ): Promise<
         T extends true
-            ? components['schemas']['GetTxReceiptResponse']
-            : components['schemas']['TXID']
+        ? components['schemas']['GetTxReceiptResponse']
+        : components['schemas']['TXID']
     > => {
         await this.waitForFunding()
 

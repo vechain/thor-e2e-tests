@@ -11,6 +11,10 @@ import { TransferDetails } from '../src/types'
 import { testEnv, validateEnv } from '../src/test-env'
 import { transferDetails } from '../src/constants'
 import { writeTransferTransactions } from '../src/logs/write-logs'
+import { populatedData } from '../src/populated-data'
+import { getTransferIds } from '../src/logs/query-logs'
+import { Client } from '../src/thor-client'
+import { CompressedBlockDetail } from '@vechain/sdk-network'
 
 export const POPULATED_DATA_FILENAME = './.chain-data.json'
 
@@ -88,6 +92,7 @@ const checkIfPopulated = async (): Promise<boolean> => {
 //}
 
 const populate = async () => {
+    console.log('Populating data')
     let details: TransferDetails
 
     switch (testEnv.type) {
@@ -120,4 +125,9 @@ const populate = async () => {
 
     console.log('Populated data')
 }
-export default populate
+const setup = async () => {
+    await validateEnv()
+    await populate()
+}
+
+export default setup

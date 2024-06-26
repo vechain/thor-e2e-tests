@@ -1,7 +1,12 @@
 import { getGenesisBlockId } from './populated-data'
 import { TransferDetails } from './types'
+import { populatedData } from './populated-data'
 
-const validRevisions = ['best', '1', getGenesisBlockId()]
+const validRevisions = [
+    'best',
+    '1',
+    populatedData.exists() ? populatedData.read().genesisId : '',
+]
 
 const validRevisionsNotFound = [
     '123412341',
