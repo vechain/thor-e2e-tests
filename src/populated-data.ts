@@ -1,4 +1,4 @@
-import type { PopulatedChainData } from '../test/globalSetup'
+import { PopulatedChainData } from './types'
 import { POPULATED_DATA_FILENAME } from '../test/globalSetup'
 import fs from 'fs'
 import { components } from './open-api-types'
@@ -54,16 +54,16 @@ const formatTxReceipt = (
 export const getGenesisBlockId = () => {
     const data = readPopulatedData()
 
-    return data.genesisBlockId
+    return data.genesisId
 }
 
 export const readRandomTransfer = async (): Promise<Transfer> => {
     const data = readPopulatedData()
 
-    const randomIndex = Math.floor(Math.random() * data.transfers.length)
+    const randomIndex = Math.floor(Math.random() * data.transfersIds.length)
 
     const txReceipt = await Node1Client.getTransactionReceipt(
-        data.transfers[randomIndex],
+        data.transfersIds[randomIndex],
     )
 
     if (!txReceipt.body || !txReceipt.success) return readRandomTransfer()
@@ -88,7 +88,7 @@ export const getTransferDetails = async () => {
 
     const transfers = (
         await Promise.all(
-            data.transfers.map(async (txId) => {
+            data.transfersIds.map(async (txId) => {
                 try {
                     return pollReceipt(txId, 10_000)
                 } catch {

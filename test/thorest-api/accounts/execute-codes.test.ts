@@ -5,6 +5,7 @@ import { interfaces } from '../../../src/contracts/hardhat'
 import { getBlockRef } from '../../../src/utils/block-utils'
 import { revisions } from '../../../src/constants'
 import { generateAddress, ThorWallet } from '../../../src/wallet'
+import { testCase, testCaseEach } from '../../../src/test-case'
 
 const CALLER_ADDR = '0x435933c8064b4Ae76bE665428e0307eF2cCFBD68'
 const GAS_PAYER = '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed'
@@ -42,152 +43,172 @@ const READ_ONLY_REQUEST = (address: string) => {
  * @group api
  * @group accounts
  */
-describe('POST /accounts/*', function () {
+describe('POST /accounts/*', function() {
     const wallet = ThorWallet.new(true)
 
     beforeAll(async () => {
         await wallet.waitForFunding()
     })
 
-    it('should execute an array of clauses', async function () {
-        const to = generateAddress()
+    testCase(['solo', 'default-private'])(
+        'should execute an array of clauses',
+        async function() {
+            const to = generateAddress()
 
-        const tokenAmount = '0x100000'
+            const tokenAmount = '0x100000'
 
-        const res = await Node1Client.executeAccountBatch({
-            clauses: [
-                // VET Transfer
+            const res = await Node1Client.executeAccountBatch({
+                clauses: [
+                    // VET Transfer
+                    {
+                        to: to,
+                        value: tokenAmount,
+                        data: '0x',
+                    },
+                    // VTHO Transfer (Contract Call)
+                    {
+                        to: contractAddresses.energy,
+                        value: '0x0',
+                        data: interfaces.energy.encodeFunctionData('transfer', [
+                            to,
+                            tokenAmount,
+                        ]),
+                    },
+                    // Contract Deployment
+                    {
+                        value: '0x0',
+                        data: SimpleCounter__factory.createInterface().encodeDeploy(),
+                    },
+                ],
+                caller: wallet.address,
+            })
+
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Expected Response Body').toEqual([
                 {
-                    to: to,
-                    value: tokenAmount,
                     data: '0x',
+                    events: [],
+                    transfers: [
+                        {
+                            sender: wallet.address,
+                            recipient: to,
+                            amount: tokenAmount,
+                        },
+                    ],
+                    gasUsed: expect.any(Number),
+                    reverted: false,
+                    vmError: '',
                 },
-                // VTHO Transfer (Contract Call)
                 {
-                    to: contractAddresses.energy,
-                    value: '0x0',
-                    data: interfaces.energy.encodeFunctionData('transfer', [
-                        to,
-                        tokenAmount,
-                    ]),
+                    data: '0x0000000000000000000000000000000000000000000000000000000000000001',
+                    events: [
+                        {
+                            address:
+                                '0x0000000000000000000000000000456e65726779',
+                            topics: [
+                                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+                                `0x000000000000000000000000${wallet.address.slice(2)}`,
+                                `0x000000000000000000000000${to.slice(2)}`,
+                            ],
+                            data: `0x0000000000000000000000000000000000000000000000000000000000${tokenAmount.slice(2)}`,
+                        },
+                    ],
+                    transfers: [],
+                    gasUsed: expect.any(Number),
+                    reverted: false,
+                    vmError: '',
                 },
-                // Contract Deployment
                 {
-                    value: '0x0',
-                    data: SimpleCounter__factory.createInterface().encodeDeploy(),
+                    data: '0x',
+                    events: [
+                        {
+                            address: expect.any(String),
+                            topics: [
+                                '0xb35bf4274d4295009f1ec66ed3f579db287889444366c03d3a695539372e8951',
+                            ],
+                            data: expect.any(String),
+                        },
+                    ],
+                    transfers: [],
+                    gasUsed: expect.any(Number),
+                    reverted: false,
+                    vmError: '',
                 },
-            ],
-            caller: wallet.address,
-        })
+            ])
+        },
+    )
 
-        expect(res.success, 'API response should be a success').toBeTrue()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(res.body, 'Expected Response Body').toEqual([
-            {
-                data: '0x',
-                events: [],
-                transfers: [
-                    {
-                        sender: wallet.address,
-                        recipient: to,
-                        amount: tokenAmount,
-                    },
-                ],
-                gasUsed: expect.any(Number),
-                reverted: false,
-                vmError: '',
-            },
-            {
-                data: '0x0000000000000000000000000000000000000000000000000000000000000001',
-                events: [
-                    {
-                        address: '0x0000000000000000000000000000456e65726779',
-                        topics: [
-                            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-                            `0x000000000000000000000000${wallet.address.slice(2)}`,
-                            `0x000000000000000000000000${to.slice(2)}`,
-                        ],
-                        data: `0x0000000000000000000000000000000000000000000000000000000000${tokenAmount.slice(2)}`,
-                    },
-                ],
-                transfers: [],
-                gasUsed: expect.any(Number),
-                reverted: false,
-                vmError: '',
-            },
-            {
-                data: '0x',
-                events: [
-                    {
-                        address: expect.any(String),
-                        topics: [
-                            '0xb35bf4274d4295009f1ec66ed3f579db287889444366c03d3a695539372e8951',
-                        ],
-                        data: expect.any(String),
-                    },
-                ],
-                transfers: [],
-                gasUsed: expect.any(Number),
-                reverted: false,
-                vmError: '',
-            },
-        ])
-    })
+    testCase(['solo', 'default-private'])(
+        'should be able to query historic revisions',
+        async () => {
+            const request = {
+                clauses: [SEND_VTHO_CLAUSE],
+                caller: wallet.address,
+            }
 
-    it('should be able to query historic revisions', async () => {
-        const request = {
-            clauses: [SEND_VTHO_CLAUSE],
-            caller: wallet.address,
-        }
+            // generated wallet had no funds configured in genesis, so this should be reverted
+            const historicCall = await Node1Client.executeAccountBatch(
+                request,
+                '0',
+            )
 
-        // generated wallet had no funds configured in genesis, so this should be reverted
-        const historicCall = await Node1Client.executeAccountBatch(request, '0')
+            expect(
+                historicCall.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(historicCall.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                historicCall.body?.[0]?.reverted,
+                'Transaction should not revert',
+            ).toEqual(true)
 
-        expect(
-            historicCall.success,
-            'API response should be a success',
-        ).toBeTrue()
-        expect(historicCall.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(
-            historicCall.body?.[0]?.reverted,
-            'Transaction should not revert',
-        ).toEqual(true)
+            // generated wallet was funded, so this should be successful
+            const currentCall = await Node1Client.executeAccountBatch(
+                request,
+                'best',
+            )
 
-        // generated wallet was funded, so this should be successful
-        const currentCall = await Node1Client.executeAccountBatch(
-            request,
-            'best',
-        )
+            expect(
+                currentCall.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(currentCall.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                currentCall.body?.[0]?.reverted,
+                'Transaction should not revert',
+            ).toEqual(false)
+        },
+    )
 
-        expect(
-            currentCall.success,
-            'API response should be a success',
-        ).toBeTrue()
-        expect(currentCall.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(
-            currentCall.body?.[0]?.reverted,
-            'Transaction should not revert',
-        ).toEqual(false)
-    })
+    testCase(['solo', 'default-private'])(
+        'should be able to call read only contract methods',
+        async () => {
+            const request = READ_ONLY_REQUEST(wallet.address)
+            const historicCall = await Node1Client.executeAccountBatch(
+                request,
+                '0',
+            )
+            expect(
+                historicCall.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(historicCall.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(historicCall.body?.[0]?.reverted).toEqual(false)
+            expect(historicCall.body?.[1]?.reverted).toEqual(false)
+            const balanceOf = parseInt(historicCall.body?.[0]?.data ?? '-1', 16)
+            const totalSupply = parseInt(
+                historicCall.body?.[1]?.data ?? '-1',
+                16,
+            )
+            expect(balanceOf).toBeGreaterThanOrEqual(0)
+            expect(totalSupply).toBeGreaterThanOrEqual(0)
+        },
+    )
 
-    it('should be able to call read only contract methods', async () => {
-        const request = READ_ONLY_REQUEST(wallet.address)
-        const historicCall = await Node1Client.executeAccountBatch(request, '0')
-        expect(
-            historicCall.success,
-            'API response should be a success',
-        ).toBeTrue()
-        expect(historicCall.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(historicCall.body?.[0]?.reverted).toEqual(false)
-        expect(historicCall.body?.[1]?.reverted).toEqual(false)
-        const balanceOf = parseInt(historicCall.body?.[0]?.data ?? '-1', 16)
-        const totalSupply = parseInt(historicCall.body?.[1]?.data ?? '-1', 16)
-        expect(balanceOf).toBeGreaterThanOrEqual(0)
-        expect(totalSupply).toBeGreaterThanOrEqual(0)
-    })
-
-    it.each(revisions.valid())(
+    testCaseEach(['solo', 'default-private'])(
         'should be able to call read only contract methods with valid revision: %s',
+        revisions.valid(),
         async (revision) => {
             const request = READ_ONLY_REQUEST(wallet.address)
             const res = await Node1Client.executeAccountBatch(request, revision)
@@ -198,8 +219,9 @@ describe('POST /accounts/*', function () {
         },
     )
 
-    it.each(revisions.valid())(
+    testCaseEach(['solo', 'default-private'])(
         'should be able execute clauses for valid revision: %s',
+        revisions.valid(),
         async (revision) => {
             const res = await Node1Client.executeAccountBatch(
                 {
@@ -214,9 +236,10 @@ describe('POST /accounts/*', function () {
         },
     )
 
-    it.each(revisions.validNotFound)(
+    testCaseEach(['solo', 'default-private'])(
         'valid revisions not found: %s',
-        async function (revision) {
+        revisions.validNotFound,
+        async function(revision) {
             const res = await Node1Client.executeAccountBatch(
                 {
                     clauses: [SEND_VTHO_CLAUSE],
@@ -231,134 +254,164 @@ describe('POST /accounts/*', function () {
     )
 
     describe('execute with evm fields', () => {
-        it('should return the correct block ref', async () => {
-            const blockRef = await getBlockRef('1')
+        testCase(['solo', 'default-private'])(
+            'should return the correct block ref',
+            async () => {
+                const blockRef = await getBlockRef('1')
 
-            const res = await Node1Client.executeAccountBatch({
-                clauses: [
+                const res = await Node1Client.executeAccountBatch({
+                    clauses: [
+                        {
+                            to: contractAddresses.extension,
+                            value: '0x0',
+                            data: interfaces.extension.encodeFunctionData(
+                                'txBlockRef',
+                            ),
+                        },
+                    ],
+                    caller: CALLER_ADDR,
+                    blockRef,
+                })
+
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(
+                    res.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(res.body, 'Expected Response Body').toEqual([
                     {
-                        to: contractAddresses.extension,
-                        value: '0x0',
-                        data: interfaces.extension.encodeFunctionData(
-                            'txBlockRef',
-                        ),
+                        data: `${blockRef}000000000000000000000000000000000000000000000000`,
+                        events: [],
+                        gasUsed: expect.any(Number),
+                        reverted: false,
+                        transfers: [],
+                        vmError: '',
                     },
-                ],
-                caller: CALLER_ADDR,
-                blockRef,
-            })
+                ])
+            },
+        )
 
-            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(res.success, 'API response should be a success').toBeTrue()
-            expect(res.body, 'Expected Response Body').toEqual([
-                {
-                    data: `${blockRef}000000000000000000000000000000000000000000000000`,
-                    events: [],
-                    gasUsed: expect.any(Number),
-                    reverted: false,
-                    transfers: [],
-                    vmError: '',
-                },
-            ])
-        })
+        testCase(['solo', 'default-private'])(
+            'should return the correct gas payer',
+            async () => {
+                const requestBody = {
+                    clauses: [
+                        {
+                            to: contractAddresses.extension,
+                            value: '0x0',
+                            data: interfaces.extension.encodeFunctionData(
+                                'txGasPayer',
+                            ),
+                        },
+                    ],
+                    caller: CALLER_ADDR,
+                    gasPayer: GAS_PAYER,
+                }
 
-        it('should return the correct gas payer', async () => {
-            const requestBody = {
-                clauses: [
+                const res = await Node1Client.executeAccountBatch(requestBody)
+
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(
+                    res.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(res.body, 'Expected Response Body').toEqual([
                     {
-                        to: contractAddresses.extension,
-                        value: '0x0',
-                        data: interfaces.extension.encodeFunctionData(
-                            'txGasPayer',
-                        ),
+                        data: `0x000000000000000000000000${GAS_PAYER.slice(2)}`,
+                        events: [],
+                        gasUsed: expect.any(Number),
+                        reverted: false,
+                        transfers: [],
+                        vmError: '',
                     },
-                ],
-                caller: CALLER_ADDR,
-                gasPayer: GAS_PAYER,
-            }
+                ])
+            },
+        )
 
-            const res = await Node1Client.executeAccountBatch(requestBody)
+        testCase(['solo', 'default-private'])(
+            'should return the correct proved work',
+            async () => {
+                const provedWork = '191923'
 
-            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(res.success, 'API response should be a success').toBeTrue()
-            expect(res.body, 'Expected Response Body').toEqual([
-                {
-                    data: `0x000000000000000000000000${GAS_PAYER.slice(2)}`,
-                    events: [],
-                    gasUsed: expect.any(Number),
-                    reverted: false,
-                    transfers: [],
-                    vmError: '',
-                },
-            ])
-        })
+                const res = await Node1Client.executeAccountBatch({
+                    clauses: [
+                        {
+                            to: contractAddresses.extension,
+                            value: '0x0',
+                            data: interfaces.extension.encodeFunctionData(
+                                'txProvedWork',
+                            ),
+                        },
+                    ],
+                    caller: CALLER_ADDR,
+                    provedWork,
+                })
 
-        it('should return the correct proved work', async () => {
-            const provedWork = '191923'
-
-            const res = await Node1Client.executeAccountBatch({
-                clauses: [
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(
+                    res.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(res.body, 'Expected Response Body').toEqual([
                     {
-                        to: contractAddresses.extension,
-                        value: '0x0',
-                        data: interfaces.extension.encodeFunctionData(
-                            'txProvedWork',
-                        ),
+                        data: '0x000000000000000000000000000000000000000000000000000000000002edb3',
+                        events: [],
+                        gasUsed: expect.any(Number),
+                        reverted: false,
+                        transfers: [],
+                        vmError: '',
                     },
-                ],
-                caller: CALLER_ADDR,
-                provedWork,
-            })
+                ])
 
-            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(res.success, 'API response should be a success').toBeTrue()
-            expect(res.body, 'Expected Response Body').toEqual([
-                {
-                    data: '0x000000000000000000000000000000000000000000000000000000000002edb3',
-                    events: [],
-                    gasUsed: expect.any(Number),
-                    reverted: false,
-                    transfers: [],
-                    vmError: '',
-                },
-            ])
+                const amount = parseInt(
+                    res.body?.[0]?.data?.slice(2) ?? '0',
+                    16,
+                )
+                expect(amount).toEqual(parseInt(provedWork))
+            },
+        )
 
-            const amount = parseInt(res.body?.[0]?.data?.slice(2) ?? '0', 16)
-            expect(amount).toEqual(parseInt(provedWork))
-        })
+        testCase(['solo', 'default-private'])(
+            'should return the correct expiration',
+            async () => {
+                const expiration = 13627
 
-        it('should return the correct expiration', async () => {
-            const expiration = 13627
+                const res = await Node1Client.executeAccountBatch({
+                    clauses: [
+                        {
+                            to: contractAddresses.extension,
+                            value: '0x0',
+                            data: interfaces.extension.encodeFunctionData(
+                                'txExpiration',
+                            ),
+                        },
+                    ],
+                    caller: CALLER_ADDR,
+                    expiration,
+                })
 
-            const res = await Node1Client.executeAccountBatch({
-                clauses: [
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(
+                    res.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(res.body, 'Expected Response Body').toEqual([
                     {
-                        to: contractAddresses.extension,
-                        value: '0x0',
-                        data: interfaces.extension.encodeFunctionData(
-                            'txExpiration',
-                        ),
+                        data: '0x000000000000000000000000000000000000000000000000000000000000353b',
+                        events: [],
+                        gasUsed: 388,
+                        reverted: false,
+                        transfers: [],
+                        vmError: '',
                     },
-                ],
-                caller: CALLER_ADDR,
-                expiration,
-            })
+                ])
 
-            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(res.success, 'API response should be a success').toBeTrue()
-            expect(res.body, 'Expected Response Body').toEqual([
-                {
-                    data: '0x000000000000000000000000000000000000000000000000000000000000353b',
-                    events: [],
-                    gasUsed: 388,
-                    reverted: false,
-                    transfers: [],
-                    vmError: '',
-                },
-            ])
-
-            const amount = parseInt(res.body?.[0]?.data?.slice(2) ?? '0', 16)
-            expect(amount).toEqual(expiration)
-        })
+                const amount = parseInt(
+                    res.body?.[0]?.data?.slice(2) ?? '0',
+                    16,
+                )
+                expect(amount).toEqual(expiration)
+            },
+        )
     })
 })

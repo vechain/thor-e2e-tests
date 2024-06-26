@@ -23,15 +23,7 @@ const generateFaucetAccounts = (): AccountFaucet[] => {
 
     let hdNode: any = undefined
     if (options.pks && !options.mnemonic) {
-        const privateKeys = options.pks.split(',')
-        for (let i = 0; i < privateKeys.len(); i++) {
-            const node = HDNode.fromPrivateKey(privateKeys[i], Buffer.from([0]))
-
-            accounts.push({
-                privateKey: node.privateKey!.toString('hex'),
-                address: node.address,
-            })
-        }
+        hdNode = HDNode.fromPrivateKey(options.pks, Buffer.from([0]))
     } else if (!options.pks && options.mnemonic) {
         hdNode = HDNode.fromMnemonic(options.mnemonic.split(' '))
     } else if (!options.pks && !options.mnemonic) {
@@ -40,15 +32,13 @@ const generateFaucetAccounts = (): AccountFaucet[] => {
         throw new Error('A set os keys and mnemonic are mutualy exclusive')
     }
 
-    if (hdNode) {
-        for (let i = 0; i < faucetAccountLength; i++) {
-            const node = hdNode.derive(i)
+    for (let i = 0; i < faucetAccountLength; i++) {
+        const node = hdNode.derive(i)
 
-            accounts.push({
-                privateKey: node.privateKey!.toString('hex'),
-                address: node.address,
-            })
-        }
+        accounts.push({
+            privateKey: node.privateKey!.toString('hex'),
+            address: node.address,
+        })
     }
 
     return accounts
