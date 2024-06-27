@@ -90,20 +90,21 @@ const validateEnv = async (): Promise<boolean> => {
     // })
 
     // TODO: Validate the account balances
-    // const client = ThorClient.fromUrl(testEnv.urls[0])
-    //
-    // // ensure each account has a balance greater than 0
-    // for (const account of accounts) {
-    //     const balance = await client.accounts.getAccount(account)
-    //     const requiredBalance = unitsUtils.parseVET(BigInt('0x2710').toString())
-    //
-    //     if (BigInt(balance.balance) < requiredBalance) {
-    //         throw new Error('Account balance is less than 10,000 VET')
-    //     }
-    //     if (BigInt(balance.energy) < requiredBalance) {
-    //         throw new Error('Account energy is less than 10,000 VTHO')
-    //     }
-    // }
+    const client = ThorClient.fromUrl(testEnv.urls[0])
+
+    // ensure each account has a balance greater than 0
+    for (const account of testEnv.keys) {
+        const address = addressUtils.fromPrivateKey(new Buffer(account.replace('0x', ''), 'hex'))
+        const balance = await client.accounts.getAccount(address)
+        const requiredBalance = unitsUtils.parseVET(BigInt('0x2710').toString())
+
+        if (BigInt(balance.balance) < requiredBalance) {
+            throw new Error('Account balance is less than 10,000 VET')
+        }
+        if (BigInt(balance.energy) < requiredBalance) {
+            throw new Error('Account energy is less than 10,000 VTHO')
+        }
+    }
 
     return true
 }

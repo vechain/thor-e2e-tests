@@ -42,8 +42,7 @@ const parseAmount = (amount: number | string): number => {
  * @param account
  */
 const fundAccount = async (account: string, amounts: FundingAmounts) => {
-    const key = randomFunder()
-    const wallet = new ThorWallet(Buffer.from(key, 'hex'))
+    const wallet = new ThorWallet(Buffer.from(randomFunder(), 'hex'))
 
     const clauses = []
     const vetAmount = parseAmount(amounts.vet)

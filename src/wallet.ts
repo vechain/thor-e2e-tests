@@ -15,6 +15,7 @@ import {
 import { getBlockRef } from './utils/block-utils'
 import { components } from './open-api-types'
 import { Node1Client, SDKClient } from './thor-client'
+import * as fs from 'fs';
 
 export const generateAddress = () => {
     return generateEmptyWallet().address
@@ -75,13 +76,20 @@ class ThorWallet {
     }
 
     public static empty() {
-        return new ThorWallet(secp256k1.generatePrivateKey())
+        const privateKey = secp256k1.generatePrivateKey()
+
+        const addr = addressFromPrivateKey(privateKey)
+
+        fs.writeFile('./keys/' + addr + '.txt', privateKey.toString('hex'), err => { })
+
+        return new ThorWallet(privateKey)
     }
 
     public static withFunds(amounts: FundingAmounts) {
         const privateKey = secp256k1.generatePrivateKey()
 
         const addr = addressFromPrivateKey(privateKey)
+        fs.writeFile('./keys/' + addr + '.txt', privateKey.toString('hex'), err => { })
 
         const receipt = fundAccount(addr, amounts).then((res) => res.receipt)
 

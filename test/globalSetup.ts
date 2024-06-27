@@ -15,6 +15,7 @@ import { populatedData } from '../src/populated-data'
 import { getTransferIds } from '../src/logs/query-logs'
 import { Client } from '../src/thor-client'
 import { CompressedBlockDetail } from '@vechain/sdk-network'
+import * as fs from 'fs';
 
 export const POPULATED_DATA_FILENAME = './.chain-data.json'
 
@@ -94,6 +95,10 @@ const checkIfPopulated = async (): Promise<boolean> => {
 const populate = async () => {
     console.log('Populating data')
     let details: TransferDetails
+
+    if (!fs.existsSync('./keys')) {
+        fs.mkdirSync('./keys');
+    }
 
     switch (testEnv.type) {
         case 'mainnet':

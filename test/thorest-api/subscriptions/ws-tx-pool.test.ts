@@ -1,48 +1,32 @@
-import { Node1Client } from '../../../src/thor-client'
-import { generateAddress, ThorWallet } from '../../../src/wallet'
+import { Client } from '../../../src/thor-client'
+import { ThorWallet } from '../../../src/wallet'
+import { fundingAmounts } from '../../../src/account-faucet'
+import { testCase } from '../../../src/test-case'
 
 /**
  * @group api
  * @group websockets
  */
 describe('WS /subscriptions/txpool', () => {
-    it('should be able to subscribe', async () => {
-        const txs: { id: string }[] = []
+    testCase(['solo', 'default-private'])(
+        'should be able to subscribe', async () => {
+            const txs: { id: string }[] = []
 
-        const wallet = ThorWallet.new(true)
+            const wallet1 = ThorWallet.withFunds(fundingAmounts.noVetTinyVtho)
+            const wallet2 = ThorWallet.withFunds(fundingAmounts.noVetTinyVtho)
 
-        Node1Client.subscribeToTxPool((txId) => {
-            txs.push(txId)
+            Client.raw.subscribeToTxPool((txId) => {
+                txs.push(txId)
+            })
+
+            const receipt1 = await wallet1.waitForFunding()
+            const receipt2 = await wallet2.waitForFunding()
+
+            //sleep for 1 sec to ensure the beat is received
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+
+            expect(txs.length).toBeGreaterThanOrEqual(2)
+            expect(txs.some((tx) => tx.id === receipt1?.meta?.txID)).toBeTruthy()
+            expect(txs.some((tx) => tx.id === receipt2?.meta?.txID)).toBeTruthy()
         })
-
-        const account1 = generateAddress()
-        const account2 = generateAddress()
-
-        const sentTxs = await Promise.all([
-            wallet.sendClauses(
-                [
-                    {
-                        to: account1,
-                        value: 1,
-                        data: '0x',
-                    },
-                ],
-                true,
-            ),
-            wallet.sendClauses(
-                [
-                    {
-                        to: account2,
-                        value: 1,
-                        data: '0x',
-                    },
-                ],
-                true,
-            ),
-        ])
-
-        expect(txs.length).toBeGreaterThanOrEqual(2)
-        expect(txs.some((tx) => tx.id === sentTxs[0].meta?.txID)).toBeTruthy()
-        expect(txs.some((tx) => tx.id === sentTxs[1].meta?.txID)).toBeTruthy()
-    })
 })
