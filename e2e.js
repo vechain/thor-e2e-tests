@@ -17,6 +17,8 @@ const options = commander.opts()
 var process_env = {}
 if (options.nodeURL) {
     process_env.NODE_URLS = options.nodeURL
+} else {
+    throw new Error('--nodeURL flag is expected')
 }
 if (options.pks) {
     process_env.PRIVATE_KEYS = options.pks
@@ -34,5 +36,5 @@ spawn('npm', ['test'], {
     shell: true,
     env: process_env,
     stdio: 'inherit',
-    detached: true,
+    detached: false,
 })
