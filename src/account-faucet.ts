@@ -17,9 +17,9 @@ type FundingAmounts = {
 const fundingAmounts = {
     tinyVetTinyVtho: { vet: '0x1', vtho: '0x1' },
     tinyVetNoVtho: { vet: '0x1', vtho: '0x0' },
-    tinyVetBigVtho: { vet: '0x1', vtho: 50e18 },
-    noVetBigVtho: { vet: '0x0', vtho: 100e18 },
-    noVetMassiveVtho: { vet: '0x0', vtho: 1000e18 },
+    tinyVetBigVtho: { vet: '0x1', vtho: 1000e18 },
+    noVetBigVtho: { vet: '0x0', vtho: 1000e18 },
+    noVetMassiveVtho: { vet: '0x0', vtho: 10000e18 },
     noVetSmallVtho: { vet: '0x0', vtho: 5e18 },
     noVetTinyVtho: { vet: '0x0', vtho: '0x1' },
 }

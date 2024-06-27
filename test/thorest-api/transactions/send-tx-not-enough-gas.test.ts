@@ -3,15 +3,18 @@ import { generateAddress, ThorWallet } from '../../../src/wallet'
 import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-types'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
 import { revertedPostTx } from './setup/asserts'
+import { testCase } from '../../../src/test-case'
+import { fundingAmounts } from '../../../src/account-faucet'
 
 /**
  * @group api
  * @group transactions
  */
-describe('send tx with not enough gas', function () {
-    const wallet = ThorWallet.new(true)
+describe('send tx with not enough gas', function() {
+    const deployer = ThorWallet.withFunds(fundingAmounts.noVetMassiveVtho)
+    const wallet = ThorWallet.empty()
 
-    it('should fail when making a contract deployment', async function () {
+    it('should fail when making a contract deployment', async function() {
         // Prepare the transaction
         const deployContractClause = clauseBuilder.deployContract(
             ParisCounter.bytecode,
@@ -38,7 +41,7 @@ describe('send tx with not enough gas', function () {
         await ddt.runTestFlow()
     })
 
-    it('should fail when making a VET transfer', async function () {
+    it('should fail when making a VET transfer', async function() {
         // Prepare the transaction
         const receivingAddr = generateAddress()
         const clauses = [
@@ -70,9 +73,9 @@ describe('send tx with not enough gas', function () {
         await ddt.runTestFlow()
     })
 
-    it('should fail when making a contract call', async function () {
+    it('should fail when making a contract call', async function() {
         // Preconditions - deploy a contract
-        const contract = await wallet.deployContract(
+        const contract = await deployer.deployContract(
             ParisCounter.bytecode,
             ParisCounter.abi,
         )

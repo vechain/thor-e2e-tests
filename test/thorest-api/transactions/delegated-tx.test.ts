@@ -24,11 +24,14 @@ testCase(['solo', 'default-private'])(
         const wallet = ThorWallet.withFunds(fundingAmounts.noVetMassiveVtho)
         const emptyWallet = ThorWallet.empty()
 
+        await wallet.waitForFunding()
+
         const contract = await wallet.deployContract(
             ParisCounter.bytecode,
             ParisCounter.abi,
         )
         expect(contract.address).toBeDefined()
+
 
         const parisInterface = ParisCounter.createInterface()
 
