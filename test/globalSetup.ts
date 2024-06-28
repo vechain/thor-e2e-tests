@@ -108,6 +108,33 @@ const populate = async () => {
             details = transferDetails.test
             break
         case 'default-private':
+            const maxDistance = 1000
+            const lastBlock = (await Client.raw.getBlock('best'))?.body
+            if (lastBlock?.number! == 2) {
+                details = await writeTransferTransactions()
+                break
+            }
+
+            let prevBlockHeight = lastBlock?.number! - maxDistance
+            if (lastBlock?.number! < maxDistance) {
+                prevBlockHeight = 2
+            }
+            let transactionsAmount = 0
+            const prevBlock = (await Client.raw.getBlock(prevBlockHeight))?.body
+            for (let i = prevBlockHeight; i <= lastBlock?.number!; i++) {
+                const block = (await Client.raw.getBlock(i))?.body
+
+                const trxs = await Client.sdk.blocks.getBlockCompressed(block?.number!)
+                transactionsAmount += trxs!.transactions.length
+            }
+            details = {
+                firstBlock: prevBlock!.number!,
+                lastBlock: lastBlock!.number!,
+                transferCount: transactionsAmount,
+            }
+
+            console.log('Details', details)
+            break
         case 'solo': {
             details = await writeTransferTransactions()
             break

@@ -2,7 +2,7 @@ import { PopulatedChainData } from './types'
 import { POPULATED_DATA_FILENAME } from '../test/globalSetup'
 import fs from 'fs'
 import { components } from './open-api-types'
-import { Node1Client } from './thor-client'
+import { Client } from './thor-client'
 import { pollReceipt } from './transactions'
 
 export type Transfer = {
@@ -62,7 +62,7 @@ export const readRandomTransfer = async (): Promise<Transfer> => {
 
     const randomIndex = Math.floor(Math.random() * data.transfersIds.length)
 
-    const txReceipt = await Node1Client.getTransactionReceipt(
+    const txReceipt = await Client.raw.getTransactionReceipt(
         data.transfersIds[randomIndex],
     )
 

@@ -1,23 +1,26 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { HEX_AT_LEAST_1 } from '../../../src/utils/hex-utils'
 import { SimpleCounter__factory } from '../../../typechain-types'
 import { revisions } from '../../../src/constants'
 import { generateAddresses, ThorWallet } from '../../../src/wallet'
+import { testCase, testCaseEach } from '../../../src/test-case'
 
 /**
  * @group api
  * @group accounts
  */
-describe('GET /accounts/{address}/code', function () {
+describe('GET /accounts/{address}/code', function() {
     const accountAddress = generateAddresses(4)
 
     const wallet = ThorWallet.new(true)
 
-    it.each(accountAddress)(
+
+    testCaseEach(['solo', 'default-private'])(
         'should return no code for newly created address: %s',
-        async function (addr) {
-            const res = await Node1Client.getAccountCode(addr)
+        accountAddress,
+        async function(addr) {
+            const res = await Client.raw.getAccountCode(addr)
 
             expect(res.success, 'API response should be a success').toBeTrue()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -27,14 +30,16 @@ describe('GET /accounts/{address}/code', function () {
         },
     )
 
-    const noPrefix = Object.entries(contractAddresses).map(
-        ([name, address]) => [name, address.slice(2)],
+    const noPrefix = Object.values(contractAddresses).map((address) =>
+        address.slice(2),
     )
 
-    it.each([...Object.entries(contractAddresses), ...noPrefix])(
+
+    testCaseEach(['solo', 'default-private'])(
         'should return the code for %s: %s',
-        async function (entry, address) {
-            const res = await Node1Client.getAccountCode(address)
+        [...Object.values(contractAddresses), ...noPrefix],
+        async function(address: string) {
+            const res = await Client.raw.getAccountCode(address)
 
             expect(res.success, 'API response should be a success').toBeTrue()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -44,13 +49,15 @@ describe('GET /accounts/{address}/code', function () {
         },
     )
 
-    it.each([
+
+    testCaseEach(['solo', 'default-private'])(
+        `should return 400 for invalid address: %s`, [
         'bad address', //not hex
         '0x0001234', //too short
         '0', //too short
         false,
-    ])(`should return 400 for invalid address: %s`, async function (addr) {
-        const res = await Node1Client.getAccountCode(addr as string)
+    ], async function(addr) {
+        const res = await Client.raw.getAccountCode(addr as string)
 
         expect(res.success, 'API Call should fail').toBeFalse()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
@@ -73,14 +80,14 @@ describe('GET /accounts/{address}/code', function () {
 
         expect(address).toBeTruthy()
 
-        const code = await Node1Client.getAccountCode(address)
+        const code = await Client.raw.getAccountCode(address)
 
         // Check the bytecode is not equal to 0x
         expect(code.body, 'Expected Response Body').toEqual({
             code: expect.stringMatching(HEX_AT_LEAST_1),
         })
 
-        const codeForRevision = await Node1Client.getAccountCode(
+        const codeForRevision = await Client.raw.getAccountCode(
             address,
             `${(txReceipt.meta?.blockNumber ?? 1) - 1}`,
         )
@@ -92,10 +99,11 @@ describe('GET /accounts/{address}/code', function () {
         })
     })
 
-    it.each(revisions.valid())(
+    testCaseEach(['solo', 'default-private'])(
         'should be able to fetch the account state for revision: %s',
+        revisions.valid(),
         async (revision) => {
-            const vtho = await Node1Client.getAccountCode(
+            const vtho = await Client.raw.getAccountCode(
                 contractAddresses.energy,
                 revision,
             )
@@ -108,10 +116,11 @@ describe('GET /accounts/{address}/code', function () {
         },
     )
 
-    it.each(revisions.invalid)(
+    testCaseEach(['solo', 'default-private'])(
         'should throw an error for invalid revision: %s',
+        revisions.invalid,
         async (revision) => {
-            const vtho = await Node1Client.getAccountCode(
+            const vtho = await Client.raw.getAccountCode(
                 contractAddresses.energy,
                 revision,
             )

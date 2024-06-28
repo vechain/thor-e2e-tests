@@ -11,7 +11,6 @@
         "docker:restart": "yarn docker:down && yarn docker:up",
         "pretest": "yarn docker:restart",
         "test": "yarn jest --forceExit",
-        "posttest": "yarn docker:down",
         "test:fast": "yarn jest --forceExit",
         "generate:openapi": "yarn openapi-typescript -o ./src/open-api-types.ts",
         "generate:accounts": "ts-node scripts/generate-genesis-accounts.ts",
