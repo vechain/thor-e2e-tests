@@ -1,10 +1,11 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { HEX_REGEX } from '../../../src/utils/hex-utils'
 import { revisions } from '../../../src/constants'
-import { readRandomTransfer, Transfer } from '../../../src/populated-data'
+import { populatedData, readRandomTransfer, Transfer } from '../../../src/populated-data'
 import { FAUCET_AMOUNT_HEX } from '../../../src/account-faucet'
 import { testCase, testCaseEach } from '../../../src/test-case'
+import { ThorWallet } from '../../../src/wallet'
 
 /**
  * @group api
@@ -25,12 +26,22 @@ describe('GET /accounts/{address}', function() {
     })
 
     testCase(['solo', 'default-private'])('correct balance', async function() {
-        const res = await Node1Client.getAccount(transfer.vet.recipient)
 
-        expect(res.success, 'API response should be a success').toBeTrue()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(res.body, 'Expected Response Body').toEqual({
-            balance: transfer.vet.amount,
+        const emptyWallet = ThorWallet.empty()
+
+        const clauses = [{
+            to: emptyWallet.address,
+            value: '0x1',
+            data: '0x',
+        }]
+
+        await ThorWallet.withFunds().sendClauses(clauses, true)
+        const newTransfer = await Client.raw.getAccount(emptyWallet.address)
+
+        expect(newTransfer.success, 'API response should be a success').toBeTrue()
+        expect(newTransfer.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(newTransfer.body, 'Expected Response Body').toEqual({
+            balance: '0x1',
             energy: expect.stringMatching(HEX_REGEX),
             hasCode: false,
         })
@@ -40,7 +51,7 @@ describe('GET /accounts/{address}', function() {
         'contract account hasCode',
         async function() {
             const addr = contractAddresses.energy
-            const res = await Node1Client.getAccount(addr)
+            const res = await Client.raw.getAccount(addr)
 
             expect(res.success, 'API response should be a success').toBeTrue()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -56,7 +67,7 @@ describe('GET /accounts/{address}', function() {
         'valid revision %s',
         revisions.valid(true),
         async function(revision) {
-            const res = await Node1Client.getAccount(
+            const res = await Client.raw.getAccount(
                 transfer.vet.recipient,
                 revision,
             )
@@ -74,7 +85,7 @@ describe('GET /accounts/{address}', function() {
         'invalid address: %s',
         invalidAddresses,
         async (a) => {
-            const res = await Node1Client.getAccount(a as string)
+            const res = await Client.raw.getAccount(a as string)
             expect(res.success, 'API Call should fail').toBeFalse()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
         },
@@ -84,7 +95,7 @@ describe('GET /accounts/{address}', function() {
         'invalid revision: %s',
         revisions.invalid,
         async (r) => {
-            const res = await Node1Client.getAccount(transfer.vet.recipient, r)
+            const res = await Client.raw.getAccount(transfer.vet.recipient, r)
             expect(res.success, 'API Call should fail').toBeFalse()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
         },

@@ -3,7 +3,6 @@ import { testBloomForAddress } from '../../../src/utils/bloom'
 import assert from 'node:assert'
 import { ThorWallet } from '../../../src/wallet'
 import { components } from '../../../src/open-api-types'
-import { fundingAmounts } from '../../../src/account-faucet'
 import { testCase } from '../../../src/test-case'
 
 /**
@@ -20,7 +19,7 @@ describe('WS /subscriptions/beat2', () => {
                 beats.push(newBlock)
             })
 
-            const wallet = ThorWallet.withFunds(fundingAmounts.noVetTinyVtho)
+            const wallet = ThorWallet.txBetweenFunding()
 
             const fundReceipt = await wallet.waitForFunding()
 

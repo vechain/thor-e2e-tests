@@ -38,7 +38,7 @@ export const getTransferIds = async (
 
     return txs
         .filter((tx) => {
-            return hasVetTransfer(tx) && hasVthoTransfer(tx)
+            return hasVetTransfer(tx) || hasVthoTransfer(tx)
         })
         .map((tx) => tx.id)
 }

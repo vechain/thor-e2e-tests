@@ -18,7 +18,7 @@ describe('WS /subscriptions/event', () => {
         'should be able to subscribe', async () => {
             const events: components['schemas']['SubscriptionEventResponse'][] = []
             //const account = generateAddress()
-            const wallet = ThorWallet.withFunds(fundingAmounts.noVetTinyVtho)
+            const wallet = ThorWallet.txBetweenFunding()
 
             Client.raw.subscribeToEvents(
                 (event) => {

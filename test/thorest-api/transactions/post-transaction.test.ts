@@ -1,13 +1,12 @@
 import { ThorWallet } from '../../../src/wallet'
 import { testCase } from '../../../src/test-case'
-import { fundingAmounts } from '../../../src/account-faucet'
 
 /**
  * @group api
  * @group transactions
  */
 describe('POST /transactions', function() {
-    const wallet = ThorWallet.withFunds(fundingAmounts.noVetTinyVtho)
+    const wallet = ThorWallet.txBetweenFunding()
 
 
     testCase(['solo', 'default-private'])(

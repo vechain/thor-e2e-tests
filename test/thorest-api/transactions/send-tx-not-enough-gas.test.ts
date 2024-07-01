@@ -14,100 +14,103 @@ describe('send tx with not enough gas', function() {
     const deployer = ThorWallet.withFunds(fundingAmounts.noVetMassiveVtho)
     const wallet = ThorWallet.empty()
 
-    it('should fail when making a contract deployment', async function() {
-        // Prepare the transaction
-        const deployContractClause = clauseBuilder.deployContract(
-            ParisCounter.bytecode,
-        )
-        const txBody = await wallet.buildTransaction([deployContractClause])
-        txBody.gas = 0
-        const tx = new Transaction(txBody)
-        const rawTx = await wallet.signAndEncodeTx(tx)
+    testCase(['solo', 'default-private'])(
+        'should fail when making a contract deployment', async function() {
+            // Prepare the transaction
+            const deployContractClause = clauseBuilder.deployContract(
+                ParisCounter.bytecode,
+            )
+            const txBody = await wallet.buildTransaction([deployContractClause])
+            txBody.gas = 0
+            const tx = new Transaction(txBody)
+            const rawTx = await wallet.signAndEncodeTx(tx)
 
-        // Create the test plan
-        const testPlan = {
-            postTxStep: {
-                rawTx,
-                expectedResult: (data: any) =>
-                    revertedPostTx(
-                        data,
-                        'bad tx: intrinsic gas exceeds provided gas',
-                    ),
-            },
-        }
+            // Create the test plan
+            const testPlan = {
+                postTxStep: {
+                    rawTx,
+                    expectedResult: (data: any) =>
+                        revertedPostTx(
+                            data,
+                            'bad tx: intrinsic gas exceeds provided gas',
+                        ),
+                },
+            }
 
-        // Run the test flow
-        const ddt = new TransactionDataDrivenFlow(testPlan)
-        await ddt.runTestFlow()
-    })
+            // Run the test flow
+            const ddt = new TransactionDataDrivenFlow(testPlan)
+            await ddt.runTestFlow()
+        })
 
-    it('should fail when making a VET transfer', async function() {
-        // Prepare the transaction
-        const receivingAddr = generateAddress()
-        const clauses = [
-            {
-                value: 1000,
-                data: '0x',
-                to: receivingAddr,
-            },
-        ]
-        const txBody = await wallet.buildTransaction(clauses)
-        txBody.gas = 0
-        const tx = new Transaction(txBody)
-        const rawTx = await wallet.signAndEncodeTx(tx)
+    testCase(['solo', 'default-private'])(
+        'should fail when making a VET transfer', async function() {
+            // Prepare the transaction
+            const receivingAddr = generateAddress()
+            const clauses = [
+                {
+                    value: 1000,
+                    data: '0x',
+                    to: receivingAddr,
+                },
+            ]
+            const txBody = await wallet.buildTransaction(clauses)
+            txBody.gas = 0
+            const tx = new Transaction(txBody)
+            const rawTx = await wallet.signAndEncodeTx(tx)
 
-        // Create the test plan
-        const testPlan = {
-            postTxStep: {
-                rawTx,
-                expectedResult: (data: any) =>
-                    revertedPostTx(
-                        data,
-                        'bad tx: intrinsic gas exceeds provided gas',
-                    ),
-            },
-        }
+            // Create the test plan
+            const testPlan = {
+                postTxStep: {
+                    rawTx,
+                    expectedResult: (data: any) =>
+                        revertedPostTx(
+                            data,
+                            'bad tx: intrinsic gas exceeds provided gas',
+                        ),
+                },
+            }
 
-        // Run the test flow
-        const ddt = new TransactionDataDrivenFlow(testPlan)
-        await ddt.runTestFlow()
-    })
+            // Run the test flow
+            const ddt = new TransactionDataDrivenFlow(testPlan)
+            await ddt.runTestFlow()
+        })
 
-    it('should fail when making a contract call', async function() {
-        // Preconditions - deploy a contract
-        const contract = await deployer.deployContract(
-            ParisCounter.bytecode,
-            ParisCounter.abi,
-        )
-        expect(contract.address).toBeDefined()
+    testCase(['solo', 'default-private'])(
+        'should fail when making a contract call', async function() {
+            // Preconditions - deploy a contract
+            const contract = await deployer.deployContract(
+                ParisCounter.bytecode,
+                ParisCounter.abi,
+            )
+            expect(contract.address).toBeDefined()
 
-        const parisInterface = ParisCounter.createInterface()
-        const clauses = [
-            {
-                data: parisInterface.encodeFunctionData('incrementCounter'),
-                value: '0x0',
-                to: contract.address,
-            },
-        ]
-        const txBody = await wallet.buildTransaction(clauses)
-        txBody.gas = 0
-        const tx = new Transaction(txBody)
-        const rawTx = await wallet.signAndEncodeTx(tx)
+            const parisInterface = ParisCounter.createInterface()
+            const clauses = [
+                {
+                    data: parisInterface.encodeFunctionData('incrementCounter'),
+                    value: '0x0',
+                    to: contract.address,
+                },
+            ]
+            const txBody = await wallet.buildTransaction(clauses)
+            txBody.gas = 0
+            const tx = new Transaction(txBody)
+            const rawTx = await wallet.signAndEncodeTx(tx)
 
-        // Create the test plan
-        const testPlan = {
-            postTxStep: {
-                rawTx,
-                expectedResult: (data: any) =>
-                    revertedPostTx(
-                        data,
-                        'bad tx: intrinsic gas exceeds provided gas',
-                    ),
-            },
-        }
+            // Create the test plan
+            const testPlan = {
+                postTxStep: {
+                    rawTx,
+                    expectedResult: (data: any) =>
+                        revertedPostTx(
+                            data,
+                            'bad tx: intrinsic gas exceeds provided gas',
+                        ),
+                },
+            }
 
-        // Run the test flow
-        const ddt = new TransactionDataDrivenFlow(testPlan)
-        await ddt.runTestFlow()
-    })
+            // Run the test flow
+            const ddt = new TransactionDataDrivenFlow(testPlan)
+            await ddt.runTestFlow()
+        })
 })

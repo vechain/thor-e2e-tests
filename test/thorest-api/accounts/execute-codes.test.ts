@@ -55,7 +55,7 @@ describe('POST /accounts/*', function() {
     testCase(['solo', 'default-private'])(
         'should execute an array of clauses',
         async function() {
-            const to = generateAddress()
+            const to = ThorWallet.withFunds()
 
             const tokenAmount = '0x1'
 
@@ -63,7 +63,7 @@ describe('POST /accounts/*', function() {
                 clauses: [
                     // VET Transfer
                     {
-                        to: to,
+                        to: to.address,
                         value: tokenAmount,
                         data: '0x',
                     },
@@ -72,7 +72,7 @@ describe('POST /accounts/*', function() {
                         to: contractAddresses.energy,
                         value: '0x0',
                         data: interfaces.energy.encodeFunctionData('transfer', [
-                            to,
+                            to.address,
                             tokenAmount,
                         ]),
                     },
@@ -94,7 +94,7 @@ describe('POST /accounts/*', function() {
                     transfers: [
                         {
                             sender: wallet.address,
-                            recipient: to,
+                            recipient: to.address,
                             amount: tokenAmount,
                         },
                     ],
@@ -111,7 +111,7 @@ describe('POST /accounts/*', function() {
                             topics: [
                                 '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
                                 `0x000000000000000000000000${wallet.address.slice(2)}`,
-                                `0x000000000000000000000000${to.slice(2)}`,
+                                `0x000000000000000000000000${to.address.slice(2)}`,
                             ],
                             data: `0x000000000000000000000000000000000000000000000000000000000000000${tokenAmount.slice(2)}`,
                         },
@@ -163,7 +163,7 @@ describe('POST /accounts/*', function() {
             expect(
                 historicCall.body?.[0]?.reverted,
                 'Transaction should not revert',
-            ).toEqual(true)
+            ).toEqual(false)
 
             // generated wallet was funded, so this should be successful
             const currentCall = await Client.raw.executeAccountBatch(

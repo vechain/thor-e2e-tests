@@ -23,13 +23,13 @@ const writeTransferTransactions = async (): Promise<TransferDetails> => {
             block = await Client.raw.getBlock('best')
         }
 
-        console.log('Populating [block=' + (block.body?.number + 1) + ']')
+        console.log('Populating [block=' + (block.body!.number! + 1) + ']')
 
         const res = await Promise.all(
             Array.from({ length: 20 }, () => {
-                return ThorWallet.withFunds(
-                    fundingAmounts.tinyVetTinyVtho,
+                const reciept = ThorWallet.txBetweenFunding(
                 ).waitForFunding()
+                return reciept
             }),
         )
 

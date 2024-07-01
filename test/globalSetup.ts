@@ -100,6 +100,7 @@ const populate = async () => {
         fs.mkdirSync('./keys');
     }
 
+    let transferIds: string[] = []
     switch (testEnv.type) {
         case 'mainnet':
             details = transferDetails.main
@@ -109,10 +110,9 @@ const populate = async () => {
             break
         case 'default-private':
             const maxDistance = 1000
-            const lastBlock = (await Client.raw.getBlock('best'))?.body
-            if (lastBlock?.number! == 2) {
-                details = await writeTransferTransactions()
-                break
+            let lastBlock = (await Client.raw.getBlock('best'))!.body
+            if (lastBlock!.number! <= 2) {
+                await writeTransferTransactions()
             }
 
             let prevBlockHeight = lastBlock?.number! - maxDistance
@@ -121,19 +121,22 @@ const populate = async () => {
             }
             let transactionsAmount = 0
             const prevBlock = (await Client.raw.getBlock(prevBlockHeight))?.body
+            lastBlock = (await Client.raw.getBlock('best'))!.body
             for (let i = prevBlockHeight; i <= lastBlock?.number!; i++) {
                 const block = (await Client.raw.getBlock(i))?.body
 
                 const trxs = await Client.sdk.blocks.getBlockCompressed(block?.number!)
+
                 transactionsAmount += trxs!.transactions.length
+                transferIds = transferIds.concat(trxs!.transactions)
             }
+
             details = {
                 firstBlock: prevBlock!.number!,
                 lastBlock: lastBlock!.number!,
                 transferCount: transactionsAmount,
             }
 
-            console.log('Details', details)
             break
         case 'solo': {
             details = await writeTransferTransactions()
@@ -143,15 +146,17 @@ const populate = async () => {
             throw new Error('Invalid network type')
     }
 
+    console.log('Details', details)
     if (populatedData.exists()) populatedData.remove()
 
-    const txIds = await getTransferIds(details)
+    //const txIds = await getTransferIds(details)
     const genesisBlock =
         (await Client.sdk.blocks.getGenesisBlock()) as CompressedBlockDetail
 
+    console.log('Transfers', transferIds)
     populatedData.write({
         genesisId: genesisBlock.id,
-        transfersIds: txIds,
+        transfersIds: transferIds,
         transferDetails: details,
     })
 

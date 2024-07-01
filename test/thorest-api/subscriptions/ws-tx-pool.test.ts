@@ -12,8 +12,8 @@ describe('WS /subscriptions/txpool', () => {
         'should be able to subscribe', async () => {
             const txs: { id: string }[] = []
 
-            const wallet1 = ThorWallet.withFunds(fundingAmounts.noVetTinyVtho)
-            const wallet2 = ThorWallet.withFunds(fundingAmounts.noVetTinyVtho)
+            const wallet1 = ThorWallet.txBetweenFunding()
+            const wallet2 = ThorWallet.txBetweenFunding()
 
             Client.raw.subscribeToTxPool((txId) => {
                 txs.push(txId)
