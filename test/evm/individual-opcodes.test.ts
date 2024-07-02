@@ -1,4 +1,4 @@
-import { ThorWallet } from '../../src/wallet'
+import { ThorWallet, addressFromPrivateKey } from '../../src/wallet'
 import { Contract } from '@vechain/sdk-network'
 import {
     IndividualOpCodes__factory as Opcodes,
@@ -10,6 +10,8 @@ import {
     addUintPadding,
 } from '../../src/utils/padding-utils'
 import { pollReceipt } from '../../src/transactions'
+import { testCase, testCaseEach } from '../../src/test-case'
+import { randomFunder } from '../../src/account-faucet'
 
 const opcodesInterface = Opcodes.createInterface()
 
@@ -29,11 +31,16 @@ const opcodesInterface = Opcodes.createInterface()
 describe('Individual OpCodes', () => {
     let wallet: ThorWallet
     let opcodes: Contract
-    const caller = '0xf077b491b355e64048ce21e3a6fc4751eeea77fa'
+    const caller = addressFromPrivateKey(Buffer.from(randomFunder(), 'hex'))
+
     const paddedCaller = addAddressPadding(caller) //remove 0x
         .slice(2)
     beforeAll(async () => {
-        wallet = ThorWallet.new(true)
+        wallet = ThorWallet.withFunds({
+            vet: '0x0',
+            vtho: 6000e18,
+        })
+
         opcodes = await wallet.deployContract(Opcodes.bytecode, Opcodes.abi)
     })
 
@@ -347,8 +354,9 @@ describe('Individual OpCodes', () => {
         },
     }
 
-    it.each(Object.entries(reusableTests))(
+    testCaseEach(['solo', 'default-private'])(
         'should give the correct output for opcode: %s',
+        Object.entries(reusableTests),
         async (name, { input, expected }) => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData(name as any, input as any),
@@ -362,25 +370,30 @@ describe('Individual OpCodes', () => {
         },
     )
 
-    it('should give the correct output for opcode: BALANCE', async () => {
-        const debugged = await traceContractCall(
-            opcodesInterface.encodeFunctionData('BALANCE', [caller]),
-            'BALANCE',
-        )
+    testCase(['solo', 'default-private'])(
+        'should give the correct output for opcode: BALANCE',
+        async () => {
+            const debugged = await traceContractCall(
+                opcodesInterface.encodeFunctionData('BALANCE', [caller]),
+                'BALANCE',
+            )
 
-        const balance = BigInt(`0x${debugged.returnValue}`)
+            const balance = BigInt(`0x${debugged.returnValue}`)
 
-        expect(
-            debugged.structLogs.some((log: any) => log.op === 'BALANCE'),
-        ).toEqual(true)
-        expect(balance).toBeGreaterThan(0)
-    })
+            expect(
+                debugged.structLogs.some((log: any) => log.op === 'BALANCE'),
+            ).toEqual(true)
+            expect(balance).toBeGreaterThan(0)
+        },
+    )
 
     /**
      * DUP_N
      */
-    it.each([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])(
+
+    testCaseEach(['solo', 'default-private'])(
         'should give the correct output for opcode: DUP%s',
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         async (dupN) => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('DUP_ALL'),
@@ -403,8 +416,9 @@ describe('Individual OpCodes', () => {
         LOG4: [1n, 3n, 5n, 7n, 9n, 11n],
     }
 
-    it.each(Object.entries(logTests))(
+    testCaseEach(['solo', 'default-private'])(
         'should give the correct output for opcode: %s',
+        Object.entries(logTests),
         async (logN, input) => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData(logN as any, input as any),
@@ -427,75 +441,90 @@ describe('Individual OpCodes', () => {
         },
     )
 
-    it('should give the correct output for opcode: REVERT', async () => {
-        const debugged = await traceContractCall(
-            opcodesInterface.encodeFunctionData('REVERT'),
-            'REVERT',
-            true,
-        )
+    testCase(['solo', 'default-private'])(
+        'should give the correct output for opcode: REVERT',
+        async () => {
+            const debugged = await traceContractCall(
+                opcodesInterface.encodeFunctionData('REVERT'),
+                'REVERT',
+                true,
+            )
 
-        const relevantStructLogs = debugged.structLogs.filter(
-            (log: any) => log.op === 'REVERT',
-        )
+            const relevantStructLogs = debugged.structLogs.filter(
+                (log: any) => log.op === 'REVERT',
+            )
 
-        expect(relevantStructLogs.length).toBeGreaterThan(0)
-    })
+            expect(relevantStructLogs.length).toBeGreaterThan(0)
+        },
+    )
 
-    it('should give the correct output for opcode: INVALID', async () => {
-        const debugged = await traceContractCall(
-            opcodesInterface.encodeFunctionData('INVALID'),
-            'INVALID',
-            true,
-        )
+    testCase(['solo', 'default-private'])(
+        'should give the correct output for opcode: INVALID',
+        async () => {
+            const debugged = await traceContractCall(
+                opcodesInterface.encodeFunctionData('INVALID'),
+                'INVALID',
+                true,
+            )
 
-        expect(debugged.structLogs[debugged.structLogs.length - 1].error).toBe(
-            'invalid opcode 0xfe',
-        )
-    })
+            expect(
+                debugged.structLogs[debugged.structLogs.length - 1].error,
+            ).toBe('invalid opcode 0xfe')
+        },
+    )
 
-    it('should give the correct output for opcode: STOP', async () => {
-        const debugged = await traceContractCall(
-            opcodesInterface.encodeFunctionData('STOP'),
-            'STOP',
-        )
+    testCase(['solo', 'default-private'])(
+        'should give the correct output for opcode: STOP',
+        async () => {
+            const debugged = await traceContractCall(
+                opcodesInterface.encodeFunctionData('STOP'),
+                'STOP',
+            )
 
-        expect(debugged.structLogs[debugged.structLogs.length - 1].op).toBe(
-            'STOP',
-        )
-    })
+            expect(debugged.structLogs[debugged.structLogs.length - 1].op).toBe(
+                'STOP',
+            )
+        },
+    )
 
-    it('should give the correct output for opcode: ADDRESS', async () => {
-        const debugged = await traceContractCall(
-            opcodesInterface.encodeFunctionData('ADDRESS'),
-            'ADDRESS',
-        )
+    testCase(['solo', 'default-private'])(
+        'should give the correct output for opcode: ADDRESS',
+        async () => {
+            const debugged = await traceContractCall(
+                opcodesInterface.encodeFunctionData('ADDRESS'),
+                'ADDRESS',
+            )
 
-        expect(debugged.returnValue).toBe(
-            addAddressPadding(opcodes.address).slice(2),
-        )
-    })
+            expect(debugged.returnValue).toBe(
+                addAddressPadding(opcodes.address).slice(2),
+            )
+        },
+    )
 
-    it('should give the correct output for opcode: PUSH0', async () => {
-        const clauses = [
-            {
-                data: ShanghaiCounter.bytecode,
-                value: '0x0',
-                to: null,
-            },
-        ]
+    testCase(['solo', 'default-private'])(
+        'should give the correct output for opcode: PUSH0',
+        async () => {
+            const clauses = [
+                {
+                    data: ShanghaiCounter.bytecode,
+                    value: '0x0',
+                    to: null,
+                },
+            ]
 
-        const tx = await wallet.sendClauses(clauses, false)
+            const tx = await wallet.sendClauses(clauses, false)
 
-        const receipt = await pollReceipt(tx.id ?? '')
+            const receipt = await pollReceipt(tx.id ?? '')
 
-        expect(receipt.reverted).toBe(true)
+            expect(receipt.reverted).toBe(true)
 
-        // 0x5f is the PUSH0 opcode
-        const simulation = await Node1Client.executeAccountBatch({
-            clauses,
-            caller,
-        })
+            // 0x5f is the PUSH0 opcode
+            const simulation = await Node1Client.executeAccountBatch({
+                clauses,
+                caller,
+            })
 
-        expect(simulation.body?.[0]?.vmError).toEqual('invalid opcode 0x5f')
-    })
+            expect(simulation.body?.[0]?.vmError).toEqual('invalid opcode 0x5f')
+        },
+    )
 })

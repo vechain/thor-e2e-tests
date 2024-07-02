@@ -1,8 +1,8 @@
-import type { PopulatedChainData } from '../test/globalSetup'
+import { PopulatedChainData } from './types'
 import { POPULATED_DATA_FILENAME } from '../test/globalSetup'
 import fs from 'fs'
 import { components } from './open-api-types'
-import { Node1Client } from './thor-client'
+import { Client } from './thor-client'
 import { pollReceipt } from './transactions'
 
 export type Transfer = {
@@ -54,16 +54,16 @@ const formatTxReceipt = (
 export const getGenesisBlockId = () => {
     const data = readPopulatedData()
 
-    return data.genesisBlockId
+    return data.genesisId
 }
 
 export const readRandomTransfer = async (): Promise<Transfer> => {
     const data = readPopulatedData()
 
-    const randomIndex = Math.floor(Math.random() * data.transfers.length)
+    const randomIndex = Math.floor(Math.random() * data.transfersIds.length)
 
-    const txReceipt = await Node1Client.getTransactionReceipt(
-        data.transfers[randomIndex],
+    const txReceipt = await Client.raw.getTransactionReceipt(
+        data.transfersIds[randomIndex],
     )
 
     if (!txReceipt.body || !txReceipt.success) return readRandomTransfer()
@@ -88,7 +88,7 @@ export const getTransferDetails = async () => {
 
     const transfers = (
         await Promise.all(
-            data.transfers.map(async (txId) => {
+            data.transfersIds.map(async (txId) => {
                 try {
                     return pollReceipt(txId, 10_000)
                 } catch {
@@ -115,3 +115,26 @@ export const getTransferDetails = async () => {
 
     return transferDetails
 }
+
+const populatedData = {
+    exists: () => {
+        return fs.existsSync(POPULATED_DATA_FILENAME)
+    },
+    remove: () => {
+        if (populatedData.exists()) {
+            fs.unlinkSync(POPULATED_DATA_FILENAME)
+        }
+    },
+    write: (data: PopulatedChainData) => {
+        fs.writeFileSync(POPULATED_DATA_FILENAME, JSON.stringify(data))
+    },
+    read: (): PopulatedChainData => {
+        if (!populatedData.exists()) {
+            throw new Error('Populated data file does not exist')
+        }
+        const data = fs.readFileSync(POPULATED_DATA_FILENAME, 'utf-8')
+        return JSON.parse(data) as PopulatedChainData
+    },
+}
+
+export { populatedData }

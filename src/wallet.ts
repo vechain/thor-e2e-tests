@@ -6,7 +6,7 @@ import {
     TransactionBody,
     TransactionClause,
 } from '@vechain/sdk-core'
-import { delegateTx, fundAccount } from './account-faucet'
+import { delegateTx, fundAccount, FundingAmounts, randomFunder } from './account-faucet'
 import {
     generateNonce,
     pollReceipt,
@@ -15,6 +15,9 @@ import {
 import { getBlockRef } from './utils/block-utils'
 import { components } from './open-api-types'
 import { Node1Client, SDKClient } from './thor-client'
+import * as fs from 'fs';
+import { contractAddresses } from './contracts/addresses'
+import { interfaces } from './contracts/hardhat'
 
 export const generateAddress = () => {
     return generateEmptyWallet().address
@@ -67,11 +70,61 @@ class ThorWallet {
             return new ThorWallet(privateKey)
         }
 
+        //const addr = addressFromPrivateKey(privateKey)
+
+        //const receipt = fundAccount(addr).then((res) => res.receipt)
+
+        return new ThorWallet(privateKey)
+    }
+
+    public static empty() {
+        const privateKey = secp256k1.generatePrivateKey()
+
         const addr = addressFromPrivateKey(privateKey)
 
-        const receipt = fundAccount(addr).then((res) => res.receipt)
+        fs.writeFile('./keys/' + addr + '.txt', privateKey.toString('hex'), err => { })
 
-        return new ThorWallet(privateKey, () => receipt)
+        return new ThorWallet(privateKey)
+    }
+
+    public static withFunds(amounts?: FundingAmounts) {
+        //const privateKey = secp256k1.generatePrivateKey()
+
+        //const addr = addressFromPrivateKey(privateKey)
+        //fs.writeFile('./keys/' + addr + '.txt', privateKey.toString('hex'), err => { })
+
+        //const receipt = fundAccount(addr, amounts).then((res) => res.receipt)
+
+        return new ThorWallet(Buffer.from(randomFunder(), 'hex'))
+    }
+
+    public static txBetweenFunding() {
+        const sender = randomFunder()
+        let reciever = randomFunder()
+        while (sender == reciever) {
+            reciever = randomFunder()
+        }
+        const clauses = [{
+            to: addressFromPrivateKey(Buffer.from(reciever, 'hex')),
+            value: '0x1',
+            data: '0x',
+        }]
+
+        clauses.push({
+            to: contractAddresses.energy,
+            value: '0x0',
+            data: interfaces.energy.encodeFunctionData('transfer', [
+                addressFromPrivateKey(Buffer.from(reciever, 'hex')),
+                BigInt(1),
+            ]),
+        }
+        )
+
+        const senderWallet = new ThorWallet(Buffer.from(sender, 'hex'))
+
+        const receipt = senderWallet.sendClauses(clauses, true)
+
+        return new ThorWallet(Buffer.from(reciever, 'hex'), () => receipt)
     }
 
     public deployContract = async (bytecode: string, abi: InterfaceAbi) => {
@@ -146,8 +199,8 @@ class ThorWallet {
         delegate?: boolean,
     ): Promise<
         T extends true
-            ? components['schemas']['GetTxReceiptResponse']
-            : components['schemas']['TXID']
+        ? components['schemas']['GetTxReceiptResponse']
+        : components['schemas']['TXID']
     > => {
         await this.waitForFunding()
 

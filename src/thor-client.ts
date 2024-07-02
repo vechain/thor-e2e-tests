@@ -5,6 +5,7 @@ import { components } from './open-api-types'
 import WebSocket from 'ws'
 import { HttpClient, ThorClient as _ThorClient } from '@vechain/sdk-network'
 import { decodeRevertReason } from './utils/revert-utils'
+import { testEnv } from './test-env'
 
 type BaseResponse = {
     httpCode?: number
@@ -480,7 +481,7 @@ class ThorClient {
 
     private initBlockSubscription() {
         this.subscribeToBlocks(
-            (data: Schema['SubscriptionBlockResponse']) => {},
+            (data: Schema['SubscriptionBlockResponse']) => { },
         )
     }
 
@@ -506,6 +507,56 @@ class ThorClient {
 }
 
 const testURL = process.env.TEST_URL || 'http://localhost:8669'
+
+class LoadBalancedClient {
+    private readonly clients: ThorClient[]
+    private readonly sdkClients: _ThorClient[]
+
+    constructor(urls: string[]) {
+        this.clients = urls.map((url) => new ThorClient(url))
+        this.sdkClients = urls.map(
+            (url) => new _ThorClient(new HttpClient(url)),
+        )
+    }
+
+    get raw(): ThorClient {
+        const handler = {
+            get: (target: ThorClient, prop: keyof ThorClient) => {
+                const client = this.getRandomClient()
+                const value = client[prop]
+                return typeof value === 'function' ? value.bind(client) : value
+            },
+        }
+
+        return new Proxy(this.getRandomClient(), handler)
+    }
+
+    get sdk(): _ThorClient {
+        const handler = {
+            get: (target: _ThorClient, prop: keyof _ThorClient) => {
+                const client = this.getRandomSDKClient()
+                const value = client[prop]
+                return typeof value === 'function' ? value.bind(client) : value
+            },
+        }
+
+        return new Proxy(this.getRandomSDKClient(), handler)
+    }
+
+    private getRandomClient(): ThorClient {
+        return this.clients[Math.floor(Math.random() * this.clients.length)]
+    }
+
+    private getRandomSDKClient(): _ThorClient {
+        return this.sdkClients[
+            Math.floor(Math.random() * this.sdkClients.length)
+        ]
+    }
+}
+
+const Client = new LoadBalancedClient(testEnv.urls)
+
+export { Client }
 
 const Node1Client = new ThorClient(testURL)
 const httpClient = new HttpClient(testURL)

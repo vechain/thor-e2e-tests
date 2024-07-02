@@ -7,13 +7,17 @@ import {
 } from '../src/populated-data'
 import { ThorWallet } from '../src/wallet'
 import 'jest-expect-message'
+import { TransferDetails } from '../src/types'
+import { testEnv, validateEnv } from '../src/test-env'
+import { transferDetails } from '../src/constants'
+import { writeTransferTransactions } from '../src/logs/write-logs'
+import { populatedData } from '../src/populated-data'
+import { getTransferIds } from '../src/logs/query-logs'
+import { Client } from '../src/thor-client'
+import { CompressedBlockDetail } from '@vechain/sdk-network'
+import * as fs from 'fs';
 
 export const POPULATED_DATA_FILENAME = './.chain-data.json'
-
-export type PopulatedChainData = {
-    genesisBlockId: string
-    transfers: string[]
-}
 
 const populateVetAndVtho = async (): Promise<string[]> => {
     const txIds: string[] = []
@@ -62,30 +66,105 @@ const checkIfPopulated = async (): Promise<boolean> => {
     return true
 }
 
+//const populate = async () => {
+//    const alreadyPopulated = await checkIfPopulated()
+//
+//    if (alreadyPopulated) {
+//        console.log('\nChain is already populated - skipping\n')
+//        return
+//    }
+//
+//    if (populatedDataExists()) {
+//        removePopulatedData()
+//    }
+//
+//    console.log('\nGetting id of genesis block\n')
+//    const genesisBlock = await Node1Client.getBlock(0)
+//    const genesisBlockId = genesisBlock.body?.id || 'invalid'
+//
+//    const transfers = await populateVetAndVtho()
+//
+//    const data: PopulatedChainData = {
+//        genesisBlockId,
+//        transfers,
+//    }
+//
+//    writePopulatedData(data)
+//}
+
 const populate = async () => {
-    const alreadyPopulated = await checkIfPopulated()
+    console.log('Populating data')
+    let details: TransferDetails
 
-    if (alreadyPopulated) {
-        console.log('\nChain is already populated - skipping\n')
-        return
+    if (!fs.existsSync('./keys')) {
+        fs.mkdirSync('./keys');
     }
 
-    if (populatedDataExists()) {
-        removePopulatedData()
+    let transferIds: string[] = []
+    switch (testEnv.type) {
+        case 'mainnet':
+            details = transferDetails.main
+            break
+        case 'testnet':
+            details = transferDetails.test
+            break
+        case 'default-private':
+            const maxDistance = 1000
+            let lastBlock = (await Client.raw.getBlock('best'))!.body
+            if (lastBlock!.number! <= 2) {
+                await writeTransferTransactions()
+            }
+
+            let prevBlockHeight = lastBlock?.number! - maxDistance
+            if (lastBlock?.number! < maxDistance) {
+                prevBlockHeight = 2
+            }
+            let transactionsAmount = 0
+            const prevBlock = (await Client.raw.getBlock(prevBlockHeight))?.body
+            lastBlock = (await Client.raw.getBlock('best'))!.body
+            for (let i = prevBlockHeight; i <= lastBlock?.number!; i++) {
+                const block = (await Client.raw.getBlock(i))?.body
+
+                const trxs = await Client.sdk.blocks.getBlockCompressed(block?.number!)
+
+                transactionsAmount += trxs!.transactions.length
+                transferIds = transferIds.concat(trxs!.transactions)
+            }
+
+            details = {
+                firstBlock: prevBlock!.number!,
+                lastBlock: lastBlock!.number!,
+                transferCount: transactionsAmount,
+            }
+
+            break
+        case 'solo': {
+            details = await writeTransferTransactions()
+            break
+        }
+        default:
+            throw new Error('Invalid network type')
     }
 
-    console.log('\nGetting id of genesis block\n')
-    const genesisBlock = await Node1Client.getBlock(0)
-    const genesisBlockId = genesisBlock.body?.id || 'invalid'
+    console.log('Details', details)
+    if (populatedData.exists()) populatedData.remove()
 
-    const transfers = await populateVetAndVtho()
+    //const txIds = await getTransferIds(details)
+    const genesisBlock =
+        (await Client.sdk.blocks.getGenesisBlock()) as CompressedBlockDetail
 
-    const data: PopulatedChainData = {
-        genesisBlockId,
-        transfers,
-    }
+    console.log('Transfers', transferIds)
+    populatedData.write({
+        genesisId: genesisBlock.id,
+        transfersIds: transferIds,
+        transferDetails: details,
+    })
 
-    writePopulatedData(data)
+    console.log('Populated data')
+}
+const setup = async () => {
+    await validateEnv()
+    await populate()
 }
 
-export default populate
+export default setup

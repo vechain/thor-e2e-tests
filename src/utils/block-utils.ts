@@ -1,7 +1,7 @@
-import { Node1Client } from '../thor-client'
+import { Client } from '../thor-client'
 
 export const getBlockRef = async (revision: string) => {
-    const block = await Node1Client.getBlock(revision)
+    const block = await Client.raw.getBlock(revision)
 
     if (!block.success) {
         throw new Error(block.httpMessage)

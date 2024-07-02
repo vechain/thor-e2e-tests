@@ -4,6 +4,7 @@ import { addUintPadding } from '../../../src/utils/padding-utils'
 import { revisions } from '../../../src/constants'
 import { HEX_REGEX_64 } from '../../../src/utils/hex-utils'
 import { ThorWallet } from '../../../src/wallet'
+import { testCase, testCaseEach } from '../../../src/test-case'
 
 const SIMPLE_STORAGE_KEY =
     '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -34,8 +35,8 @@ const setSimpleStorage = async (
  * @group api
  * @group accounts
  */
-describe('GET /accounts/{address}/storage', function () {
-    const wallet = ThorWallet.new(true)
+describe('GET /accounts/{address}/storage', function() {
+    const wallet = ThorWallet.withFunds({ vet: '0x0', vtho: 2500e18 })
     let simpleStorageAddress: string
 
     beforeAll(async () => {
@@ -54,86 +55,103 @@ describe('GET /accounts/{address}/storage', function () {
         simpleStorageAddress = txReceipt.outputs?.[0].contractAddress as string
     })
 
-    it('should return the storage value', async function () {
-        const amount = 973252
+    testCase(['solo', 'default-private'])(
+        'should return the storage value',
+        async function() {
+            const amount = 973252
 
-        await setSimpleStorage(simpleStorageAddress, amount, wallet)
+            await setSimpleStorage(simpleStorageAddress, amount, wallet)
 
-        const res = await Node1Client.getAccountStorage(
-            simpleStorageAddress,
-            SIMPLE_STORAGE_KEY,
-        )
+            const res = await Node1Client.getAccountStorage(
+                simpleStorageAddress,
+                SIMPLE_STORAGE_KEY,
+            )
 
-        expect(res.success, 'API response should be a success').toBeTrue()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(res.body, 'Expected Response Body').toEqual({
-            value: addPaddingWithPrefix(amount),
-        })
-    })
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Expected Response Body').toEqual({
+                value: addPaddingWithPrefix(amount),
+            })
+        },
+    )
 
-    it('should be able to query history storage values', async () => {
-        const contractState = await Node1Client.getAccountStorage(
-            simpleStorageAddress,
-            SIMPLE_STORAGE_KEY,
-        )
+    testCase(['solo', 'default-private'])(
+        'should be able to query history storage values',
+        async () => {
+            const contractState = await Node1Client.getAccountStorage(
+                simpleStorageAddress,
+                SIMPLE_STORAGE_KEY,
+            )
 
-        const startAmount = parseInt(contractState.body?.value ?? '0x', 16)
+            const startAmount = parseInt(contractState.body?.value ?? '0x', 16)
 
-        const newAmount = startAmount + 1
+            const newAmount = startAmount + 1
 
-        const tx = await setSimpleStorage(
-            simpleStorageAddress,
-            newAmount,
-            wallet,
-        )
+            const tx = await setSimpleStorage(
+                simpleStorageAddress,
+                newAmount,
+                wallet,
+            )
 
-        const res = await Node1Client.getAccountStorage(
-            simpleStorageAddress,
-            SIMPLE_STORAGE_KEY,
-        )
+            const res = await Node1Client.getAccountStorage(
+                simpleStorageAddress,
+                SIMPLE_STORAGE_KEY,
+            )
 
-        // Check the storage position after the transaction
-        expect(res.success, 'API response should be a success').toBeTrue()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(res.body, 'Expected Response Body').toEqual({
-            value: addPaddingWithPrefix(newAmount),
-        })
+            // Check the storage position after the transaction
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Expected Response Body').toEqual({
+                value: addPaddingWithPrefix(newAmount),
+            })
 
-        // Check the storage position before the transaction
-        const historic = await Node1Client.getAccountStorage(
-            simpleStorageAddress,
-            SIMPLE_STORAGE_KEY,
-            `${(tx.meta?.blockNumber ?? 1) - 1}`,
-        )
+            // Check the storage position before the transaction
+            const historic = await Node1Client.getAccountStorage(
+                simpleStorageAddress,
+                SIMPLE_STORAGE_KEY,
+                `${(tx.meta?.blockNumber ?? 1) - 1}`,
+            )
 
-        expect(historic.success, 'API response should be a success').toBeTrue()
-        expect(historic.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(historic.body, 'Expected Response Body').toEqual({
-            value: addPaddingWithPrefix(startAmount),
-        })
-    })
+            expect(
+                historic.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(historic.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(historic.body, 'Expected Response Body').toEqual({
+                value: addPaddingWithPrefix(startAmount),
+            })
+        },
+    )
 
-    it.each(revisions.valid())('valid revision %s', async function (revision) {
-        const res = await Node1Client.getAccountStorage(
-            simpleStorageAddress,
-            SIMPLE_STORAGE_KEY,
-            revision,
-        )
-        expect(res.success, 'API response should be a success').toBeTrue()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(res.body, 'Expected Response Body').toEqual({
-            value: expect.stringMatching(HEX_REGEX_64),
-        })
-    })
+    testCaseEach(['solo', 'default-private'])(
+        'valid revision %s',
+        revisions.valid(),
+        async function(revision) {
+            const res = await Node1Client.getAccountStorage(
+                simpleStorageAddress,
+                SIMPLE_STORAGE_KEY,
+                revision,
+            )
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Expected Response Body').toEqual({
+                value: expect.stringMatching(HEX_REGEX_64),
+            })
+        },
+    )
 
-    it.each(revisions.invalid)('invalid revision: %s', async (r) => {
-        const res = await Node1Client.getAccountStorage(
-            simpleStorageAddress,
-            SIMPLE_STORAGE_KEY,
-            r,
-        )
+    testCaseEach(['solo', 'default-private'])(
+        'invalid revision: %s',
+        revisions.invalid,
+        async (r) => {
+            const res = await Node1Client.getAccountStorage(
+                simpleStorageAddress,
+                SIMPLE_STORAGE_KEY,
+                r,
+            )
 
-        expect(res.success, 'API Call should fail').toBeFalse()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
-    })
+            expect(res.success, 'API Call should fail').toBeFalse()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
+        },
+    )
 })

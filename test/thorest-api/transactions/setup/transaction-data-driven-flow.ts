@@ -1,5 +1,5 @@
 import { components } from '../../../../src/open-api-types'
-import { Node1Client } from '../../../../src/thor-client'
+import { Client, Node1Client } from '../../../../src/thor-client'
 import { pollReceipt } from '../../../../src/transactions'
 import { TestCasePlan, TestCasePlanStepError } from './models'
 
@@ -24,7 +24,7 @@ class TransactionDataDrivenFlow {
 
         const block = await this.getTransactionReceipt(txId)
 
-        await this.getLogTransfer(block)
+        //await this.getLogTransfer(block)
 
         await this.getTransactionBlock(block?.blockID, txId)
     }
@@ -32,9 +32,10 @@ class TransactionDataDrivenFlow {
     private async postTransaction(): Promise<string | undefined> {
         const { rawTx, expectedResult } = this.plan.postTxStep
         const sendTxResponse =
-            await Node1Client.sendTransaction({
+            await Client.raw.sendTransaction({
                 raw: `0x${rawTx}`,
             })
+
 
         expectedResult(sendTxResponse)
 

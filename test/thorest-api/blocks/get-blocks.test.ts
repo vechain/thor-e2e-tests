@@ -1,4 +1,4 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { components } from '../../../src/open-api-types'
 import {
     HEX_REGEX,
@@ -8,30 +8,35 @@ import {
 } from '../../../src/utils/hex-utils'
 import { revisions } from '../../../src/constants'
 import { readRandomTransfer, Transfer } from '../../../src/populated-data'
+import { testCase, testCaseEach } from '../../../src/test-case'
 
 /**
  * @group api
  * @group blocks
  */
-describe('GET /blocks/{revision}', function () {
+describe('GET /blocks/{revision}', function() {
     let transfer: Transfer
 
     beforeAll(async () => {
         transfer = await readRandomTransfer()
     })
 
-    test('gas limit it equal to 40_000_000', async function () {
-        const block = await Node1Client.getBlock(1, false)
 
-        expect(block.success, 'API response should be a success').toBeTrue()
-        expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(block.body?.gasLimit).toEqual(40_000_000)
-    })
+    testCase(['solo', 'default-private'])(
+        'gas limit it equal to 40_000_000', async function() {
+            const block = await Client.raw.getBlock(1, false)
 
-    it.each(revisions.valid(true))(
+            expect(block.success, 'API response should be a success').toBeTrue()
+            expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(block.body?.gasLimit).toEqual(40_000_000)
+        })
+
+
+    testCaseEach(['solo', 'default-private'])(
         'can get block for revision: %s',
-        async function (revision) {
-            const block = await Node1Client.getBlock(revision, false)
+        revisions.valid(true),
+        async function(revision) {
+            const block = await Client.raw.getBlock(revision, false)
 
             expect(block.success, 'API response should be a success').toBeTrue()
             expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -58,10 +63,12 @@ describe('GET /blocks/{revision}', function () {
         },
     )
 
-    it.each(revisions.validNotFound)(
+
+    testCaseEach(['solo', 'default-private'])(
         'valid revisions not found: %s',
-        async function (revision) {
-            const block = await Node1Client.getBlock(revision, false)
+        revisions.validNotFound,
+        async function(revision) {
+            const block = await Client.raw.getBlock(revision, false)
 
             expect(block.success, 'API response should be a success').toBeTrue()
             expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -69,70 +76,76 @@ describe('GET /blocks/{revision}', function () {
         },
     )
 
-    it.each(revisions.invalid)(
+
+    testCaseEach(['solo', 'default-private'])(
         'invalid revisions: %s',
-        async function (revision) {
-            const block = await Node1Client.getBlock(revision, false)
+        revisions.invalid,
+        async function(revision) {
+            const block = await Client.raw.getBlock(revision, false)
 
             expect(block.success, 'API Call should fail').toBeFalse()
             expect(block.httpCode, 'Expected HTTP Code').toEqual(400)
         },
     )
 
-    it('should be able get compressed blocks', async function () {
-        const res = await Node1Client.getBlock(transfer.meta?.blockID, false)
 
-        expect(res.success, 'API response should be a success').toBeTrue()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(res.body, 'Block should not be null').not.toEqual(null)
+    testCase(['solo', 'default-private'])(
+        'should be able get compressed blocks', async function() {
+            const res = await Client.raw.getBlock(transfer.meta?.blockID, false)
 
-        const block = res.body as components['schemas']['GetBlockResponse']
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Block should not be null').not.toEqual(null)
 
-        const relevantTx = block.transactions!.find(
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            (txID: string) => txID === transfer.meta.txID,
-        )
+            const block = res.body as components['schemas']['GetBlockResponse']
 
-        expect(relevantTx).toBeTruthy()
-        expect(relevantTx).toEqual(transfer.meta?.txID)
-    })
+            const relevantTx = block.transactions!.find(
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
+                (txID: string) => txID === transfer.meta.txID,
+            )
 
-    it('should be able get expanded blocks', async function () {
-        const res = await Node1Client.getBlock(transfer.meta.blockID, true)
-
-        expect(res.success, 'API response should be a success').toBeTrue()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(res.body, 'Block should not be null').not.toEqual(null)
-
-        const block = res.body as components['schemas']['GetBlockResponse']
-
-        const relevantTx = block.transactions!.find(
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            (tx: components['schemas']['Tx']) => tx.id === transfer.meta.txID,
-        )
-
-        expect(relevantTx).toBeTruthy()
-        expect(relevantTx).toEqual({
-            blockRef: expect.stringMatching(HEX_REGEX_16),
-            chainTag: expect.any(Number),
-            clauses: expect.any(Array),
-            delegator: null,
-            dependsOn: null,
-            expiration: expect.any(Number),
-            gas: expect.any(Number),
-            gasPayer: expect.stringMatching(HEX_REGEX_40),
-            gasPriceCoef: expect.any(Number),
-            gasUsed: expect.any(Number),
-            id: transfer.meta.txID,
-            nonce: expect.stringMatching(HEX_REGEX),
-            origin: expect.stringMatching(HEX_REGEX_40),
-            outputs: expect.any(Array),
-            paid: expect.stringMatching(HEX_REGEX),
-            reverted: false,
-            reward: expect.stringMatching(HEX_REGEX),
-            size: expect.any(Number),
+            expect(relevantTx).toBeTruthy()
+            expect(relevantTx).toEqual(transfer.meta?.txID)
         })
-    })
+
+
+    testCase(['solo', 'default-private'])(
+        'should be able get expanded blocks', async function() {
+            const res = await Client.raw.getBlock(transfer.meta.blockID, true)
+
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Block should not be null').not.toEqual(null)
+
+            const block = res.body as components['schemas']['GetBlockResponse']
+
+            const relevantTx = block.transactions!.find(
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
+                (tx: components['schemas']['Tx']) => tx.id === transfer.meta.txID,
+            )
+
+            expect(relevantTx).toBeTruthy()
+            expect(relevantTx).toEqual({
+                blockRef: expect.stringMatching(HEX_REGEX_16),
+                chainTag: expect.any(Number),
+                clauses: expect.any(Array),
+                delegator: null,
+                dependsOn: null,
+                expiration: expect.any(Number),
+                gas: expect.any(Number),
+                gasPayer: expect.stringMatching(HEX_REGEX_40),
+                gasPriceCoef: expect.any(Number),
+                gasUsed: expect.any(Number),
+                id: transfer.meta.txID,
+                nonce: expect.stringMatching(HEX_REGEX),
+                origin: expect.stringMatching(HEX_REGEX_40),
+                outputs: expect.any(Array),
+                paid: expect.stringMatching(HEX_REGEX),
+                reverted: false,
+                reward: expect.stringMatching(HEX_REGEX),
+                size: expect.any(Number),
+            })
+        })
 })
