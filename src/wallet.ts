@@ -98,6 +98,17 @@ class ThorWallet {
         return new ThorWallet(Buffer.from(randomFunder(), 'hex'))
     }
 
+    public static newFunded(amounts: FundingAmounts) {
+        const privateKey = secp256k1.generatePrivateKey()
+
+        const addr = addressFromPrivateKey(privateKey)
+        fs.writeFile('./keys/' + addr + '.txt', privateKey.toString('hex'), err => { })
+
+        const receipt = fundAccount(addr, amounts).then((res) => res.receipt)
+
+        return new ThorWallet(privateKey, () => receipt)
+    }
+
     public static txBetweenFunding() {
         const sender = randomFunder()
         let reciever = randomFunder()

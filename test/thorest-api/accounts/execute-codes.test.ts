@@ -45,16 +45,18 @@ const READ_ONLY_REQUEST = (address: string) => {
  * @group api
  * @group accounts
  */
-describe('POST /accounts/*', function () {
+describe('POST /accounts/*', function() {
     const wallet = ThorWallet.withFunds(fundingAmounts.tinyVetBigVtho)
+    const fundedWallet = ThorWallet.newFunded({ vet: '0x0', vtho: 1e18 })
 
     beforeAll(async () => {
         await wallet.waitForFunding()
+        await fundedWallet.waitForFunding()
     })
 
     testCase(['solo', 'default-private', 'testnet'])(
         'should execute an array of clauses',
-        async function () {
+        async function() {
             const to = ThorWallet.withFunds()
 
             const tokenAmount = '0x1'
@@ -146,7 +148,7 @@ describe('POST /accounts/*', function () {
         async () => {
             const request = {
                 clauses: [SEND_VTHO_CLAUSE],
-                caller: wallet.address,
+                caller: fundedWallet.address,
             }
 
             // generated wallet had no funds configured in genesis, so this should be reverted
@@ -241,7 +243,7 @@ describe('POST /accounts/*', function () {
     testCaseEach(['solo', 'default-private', 'testnet'])(
         'valid revisions not found: %s',
         revisions.validNotFound,
-        async function (revision) {
+        async function(revision) {
             const res = await Client.raw.executeAccountBatch(
                 {
                     clauses: [SEND_VTHO_CLAUSE],
