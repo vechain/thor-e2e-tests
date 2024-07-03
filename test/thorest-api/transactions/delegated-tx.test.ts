@@ -18,9 +18,9 @@ import { testCase } from '../../../src/test-case'
  * @group api
  * @group transactions
  */
-testCase(['solo', 'default-private'])(
+testCase(['solo', 'default-private', 'testnet'])(
     'should send a tx with delegated payer',
-    async function() {
+    async function () {
         const wallet = ThorWallet.withFunds(fundingAmounts.noVetMassiveVtho)
         const emptyWallet = ThorWallet.empty()
 

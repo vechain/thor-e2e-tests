@@ -11,7 +11,7 @@ import { ThorWallet } from '../../../src/wallet'
  * @group api
  * @group accounts
  */
-describe('GET /accounts/{address}', function() {
+describe('GET /accounts/{address}', function () {
     const invalidAddresses = [
         '0x00000000',
         'zzzzzzz',
@@ -25,7 +25,7 @@ describe('GET /accounts/{address}', function() {
         transfer = await readRandomTransfer()
     })
 
-    testCase(['solo', 'default-private'])('correct balance', async function() {
+    testCase(['solo', 'default-private', 'testnet'])('correct balance', async function () {
 
         const emptyWallet = ThorWallet.empty()
 
@@ -47,9 +47,9 @@ describe('GET /accounts/{address}', function() {
         })
     })
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'contract account hasCode',
-        async function() {
+        async function () {
             const addr = contractAddresses.energy
             const res = await Client.raw.getAccount(addr)
 
@@ -63,10 +63,10 @@ describe('GET /accounts/{address}', function() {
         },
     )
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'valid revision %s',
         revisions.valid(true),
-        async function(revision) {
+        async function (revision) {
             const res = await Client.raw.getAccount(
                 transfer.vet.recipient,
                 revision,
@@ -81,7 +81,7 @@ describe('GET /accounts/{address}', function() {
         },
     )
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'invalid address: %s',
         invalidAddresses,
         async (a) => {
@@ -91,7 +91,7 @@ describe('GET /accounts/{address}', function() {
         },
     )
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'invalid revision: %s',
         revisions.invalid,
         async (r) => {

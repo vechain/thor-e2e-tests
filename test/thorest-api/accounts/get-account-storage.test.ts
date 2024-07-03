@@ -1,4 +1,4 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { SimpleCounter__factory } from '../../../typechain-types'
 import { addUintPadding } from '../../../src/utils/padding-utils'
 import { revisions } from '../../../src/constants'
@@ -35,7 +35,7 @@ const setSimpleStorage = async (
  * @group api
  * @group accounts
  */
-describe('GET /accounts/{address}/storage', function() {
+describe('GET /accounts/{address}/storage', function () {
     const wallet = ThorWallet.withFunds({ vet: '0x0', vtho: 2500e18 })
     let simpleStorageAddress: string
 
@@ -55,14 +55,14 @@ describe('GET /accounts/{address}/storage', function() {
         simpleStorageAddress = txReceipt.outputs?.[0].contractAddress as string
     })
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should return the storage value',
-        async function() {
+        async function () {
             const amount = 973252
 
             await setSimpleStorage(simpleStorageAddress, amount, wallet)
 
-            const res = await Node1Client.getAccountStorage(
+            const res = await Client.raw.getAccountStorage(
                 simpleStorageAddress,
                 SIMPLE_STORAGE_KEY,
             )
@@ -75,10 +75,10 @@ describe('GET /accounts/{address}/storage', function() {
         },
     )
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should be able to query history storage values',
         async () => {
-            const contractState = await Node1Client.getAccountStorage(
+            const contractState = await Client.raw.getAccountStorage(
                 simpleStorageAddress,
                 SIMPLE_STORAGE_KEY,
             )
@@ -93,7 +93,7 @@ describe('GET /accounts/{address}/storage', function() {
                 wallet,
             )
 
-            const res = await Node1Client.getAccountStorage(
+            const res = await Client.raw.getAccountStorage(
                 simpleStorageAddress,
                 SIMPLE_STORAGE_KEY,
             )
@@ -106,7 +106,7 @@ describe('GET /accounts/{address}/storage', function() {
             })
 
             // Check the storage position before the transaction
-            const historic = await Node1Client.getAccountStorage(
+            const historic = await Client.raw.getAccountStorage(
                 simpleStorageAddress,
                 SIMPLE_STORAGE_KEY,
                 `${(tx.meta?.blockNumber ?? 1) - 1}`,
@@ -123,11 +123,11 @@ describe('GET /accounts/{address}/storage', function() {
         },
     )
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'valid revision %s',
         revisions.valid(),
-        async function(revision) {
-            const res = await Node1Client.getAccountStorage(
+        async function (revision) {
+            const res = await Client.raw.getAccountStorage(
                 simpleStorageAddress,
                 SIMPLE_STORAGE_KEY,
                 revision,
@@ -140,11 +140,11 @@ describe('GET /accounts/{address}/storage', function() {
         },
     )
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'invalid revision: %s',
         revisions.invalid,
         async (r) => {
-            const res = await Node1Client.getAccountStorage(
+            const res = await Client.raw.getAccountStorage(
                 simpleStorageAddress,
                 SIMPLE_STORAGE_KEY,
                 r,

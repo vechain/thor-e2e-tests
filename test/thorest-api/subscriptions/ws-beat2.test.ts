@@ -11,7 +11,7 @@ import { testCase } from '../../../src/test-case'
  */
 describe('WS /subscriptions/beat2', () => {
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should be able to subscribe', async () => {
             const beats: components['schemas']['SubscriptionBeat2Response'][] = []
 

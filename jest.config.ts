@@ -30,9 +30,9 @@ const config: Config = {
         ],
     ],
     // ms to wait before throwing a timeout error
-    testTimeout: 180_000,
+    testTimeout: 60_000,
     json: true,
-    maxWorkers: 8,
+    maxWorkers: 10,
     setupFilesAfterEnv: [
         './test/setupAfterEnv.ts',
         'jest-extended/all',

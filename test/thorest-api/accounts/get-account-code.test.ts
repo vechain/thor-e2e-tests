@@ -10,16 +10,16 @@ import { testCase, testCaseEach } from '../../../src/test-case'
  * @group api
  * @group accounts
  */
-describe('GET /accounts/{address}/code', function() {
+describe('GET /accounts/{address}/code', function () {
     const accountAddress = generateAddresses(4)
 
     const wallet = ThorWallet.new(true)
 
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'should return no code for newly created address: %s',
         accountAddress,
-        async function(addr) {
+        async function (addr) {
             const res = await Client.raw.getAccountCode(addr)
 
             expect(res.success, 'API response should be a success').toBeTrue()
@@ -35,10 +35,10 @@ describe('GET /accounts/{address}/code', function() {
     )
 
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'should return the code for %s: %s',
         [...Object.values(contractAddresses), ...noPrefix],
-        async function(address: string) {
+        async function (address: string) {
             const res = await Client.raw.getAccountCode(address)
 
             expect(res.success, 'API response should be a success').toBeTrue()
@@ -50,13 +50,13 @@ describe('GET /accounts/{address}/code', function() {
     )
 
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         `should return 400 for invalid address: %s`, [
         'bad address', //not hex
         '0x0001234', //too short
         '0', //too short
         false,
-    ], async function(addr) {
+    ], async function (addr) {
         const res = await Client.raw.getAccountCode(addr as string)
 
         expect(res.success, 'API Call should fail').toBeFalse()
@@ -99,7 +99,7 @@ describe('GET /accounts/{address}/code', function() {
         })
     })
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'should be able to fetch the account state for revision: %s',
         revisions.valid(),
         async (revision) => {
@@ -116,7 +116,7 @@ describe('GET /accounts/{address}/code', function() {
         },
     )
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'should throw an error for invalid revision: %s',
         revisions.invalid,
         async (revision) => {

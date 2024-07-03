@@ -1,4 +1,4 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import {
     getTransferDetails,
     readRandomTransfer,
@@ -41,13 +41,13 @@ describe('POST /logs/transfers', () => {
     const transferDetails = getTransferDetails()
 
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should find a log with all parameters set', async () => {
             const transfer = await readRandomTransfer()
 
             const request = buildRequestFromTransfer(transfer)
 
-            const response = await Node1Client.queryTransferLogs(request)
+            const response = await Client.raw.queryTransferLogs(request)
 
             const relevantLog = response.body?.find(
                 (log) => log?.meta?.txID === transfer.meta.txID,
@@ -72,10 +72,10 @@ describe('POST /logs/transfers', () => {
             })
         })
 
-    testCase(['solo', 'default-private'])('should be able to omit all the parameters', async () => {
+    testCase(['solo', 'default-private', 'testnet'])('should be able to omit all the parameters', async () => {
         const transfer = await readRandomTransfer()
 
-        const response = await Node1Client.queryTransferLogs({
+        const response = await Client.raw.queryTransferLogs({
             range: null,
             options: null,
             criteriaSet: null,
@@ -102,7 +102,7 @@ describe('POST /logs/transfers', () => {
 
         const modifiedRequest = modifyRequest(request, transfer)
 
-        const response = await Node1Client.queryTransferLogs(modifiedRequest)
+        const response = await Client.raw.queryTransferLogs(modifiedRequest)
 
         const relevantLog = response.body?.find(
             (log) => log?.meta?.txID === transfer.meta.txID,
@@ -127,14 +127,14 @@ describe('POST /logs/transfers', () => {
     }
 
     describe('query by "range"', () => {
-        testCase(['solo', 'default-private'])('should be able set the range to null', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able set the range to null', async () => {
             await runTransferLogsTest((request) => ({
                 ...request,
                 range: null,
             }))
         })
 
-        testCase(['solo', 'default-private'])('should be able to omit the "from" field', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able to omit the "from" field', async () => {
             await runTransferLogsTest((request) => ({
                 ...request,
                 range: {
@@ -144,7 +144,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        testCase(['solo', 'default-private'])('should be able to omit the "to" field', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able to omit the "to" field', async () => {
             await runTransferLogsTest((request) => ({
                 ...request,
                 range: {
@@ -154,7 +154,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        testCase(['solo', 'default-private'])('should be omit the "unit" field', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be omit the "unit" field', async () => {
             await runTransferLogsTest((request) => ({
                 ...request,
                 range: {
@@ -164,7 +164,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        testCase(['solo', 'default-private'])('should be able query by time', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by time', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 range: {
@@ -175,7 +175,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        testCase(['solo', 'default-private'])('should be able query by block', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by block', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 range: {
@@ -188,14 +188,14 @@ describe('POST /logs/transfers', () => {
     })
 
     describe('query by "options"', () => {
-        testCase(['solo', 'default-private'])('should be able omit all the options', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able omit all the options', async () => {
             await runTransferLogsTest((request) => ({
                 ...request,
                 options: null,
             }))
         })
 
-        testCase(['solo', 'default-private'])('should be able to omit the "offset" field', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able to omit the "offset" field', async () => {
             await runTransferLogsTest((request) => ({
                 ...request,
                 options: {
@@ -205,14 +205,14 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        testCase(['solo', 'default-private'])('should be able to omit the "limit" field', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able to omit the "limit" field', async () => {
             const request = {
                 options: {
                     offset: 0,
                 },
             }
 
-            const transferLogs = await Node1Client.queryTransferLogs(request)
+            const transferLogs = await Client.raw.queryTransferLogs(request)
 
             expect(
                 transferLogs.success,
@@ -222,7 +222,7 @@ describe('POST /logs/transfers', () => {
             expect(transferLogs.body?.length).toEqual(0)
         })
 
-        testCase(['solo', 'default-private'])('should have default maximum of 1000', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should have default maximum of 1000', async () => {
             const request = {
                 options: {
                     offset: 0,
@@ -230,13 +230,13 @@ describe('POST /logs/transfers', () => {
                 },
             }
 
-            const transferLogs = await Node1Client.queryTransferLogs(request)
+            const transferLogs = await Client.raw.queryTransferLogs(request)
 
             expect(transferLogs.success, 'API response should fail').toBeFalse()
             expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(403)
         })
 
-        testCase(['solo', 'default-private'])('should have no minimum "limit"', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should have no minimum "limit"', async () => {
             const request = {
                 options: {
                     offset: 0,
@@ -244,7 +244,7 @@ describe('POST /logs/transfers', () => {
                 },
             }
 
-            const transferLogs = await Node1Client.queryTransferLogs(request)
+            const transferLogs = await Client.raw.queryTransferLogs(request)
 
             expect(
                 transferLogs.success,
@@ -254,7 +254,7 @@ describe('POST /logs/transfers', () => {
             expect(transferLogs.body?.length).toEqual(0)
         })
 
-        testCase(['solo', 'default-private'])('should be able paginate requests', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able paginate requests', async () => {
             const { firstBlock, lastBlock } = await transferDetails
 
             const pages = 5
@@ -262,7 +262,7 @@ describe('POST /logs/transfers', () => {
             const totalTransfers = pages * amountPerPage
 
             const query = async (offset: number, limit: number) =>
-                Node1Client.queryTransferLogs({
+                Client.raw.queryTransferLogs({
                     range: {
                         from: firstBlock,
                         to: lastBlock,
@@ -316,7 +316,7 @@ describe('POST /logs/transfers', () => {
     })
 
     describe('query by "criteriaSet"', () => {
-        testCase(['solo', 'default-private'])('should be able query by "sender"', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by "sender"', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 criteriaSet: [
@@ -327,7 +327,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        testCase(['solo', 'default-private'])('should be able query by "recipient"', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by "recipient"', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 criteriaSet: [
@@ -338,7 +338,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        testCase(['solo', 'default-private'])('should be able query by "txOrigin"', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by "txOrigin"', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 criteriaSet: [
@@ -349,7 +349,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        testCase(['solo', 'default-private'])('should be able query by "sender" and "recipient"', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by "sender" and "recipient"', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 criteriaSet: [
@@ -361,7 +361,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        testCase(['solo', 'default-private'])('should be able query by "sender" and "txOrigin"', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by "sender" and "txOrigin"', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 criteriaSet: [
@@ -373,7 +373,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        testCase(['solo', 'default-private'])('should be able query by "recipient" and "txOrigin"', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by "recipient" and "txOrigin"', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 criteriaSet: [
@@ -385,7 +385,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        testCase(['solo', 'default-private'])('should be able query by all criteria', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by all criteria', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 criteriaSet: [
@@ -398,7 +398,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        testCase(['solo', 'default-private'])('should be able to omit the "criteriaSet" field', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able to omit the "criteriaSet" field', async () => {
             await runTransferLogsTest((request) => ({
                 ...request,
                 criteriaSet: null,
@@ -410,7 +410,7 @@ describe('POST /logs/transfers', () => {
         const queryTransferLogsTest = async (order?: 'asc' | 'desc' | null) => {
             const { firstBlock, lastBlock } = await getTransferDetails()
 
-            const response = await Node1Client.queryTransferLogs({
+            const response = await Client.raw.queryTransferLogs({
                 range: {
                     from: firstBlock,
                     to: lastBlock,
@@ -457,19 +457,19 @@ describe('POST /logs/transfers', () => {
             )
         }
 
-        testCase(['solo', 'default-private'])('events should be ordered by DESC', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('events should be ordered by DESC', async () => {
             await queryTransferLogsTest('desc')
         })
 
-        testCase(['solo', 'default-private'])('events should be ordered by ASC', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('events should be ordered by ASC', async () => {
             await queryTransferLogsTest('asc')
         })
 
-        testCase(['solo', 'default-private'])('default should be asc', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('default should be asc', async () => {
             await queryTransferLogsTest(undefined)
         })
 
-        testCase(['solo', 'default-private'])('default should be asc', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('default should be asc', async () => {
             await queryTransferLogsTest(null)
         })
     })

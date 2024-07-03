@@ -25,3 +25,5 @@ jest-report.html
 
 .chain-data.json
 /.yarnrc.yml
+
+/keys

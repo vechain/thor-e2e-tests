@@ -1,6 +1,6 @@
 /// <reference types="jest-extended" />
 import {
-    Node1Client,
+    Client,
     Response,
     Schema,
     SDKClient,
@@ -53,14 +53,16 @@ type EventLogFilterRequest = components['schemas']['EventLogFilterRequest']
 describe('POST /logs/event', () => {
     const transferDetails = getTransferDetails()
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should find a log with all parameters set',
         async () => {
             const transfer = await readRandomTransfer()
 
             const request = buildRequestFromTransfer(transfer)
 
-            const eventLogs = await Node1Client.queryEventLogs(request)
+            const eventLogs = await Client.raw.queryEventLogs(request)
+
+
 
             expect(
                 eventLogs.success,
@@ -92,7 +94,7 @@ describe('POST /logs/event', () => {
         'should be able to omit all the parameters',
         async () => {
             const transfer = await readRandomTransfer()
-            const response = await Node1Client.queryEventLogs({})
+            const response = await Client.raw.queryEventLogs({})
 
             expect(
                 response.success,
@@ -120,7 +122,8 @@ describe('POST /logs/event', () => {
             transfer,
         )
 
-        const response = await Node1Client.queryEventLogs(request)
+        const response = await Client.raw.queryEventLogs(request)
+
         const relevantLog = response.body?.find((log) => {
             return log?.meta?.txID === transfer.meta.txID
         })
@@ -159,7 +162,7 @@ describe('POST /logs/event', () => {
             })
         })
 
-        testCase(['solo', 'default-private'])('should be able to omit the "to" field', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able to omit the "to" field', async () => {
             await runEventLogsTest((request) => {
                 return {
                     ...request,
@@ -171,7 +174,7 @@ describe('POST /logs/event', () => {
             })
         })
 
-        testCase(['solo', 'default-private'])('should be omit the "unit" field', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be omit the "unit" field', async () => {
             await runEventLogsTest((request) => {
                 return {
                     ...request,
@@ -183,7 +186,7 @@ describe('POST /logs/event', () => {
             })
         })
 
-        testCase(['solo', 'default-private'])('should be able query by time', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by time', async () => {
             await runEventLogsTest((request, transfer) => {
                 return {
                     ...request,
@@ -196,7 +199,7 @@ describe('POST /logs/event', () => {
             })
         })
 
-        testCase(['solo', 'default-private'])('should be able query by block', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by block', async () => {
             await runEventLogsTest((request, transfer) => {
                 return {
                     ...request,
@@ -223,7 +226,7 @@ describe('POST /logs/event', () => {
         const runQueryEventLogsTest = async (order?: 'asc' | 'desc' | null) => {
             const { firstBlock, lastBlock } = await getTransferDetails()
 
-            const response = await Node1Client.queryEventLogs({
+            const response = await Client.raw.queryEventLogs({
                 range: {
                     from: firstBlock,
                     to: lastBlock,
@@ -277,25 +280,25 @@ describe('POST /logs/event', () => {
             )
         }
 
-        testCase(['solo', 'default-private'])('events should be ordered by DESC', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('events should be ordered by DESC', async () => {
             await runQueryEventLogsTest('desc')
         })
 
-        testCase(['solo', 'default-private'])('events should be ordered by ASC', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('events should be ordered by ASC', async () => {
             await runQueryEventLogsTest('asc')
         })
 
-        testCase(['solo', 'default-private'])('default should be asc', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('default should be asc', async () => {
             await runQueryEventLogsTest(undefined)
         })
 
-        testCase(['solo', 'default-private'])('should be able to set the order to null', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able to set the order to null', async () => {
             await runQueryEventLogsTest(null)
         })
     })
 
     describe('query by "options"', () => {
-        testCase(['solo', 'default-private'])('should be able omit all the options', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able omit all the options', async () => {
             await runEventLogsTest((request) => {
                 return {
                     ...request,
@@ -304,7 +307,7 @@ describe('POST /logs/event', () => {
             })
         })
 
-        testCase(['solo', 'default-private'])('should be able to omit the "offset" field', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able to omit the "offset" field', async () => {
             await runEventLogsTest((request) => {
                 return {
                     ...request,
@@ -316,14 +319,14 @@ describe('POST /logs/event', () => {
             })
         })
 
-        testCase(['solo', 'default-private'])('should be able to omit the "limit" field', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able to omit the "limit" field', async () => {
             const request = {
                 options: {
                     offset: 0,
                 },
             }
 
-            const eventLogs = await Node1Client.queryEventLogs(request)
+            const eventLogs = await Client.raw.queryEventLogs(request)
 
             expect(
                 eventLogs.success,
@@ -333,7 +336,7 @@ describe('POST /logs/event', () => {
             expect(eventLogs.body?.length).toEqual(0)
         })
 
-        testCase(['solo', 'default-private'])('should have default maximum of 1000', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should have default maximum of 1000', async () => {
             const request = {
                 options: {
                     offset: 0,
@@ -341,13 +344,13 @@ describe('POST /logs/event', () => {
                 },
             }
 
-            const eventLogs = await Node1Client.queryEventLogs(request)
+            const eventLogs = await Client.raw.queryEventLogs(request)
 
             expect(eventLogs.success, 'API response should fail').toBeFalse()
             expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(403)
         })
 
-        testCase(['solo', 'default-private'])('should have no minimum "limit"', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should have no minimum "limit"', async () => {
             const request = {
                 options: {
                     offset: 0,
@@ -355,7 +358,7 @@ describe('POST /logs/event', () => {
                 },
             }
 
-            const eventLogs = await Node1Client.queryEventLogs(request)
+            const eventLogs = await Client.raw.queryEventLogs(request)
 
             expect(
                 eventLogs.success,
@@ -365,7 +368,7 @@ describe('POST /logs/event', () => {
             expect(eventLogs.body?.length).toEqual(0)
         })
 
-        testCase(['solo', 'default-private'])('should be able paginate requests', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be able paginate requests', async () => {
             const { firstBlock, lastBlock } = await transferDetails
 
             const pages = 5
@@ -373,7 +376,7 @@ describe('POST /logs/event', () => {
             const totalElements = pages * amountPerPage
 
             const query = async (offset: number, limit: number) =>
-                Node1Client.queryEventLogs({
+                Client.raw.queryEventLogs({
                     range: {
                         from: firstBlock,
                         to: lastBlock,
@@ -437,9 +440,9 @@ describe('POST /logs/event', () => {
             ).toEqual(paginatedElements)
         })
 
-        testCase(['solo', 'default-private'])('should be empty when pagination exceeds the total amount', async () => {
+        testCase(['solo', 'default-private', 'testnet'])('should be empty when pagination exceeds the total amount', async () => {
             // First, we need to make sure there are events
-            const res1 = await Node1Client.queryEventLogs({
+            const res1 = await Client.raw.queryEventLogs({
                 options: {
                     offset: 0,
                     limit: 1_000,
@@ -452,7 +455,7 @@ describe('POST /logs/event', () => {
             )
 
             // Then, we can set a large offset and check that there are no results
-            const res2 = await Node1Client.queryEventLogs({
+            const res2 = await Client.raw.queryEventLogs({
                 options: {
                     offset: 100_000,
                     limit: 1_000,
@@ -494,7 +497,7 @@ describe('POST /logs/event', () => {
             topics = eventAddresses.map(addAddressPadding)
 
             range = {
-                to: receipt.meta.blockNumber,
+                to: receipt.meta.blockNumber + 1000,
                 from: receipt.meta.blockNumber,
                 unit: 'block',
             }
@@ -528,8 +531,8 @@ describe('POST /logs/event', () => {
             })
         }
 
-        testCase(['solo', 'default-private'])('should be able query by contract address', async () => {
-            const res = await Node1Client.queryEventLogs({
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by contract address', async () => {
+            const res = await Client.raw.queryEventLogs({
                 criteriaSet: [
                     {
                         address: contract.address,
@@ -541,8 +544,8 @@ describe('POST /logs/event', () => {
             await expectOriginalEvent(res)
         })
 
-        testCase(['solo', 'default-private'])('should be able query by topic0 address', async () => {
-            const res = await Node1Client.queryEventLogs({
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by topic0 address', async () => {
+            const res = await Client.raw.queryEventLogs({
                 criteriaSet: [
                     {
                         topic0: eventHash,
@@ -555,11 +558,11 @@ describe('POST /logs/event', () => {
         })
 
 
-        testCaseEach(['solo', 'default-private'])(
+        testCaseEach(['solo', 'default-private', 'testnet'])(
             `should be able query by topic%d`,
             [1, 2, 3],
             async (topicIndex) => {
-                const res = await Node1Client.queryEventLogs({
+                const res = await Client.raw.queryEventLogs({
                     criteriaSet: [
                         {
                             [`topic${topicIndex}`]: topics[topicIndex - 1],
@@ -572,8 +575,8 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private'])('should be able query by all topics', async () => {
-            const res = await Node1Client.queryEventLogs({
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by all topics', async () => {
+            const res = await Client.raw.queryEventLogs({
                 criteriaSet: [
                     {
                         topic0: eventHash,
@@ -588,8 +591,8 @@ describe('POST /logs/event', () => {
             await expectOriginalEvent(res)
         })
 
-        testCase(['solo', 'default-private'])('should be able query by all topics and address', async () => {
-            const res = await Node1Client.queryEventLogs({
+        testCase(['solo', 'default-private', 'testnet'])('should be able query by all topics and address', async () => {
+            const res = await Client.raw.queryEventLogs({
                 criteriaSet: [
                     {
                         address: contract.address,
@@ -605,8 +608,8 @@ describe('POST /logs/event', () => {
             await expectOriginalEvent(res)
         })
 
-        testCase(['solo', 'default-private'])('should be empty for matching topics and non-matching address', async () => {
-            const res = await Node1Client.queryEventLogs({
+        testCase(['solo', 'default-private', 'testnet'])('should be empty for matching topics and non-matching address', async () => {
+            const res = await Client.raw.queryEventLogs({
                 criteriaSet: [
                     {
                         address: contractAddresses.energy,
@@ -624,8 +627,8 @@ describe('POST /logs/event', () => {
             expect(res.body, 'Expected Response Body').toEqual([])
         })
 
-        testCase(['solo', 'default-private'])('should be empty for non-matching topics and matching address', async () => {
-            const res = await Node1Client.queryEventLogs({
+        testCase(['solo', 'default-private', 'testnet'])('should be empty for non-matching topics and matching address', async () => {
+            const res = await Client.raw.queryEventLogs({
                 criteriaSet: [
                     {
                         address: contract.address,

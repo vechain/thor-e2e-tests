@@ -44,27 +44,27 @@ const populateVetAndVtho = async (): Promise<string[]> => {
 /**
  * Checks if the chain is already populated with data. Checks a random 25 transactions
  */
-const checkIfPopulated = async (): Promise<boolean> => {
-    if (!populatedDataExists()) {
-        return false
-    }
-
-    for (let i = 0; i < 25; i++) {
-        const data = readPopulatedData()
-
-        const randomIndex = Math.floor(Math.random() * data.transfers.length)
-
-        const txReceipt = await Node1Client.getTransactionReceipt(
-            data.transfers[randomIndex],
-        )
-
-        if (!txReceipt.body) {
-            return false
-        }
-    }
-
-    return true
-}
+//const checkIfPopulated = async (): Promise<boolean> => {
+//    if (!populatedDataExists()) {
+//        return false
+//    }
+//
+//    for (let i = 0; i < 25; i++) {
+//        const data = readPopulatedData()
+//
+//        const randomIndex = Math.floor(Math.random() * data.transfers.length)
+//
+//        const txReceipt = await Node1Client.getTransactionReceipt(
+//            data.transfers[randomIndex],
+//        )
+//
+//        if (!txReceipt.body) {
+//            return false
+//        }
+//    }
+//
+//    return true
+//}
 
 //const populate = async () => {
 //    const alreadyPopulated = await checkIfPopulated()
@@ -93,7 +93,6 @@ const checkIfPopulated = async (): Promise<boolean> => {
 //}
 
 const populate = async () => {
-    console.log('Populating data')
     let details: TransferDetails
 
     if (!fs.existsSync('./keys')) {
@@ -109,8 +108,9 @@ const populate = async () => {
             details = transferDetails.test
             break
         case 'default-private':
-            const maxDistance = 1000
+            const maxDistance = 200
             let lastBlock = (await Client.raw.getBlock('best'))!.body
+            console.log('Last block', lastBlock)
             if (lastBlock!.number! <= 2) {
                 await writeTransferTransactions()
             }
@@ -146,21 +146,17 @@ const populate = async () => {
             throw new Error('Invalid network type')
     }
 
-    console.log('Details', details)
     if (populatedData.exists()) populatedData.remove()
 
-    //const txIds = await getTransferIds(details)
+    const txIds = await getTransferIds(details)
     const genesisBlock =
         (await Client.sdk.blocks.getGenesisBlock()) as CompressedBlockDetail
 
-    console.log('Transfers', transferIds)
     populatedData.write({
         genesisId: genesisBlock.id,
-        transfersIds: transferIds,
+        transfersIds: txIds,
         transferDetails: details,
     })
-
-    console.log('Populated data')
 }
 const setup = async () => {
     await validateEnv()

@@ -8,7 +8,7 @@ import { testCase } from '../../../src/test-case'
  * @group websockets
  */
 describe('WS /subscriptions/txpool', () => {
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should be able to subscribe', async () => {
             const txs: { id: string }[] = []
 

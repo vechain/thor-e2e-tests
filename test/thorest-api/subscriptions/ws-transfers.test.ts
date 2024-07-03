@@ -9,7 +9,7 @@ import { generateAddress } from '../../../src/wallet'
  * @group websockets
  */
 describe('WS /subscriptions/transfer', () => {
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should be able to subscribe',
         async () => {
             const events: components['schemas']['SubscriptionTransferResponse'][] =

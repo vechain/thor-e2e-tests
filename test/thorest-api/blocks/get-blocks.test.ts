@@ -14,7 +14,7 @@ import { testCase, testCaseEach } from '../../../src/test-case'
  * @group api
  * @group blocks
  */
-describe('GET /blocks/{revision}', function() {
+describe('GET /blocks/{revision}', function () {
     let transfer: Transfer
 
     beforeAll(async () => {
@@ -22,8 +22,8 @@ describe('GET /blocks/{revision}', function() {
     })
 
 
-    testCase(['solo', 'default-private'])(
-        'gas limit it equal to 40_000_000', async function() {
+    testCase(['solo', 'default-private', 'testnet'])(
+        'gas limit it equal to 40_000_000', async function () {
             const block = await Client.raw.getBlock(1, false)
 
             expect(block.success, 'API response should be a success').toBeTrue()
@@ -32,10 +32,10 @@ describe('GET /blocks/{revision}', function() {
         })
 
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'can get block for revision: %s',
         revisions.valid(true),
-        async function(revision) {
+        async function (revision) {
             const block = await Client.raw.getBlock(revision, false)
 
             expect(block.success, 'API response should be a success').toBeTrue()
@@ -64,10 +64,10 @@ describe('GET /blocks/{revision}', function() {
     )
 
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'valid revisions not found: %s',
         revisions.validNotFound,
-        async function(revision) {
+        async function (revision) {
             const block = await Client.raw.getBlock(revision, false)
 
             expect(block.success, 'API response should be a success').toBeTrue()
@@ -77,10 +77,10 @@ describe('GET /blocks/{revision}', function() {
     )
 
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'invalid revisions: %s',
         revisions.invalid,
-        async function(revision) {
+        async function (revision) {
             const block = await Client.raw.getBlock(revision, false)
 
             expect(block.success, 'API Call should fail').toBeFalse()
@@ -89,8 +89,8 @@ describe('GET /blocks/{revision}', function() {
     )
 
 
-    testCase(['solo', 'default-private'])(
-        'should be able get compressed blocks', async function() {
+    testCase(['solo', 'default-private', 'testnet'])(
+        'should be able get compressed blocks', async function () {
             const res = await Client.raw.getBlock(transfer.meta?.blockID, false)
 
             expect(res.success, 'API response should be a success').toBeTrue()
@@ -110,8 +110,8 @@ describe('GET /blocks/{revision}', function() {
         })
 
 
-    testCase(['solo', 'default-private'])(
-        'should be able get expanded blocks', async function() {
+    testCase(['solo', 'default-private', 'testnet'])(
+        'should be able get expanded blocks', async function () {
             const res = await Client.raw.getBlock(transfer.meta.blockID, true)
 
             expect(res.success, 'API response should be a success').toBeTrue()

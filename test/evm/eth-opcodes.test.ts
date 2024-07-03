@@ -36,7 +36,7 @@ describe('EVM Opcodes', () => {
         opcodes = await wallet.deployContract(Opcodes.bytecode, Opcodes.abi)
     })
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'Should run without errors the majority of opcodes',
         async () => {
             await opcodes.transact.test()
@@ -44,7 +44,7 @@ describe('EVM Opcodes', () => {
         },
     )
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'Should throw invalid op code',
         async () => {
             await expect(() =>
@@ -53,7 +53,7 @@ describe('EVM Opcodes', () => {
         },
     )
 
-    testCase(['solo', 'default-private'])('Should revert', async () => {
+    testCase(['solo', 'default-private', 'testnet'])('Should revert', async () => {
         const { wait } = await opcodes.transact.test_revert()
 
         const tx = await wait()

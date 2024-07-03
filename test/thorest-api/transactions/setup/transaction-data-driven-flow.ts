@@ -1,5 +1,5 @@
 import { components } from '../../../../src/open-api-types'
-import { Client, Node1Client } from '../../../../src/thor-client'
+import { Client } from '../../../../src/thor-client'
 import { pollReceipt } from '../../../../src/transactions'
 import { TestCasePlan, TestCasePlanStepError } from './models'
 
@@ -55,9 +55,10 @@ class TransactionDataDrivenFlow {
 
         const { expectedResult } = this.plan.getTxStep
 
-        const tx = await Node1Client.getTransaction(txId, {
+        const tx = await Client.raw.getTransaction(txId, {
             pending: true,
         })
+
 
         expectedResult(tx)
     }
@@ -101,7 +102,7 @@ class TransactionDataDrivenFlow {
         const { expectedResult, logFilters } = this.plan.getLogTransferStep
         const request = logFilters ?? createDefaultLogFilterRequest(blockNumber)
 
-        const logsResponse = await Node1Client.queryTransferLogs(request)
+        const logsResponse = await Client.raw.queryTransferLogs(request)
 
         expectedResult(logsResponse, block)
     }
@@ -122,7 +123,7 @@ class TransactionDataDrivenFlow {
 
         const { expectedResult } = this.plan.getTxBlockStep
 
-        const block = await Node1Client.getBlock(blockId)
+        const block = await Client.raw.getBlock(blockId)
 
         expectedResult({ block, txId })
     }

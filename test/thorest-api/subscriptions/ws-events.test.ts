@@ -14,7 +14,7 @@ import { ThorWallet } from '../../../src/wallet'
  */
 describe('WS /subscriptions/event', () => {
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should be able to subscribe', async () => {
             const events: components['schemas']['SubscriptionEventResponse'][] = []
             //const account = generateAddress()

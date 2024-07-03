@@ -6,6 +6,7 @@ commander
     .option('--nodeURL <value>', 'Custom node url')
     .option('--pks <private keys>', 'A list of private keys, comma separated')
     .option('--mnemonic <mnemonic>', 'mnemonic')
+    .option('--test <testname>', 'test')
     .option(
         '--networkType < main | testnet | solo | default-private >',
         'type of the network. Default: default-private',
@@ -27,12 +28,12 @@ if (options.mnemonic) {
     process_env.MNEMONIC = options.mnemonic
 }
 if (options.networkType) {
-    process_env.MNEMONIC = options.mnemonic
+    process_env.NETWORK_TYPE = options.networkType
 } else {
     process_env.NETWORK_TYPE = 'default-private'
 }
 
-spawn('npm', ['test'], {
+spawn('yarn', ['jest', '-t', "'" + options.test + "'"], {
     shell: true,
     env: process_env,
     stdio: 'inherit',

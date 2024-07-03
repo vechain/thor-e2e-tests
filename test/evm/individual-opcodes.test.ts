@@ -4,7 +4,7 @@ import {
     IndividualOpCodes__factory as Opcodes,
     SimpleCounterShanghai__factory as ShanghaiCounter,
 } from '../../typechain-types'
-import { Node1Client } from '../../src/thor-client'
+import { Client } from '../../src/thor-client'
 import {
     addAddressPadding,
     addUintPadding,
@@ -55,7 +55,7 @@ describe('Individual OpCodes', () => {
             data,
         }
 
-        const debugged = await Node1Client.traceContractCall({
+        const debugged = await Client.raw.traceContractCall({
             ...clause,
             caller,
             gas: 1_000_000,
@@ -71,7 +71,7 @@ describe('Individual OpCodes', () => {
     }
 
     const simulateContractCall = async (data: string) => {
-        const simulated = await Node1Client.executeAccountBatch({
+        const simulated = await Client.raw.executeAccountBatch({
             clauses: [
                 {
                     to: opcodes.address,
@@ -354,7 +354,7 @@ describe('Individual OpCodes', () => {
         },
     }
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'should give the correct output for opcode: %s',
         Object.entries(reusableTests),
         async (name, { input, expected }) => {
@@ -370,7 +370,7 @@ describe('Individual OpCodes', () => {
         },
     )
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should give the correct output for opcode: BALANCE',
         async () => {
             const debugged = await traceContractCall(
@@ -391,7 +391,7 @@ describe('Individual OpCodes', () => {
      * DUP_N
      */
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'should give the correct output for opcode: DUP%s',
         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         async (dupN) => {
@@ -416,7 +416,7 @@ describe('Individual OpCodes', () => {
         LOG4: [1n, 3n, 5n, 7n, 9n, 11n],
     }
 
-    testCaseEach(['solo', 'default-private'])(
+    testCaseEach(['solo', 'default-private', 'testnet'])(
         'should give the correct output for opcode: %s',
         Object.entries(logTests),
         async (logN, input) => {
@@ -441,7 +441,7 @@ describe('Individual OpCodes', () => {
         },
     )
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should give the correct output for opcode: REVERT',
         async () => {
             const debugged = await traceContractCall(
@@ -458,7 +458,7 @@ describe('Individual OpCodes', () => {
         },
     )
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should give the correct output for opcode: INVALID',
         async () => {
             const debugged = await traceContractCall(
@@ -473,7 +473,7 @@ describe('Individual OpCodes', () => {
         },
     )
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should give the correct output for opcode: STOP',
         async () => {
             const debugged = await traceContractCall(
@@ -487,7 +487,7 @@ describe('Individual OpCodes', () => {
         },
     )
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should give the correct output for opcode: ADDRESS',
         async () => {
             const debugged = await traceContractCall(
@@ -501,7 +501,7 @@ describe('Individual OpCodes', () => {
         },
     )
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should give the correct output for opcode: PUSH0',
         async () => {
             const clauses = [
@@ -519,7 +519,7 @@ describe('Individual OpCodes', () => {
             expect(receipt.reverted).toBe(true)
 
             // 0x5f is the PUSH0 opcode
-            const simulation = await Node1Client.executeAccountBatch({
+            const simulation = await Client.raw.executeAccountBatch({
                 clauses,
                 caller,
             })

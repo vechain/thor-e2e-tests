@@ -14,7 +14,7 @@ import {
 } from './transactions'
 import { getBlockRef } from './utils/block-utils'
 import { components } from './open-api-types'
-import { Node1Client, SDKClient } from './thor-client'
+import { Client, Node1Client, SDKClient } from './thor-client'
 import * as fs from 'fs';
 import { contractAddresses } from './contracts/addresses'
 import { interfaces } from './contracts/hardhat'
@@ -145,7 +145,7 @@ class ThorWallet {
         clauses: TransactionClause[],
     ): Promise<TransactionBody> => {
         const bestBlockRef = await getBlockRef('best')
-        const genesisBlock = await Node1Client.getBlock('0')
+        const genesisBlock = await Client.raw.getBlock('0')
 
         if (!genesisBlock.success || !genesisBlock.body?.id) {
             throw new Error('Could not get best block')
@@ -153,7 +153,7 @@ class ThorWallet {
 
         return {
             blockRef: bestBlockRef,
-            expiration: 1000,
+            expiration: 100,
             clauses: clauses,
             gasPriceCoef: 0,
             gas: 1_000_000,
@@ -221,7 +221,7 @@ class ThorWallet {
             encoded = await this.signAndEncodeTx(tx)
         }
 
-        const res = await Node1Client.sendTransaction({
+        const res = await Client.raw.sendTransaction({
             raw: `0x${encoded}`,
         })
 
@@ -240,6 +240,7 @@ class ThorWallet {
         }
 
         const receipt = await pollReceipt(res.body?.id ?? '')
+
 
         if (receipt.reverted) {
             console.error(

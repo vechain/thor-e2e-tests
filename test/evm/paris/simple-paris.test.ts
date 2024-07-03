@@ -13,7 +13,7 @@ describe('Simple Paris', () => {
         vtho: 6000e18,
     })
 
-    testCase(['solo', 'default-private'])(
+    testCase(['solo', 'default-private', 'testnet'])(
         'should be able to deploy a paris contract',
         async () => {
             const contract = await wallet.deployContract(
