@@ -336,13 +336,14 @@ describe('POST /logs/event', () => {
             expect(eventLogs.body?.length).toEqual(0)
         })
 
-        testCase(['solo', 'default-private', 'testnet'])('should have default maximum of 1000', async () => {
+        testCase(['solo', 'default-private'])('should have default maximum of 1000', async () => {
             const request = {
                 options: {
                     offset: 0,
                     limit: 1001,
                 },
             }
+
 
             const eventLogs = await Client.raw.queryEventLogs(request)
 
@@ -455,9 +456,14 @@ describe('POST /logs/event', () => {
             )
 
             // Then, we can set a large offset and check that there are no results
+            const block = await Client.raw.getBlock('best')
             const res2 = await Client.raw.queryEventLogs({
+                range: {
+                    unit: 'block',
+                    from: block.body?.number!
+                },
                 options: {
-                    offset: 100_000,
+                    offset: 1_000_000,
                     limit: 1_000,
                 },
             })
@@ -478,7 +484,7 @@ describe('POST /logs/event', () => {
         let range: any
 
         beforeAll(async () => {
-            const contractFactory = SDKClient.contracts.createContractFactory(
+            const contractFactory = Client.sdk.contracts.createContractFactory(
                 EventsContract.abi,
                 EventsContract.bytecode,
                 randomFunder(),

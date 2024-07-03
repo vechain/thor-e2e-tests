@@ -130,7 +130,7 @@ class ThorWallet {
     public deployContract = async (bytecode: string, abi: InterfaceAbi) => {
         await this.waitForFunding()
 
-        const factory = SDKClient.contracts.createContractFactory(
+        const factory = Client.sdk.contracts.createContractFactory(
             abi,
             bytecode,
             this.privateKey.toString('hex'),

@@ -72,7 +72,7 @@ describe('POST /logs/transfers', () => {
             })
         })
 
-    testCase(['solo', 'default-private', 'testnet'])('should be able to omit all the parameters', async () => {
+    testCase(['solo', 'default-private'])('should be able to omit all the parameters', async () => {
         const transfer = await readRandomTransfer()
 
         const response = await Client.raw.queryTransferLogs({
@@ -222,7 +222,7 @@ describe('POST /logs/transfers', () => {
             expect(transferLogs.body?.length).toEqual(0)
         })
 
-        testCase(['solo', 'default-private', 'testnet'])('should have default maximum of 1000', async () => {
+        testCase(['solo', 'default-private'])('should have default maximum of 1000', async () => {
             const request = {
                 options: {
                     offset: 0,

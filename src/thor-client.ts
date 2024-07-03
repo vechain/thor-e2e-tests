@@ -560,6 +560,6 @@ export { Client }
 
 const Node1Client = new ThorClient(testURL)
 const httpClient = new HttpClient(testURL)
-const SDKClient = new _ThorClient(httpClient)
+const SDKClient = new _ThorClient(testURL)
 
 export { Node1Client, SDKClient }

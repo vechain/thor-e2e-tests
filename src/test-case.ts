@@ -15,7 +15,6 @@ export const testCase =
     (supportedEnvs: NetworkType[] | 'all') =>
         (title: string, testFunc: ProvidesCallback) => {
             if (supportedEnvs === 'all' || isMatching(supportedEnvs)) {
-                console.log('Type', testEnv.type, supportedEnvs)
                 test(title, testFunc)
             } else {
                 console.warn(`Skipping test: ${title}`)

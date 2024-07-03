@@ -33,7 +33,14 @@ if (options.networkType) {
     process_env.NETWORK_TYPE = 'default-private'
 }
 
-spawn('yarn', ['jest', '-t', "'" + options.test + "'"], {
+let arguments = []
+if (options.test) {
+    arguments = ['jest', '-t', "'" + options.test + "'"]
+} else {
+    arguments = ['jest']
+}
+
+spawn('yarn', arguments, {
     shell: true,
     env: process_env,
     stdio: 'inherit',
