@@ -1,5 +1,5 @@
 /// <reference types="jest-extended" />
-import { Client, Response, Schema, SDKClient } from '../../../src/thor-client'
+import { Client, Response, Schema } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import {
     getTransferDetails,

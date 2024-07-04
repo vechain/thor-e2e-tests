@@ -1,6 +1,6 @@
 import { addressUtils, HDNode, unitsUtils } from '@vechain/sdk-core'
 import { ThorClient } from '@vechain/sdk-network'
-import { genesis, faucetMnemonic } from './constants'
+import { genesis } from './constants'
 
 const mnemonic = process.env.MNEMONIC
 const nodeUrls = process.env.NODE_URLS
@@ -16,7 +16,10 @@ const testEnv = {
             return privateKeys.split(',')
         }
 
-        const _mnemonic = mnemonic ?? faucetMnemonic
+        if (!mnemonic) {
+            throw new Error('No mnemonic provided')
+        }
+        const _mnemonic = mnemonic
 
         const hdNode = HDNode.fromMnemonic(_mnemonic.split(' '))
         const keys: any[] = []

@@ -3,11 +3,9 @@ import { contractAddresses } from '../../../src/contracts/addresses'
 import { HEX_REGEX } from '../../../src/utils/hex-utils'
 import { revisions } from '../../../src/constants'
 import {
-    populatedData,
     readRandomTransfer,
     Transfer,
 } from '../../../src/populated-data'
-import { FAUCET_AMOUNT_HEX } from '../../../src/account-faucet'
 import { testCase, testCaseEach } from '../../../src/test-case'
 import { ThorWallet } from '../../../src/wallet'
 
@@ -15,7 +13,7 @@ import { ThorWallet } from '../../../src/wallet'
  * @group api
  * @group accounts
  */
-describe('GET /accounts/{address}', function () {
+describe('GET /accounts/{address}', function() {
     const invalidAddresses = [
         '0x00000000',
         'zzzzzzz',
@@ -31,7 +29,7 @@ describe('GET /accounts/{address}', function () {
 
     testCase(['solo', 'default-private', 'testnet'])(
         'correct balance',
-        async function () {
+        async function() {
             const emptyWallet = ThorWallet.empty()
 
             const clauses = [
@@ -60,7 +58,7 @@ describe('GET /accounts/{address}', function () {
 
     testCase(['solo', 'default-private', 'testnet'])(
         'contract account hasCode',
-        async function () {
+        async function() {
             const addr = contractAddresses.energy
             const res = await Client.raw.getAccount(addr)
 
@@ -77,7 +75,7 @@ describe('GET /accounts/{address}', function () {
     testCaseEach(['solo', 'default-private', 'testnet'])(
         'valid revision %s',
         revisions.valid(true),
-        async function (revision) {
+        async function(revision) {
             const res = await Client.raw.getAccount(
                 transfer.vet.recipient,
                 revision,

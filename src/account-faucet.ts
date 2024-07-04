@@ -3,10 +3,8 @@ import { interfaces } from './contracts/hardhat'
 import { secp256k1, Transaction, TransactionBody } from '@vechain/sdk-core'
 import { testEnv } from './test-env'
 import { ThorWallet } from './wallet'
-import { unitsUtils } from '@vechain/sdk-core'
+//import { unitsUtils } from '@vechain/sdk-core'
 
-const FAUCET_AMOUNT = unitsUtils.parseVET((10_000).toString())
-const FAUCET_AMOUNT_HEX = `0x${FAUCET_AMOUNT.toString(16)}`
 
 // The funding amounts are not scaled, so `0x1` equals 1 wei
 type FundingAmounts = {
@@ -100,7 +98,6 @@ export const delegateTx = (txBody: TransactionBody, senderAddress: string) => {
 export {
     randomFunder,
     fundAccount,
-    FAUCET_AMOUNT_HEX,
     fundingAmounts,
     FundingAmounts,
 }

@@ -1,11 +1,11 @@
 import 'dotenv/config'
+import { testEnv } from './test-env'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { components } from './open-api-types'
 
 import WebSocket from 'ws'
 import { HttpClient, ThorClient as _ThorClient } from '@vechain/sdk-network'
 import { decodeRevertReason } from './utils/revert-utils'
-import { testEnv } from './test-env'
 
 type BaseResponse = {
     httpCode?: number
@@ -481,7 +481,7 @@ class ThorClient {
 
     private initBlockSubscription() {
         this.subscribeToBlocks(
-            (data: Schema['SubscriptionBlockResponse']) => {},
+            (data: Schema['SubscriptionBlockResponse']) => { },
         )
     }
 
@@ -505,8 +505,6 @@ class ThorClient {
         }
     }
 }
-
-const testURL = process.env.TEST_URL || 'http://localhost:8669'
 
 class LoadBalancedClient {
     private readonly clients: ThorClient[]
@@ -557,9 +555,3 @@ class LoadBalancedClient {
 const Client = new LoadBalancedClient(testEnv.urls)
 
 export { Client }
-
-const Node1Client = new ThorClient(testURL)
-const httpClient = new HttpClient(testURL)
-const SDKClient = new _ThorClient(testURL)
-
-export { Node1Client, SDKClient }

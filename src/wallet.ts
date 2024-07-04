@@ -19,7 +19,7 @@ import {
 } from './transactions'
 import { getBlockRef } from './utils/block-utils'
 import { components } from './open-api-types'
-import { Client, Node1Client, SDKClient } from './thor-client'
+import { Client } from './thor-client'
 import * as fs from 'fs'
 import { contractAddresses } from './contracts/addresses'
 import { interfaces } from './contracts/hardhat'
@@ -90,7 +90,7 @@ class ThorWallet {
         fs.writeFile(
             './keys/' + addr + '.txt',
             privateKey.toString('hex'),
-            (err) => {},
+            (err) => { },
         )
 
         return new ThorWallet(privateKey)
@@ -114,7 +114,7 @@ class ThorWallet {
         fs.writeFile(
             './keys/' + addr + '.txt',
             privateKey.toString('hex'),
-            (err) => {},
+            (err) => { },
         )
 
         const receipt = fundAccount(addr, amounts).then((res) => res.receipt)
@@ -224,8 +224,8 @@ class ThorWallet {
         delegate?: boolean,
     ): Promise<
         T extends true
-            ? components['schemas']['GetTxReceiptResponse']
-            : components['schemas']['TXID']
+        ? components['schemas']['GetTxReceiptResponse']
+        : components['schemas']['TXID']
     > => {
         await this.waitForFunding()
 

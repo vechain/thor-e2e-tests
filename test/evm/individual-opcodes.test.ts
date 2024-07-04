@@ -36,10 +36,7 @@ describe('Individual OpCodes', () => {
     const paddedCaller = addAddressPadding(caller) //remove 0x
         .slice(2)
     beforeAll(async () => {
-        wallet = ThorWallet.withFunds({
-            vet: '0x0',
-            vtho: 6000e18,
-        })
+        wallet = ThorWallet.withFunds()
 
         opcodes = await wallet.deployContract(Opcodes.bytecode, Opcodes.abi)
     })

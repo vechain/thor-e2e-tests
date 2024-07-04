@@ -32,7 +32,7 @@ describe('EVM Opcodes', () => {
     let opcodes: Contract
 
     beforeAll(async () => {
-        wallet = ThorWallet.withFunds({ vet: '0x0', vtho: 2500e18 })
+        wallet = ThorWallet.withFunds()
         opcodes = await wallet.deployContract(Opcodes.bytecode, Opcodes.abi)
     })
 

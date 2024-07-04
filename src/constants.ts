@@ -1,4 +1,3 @@
-import { getGenesisBlockId } from './populated-data'
 import { TransferDetails } from './types'
 import { populatedData } from './populated-data'
 
@@ -47,9 +46,7 @@ export const transferDetails: Record<'test' | 'main', TransferDetails> = {
     },
 }
 
-const faucetMnemonic =
-    'denial kitchen pet squirrel other broom bar gas better priority spoil cross'
 
 const faucetAccountLength = 10
 
-export { faucetMnemonic, faucetAccountLength }
+export { faucetAccountLength }

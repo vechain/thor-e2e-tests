@@ -35,8 +35,8 @@ const setSimpleStorage = async (
  * @group api
  * @group accounts
  */
-describe('GET /accounts/{address}/storage', function () {
-    const wallet = ThorWallet.withFunds({ vet: '0x0', vtho: 2500e18 })
+describe('GET /accounts/{address}/storage', function() {
+    const wallet = ThorWallet.withFunds()
     let simpleStorageAddress: string
 
     beforeAll(async () => {
@@ -57,7 +57,7 @@ describe('GET /accounts/{address}/storage', function () {
 
     testCase(['solo', 'default-private', 'testnet'])(
         'should return the storage value',
-        async function () {
+        async function() {
             const amount = 973252
 
             await setSimpleStorage(simpleStorageAddress, amount, wallet)
@@ -126,7 +126,7 @@ describe('GET /accounts/{address}/storage', function () {
     testCaseEach(['solo', 'default-private', 'testnet'])(
         'valid revision %s',
         revisions.valid(),
-        async function (revision) {
+        async function(revision) {
             const res = await Client.raw.getAccountStorage(
                 simpleStorageAddress,
                 SIMPLE_STORAGE_KEY,

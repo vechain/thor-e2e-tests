@@ -1,4 +1,4 @@
-import { faucetAccountLength, faucetMnemonic } from '../src/constants'
+import { faucetAccountLength } from '../src/constants'
 import genesis from '../network/config/genesis.json'
 import path from 'path'
 import fs from 'fs'
@@ -35,7 +35,7 @@ const generateFaucetAccounts = (): AccountFaucet[] => {
     } else if (!options.pks && options.mnemonic) {
         hdNode = HDNode.fromMnemonic(options.mnemonic.split(' '))
     } else if (!options.pks && !options.mnemonic) {
-        hdNode = HDNode.fromMnemonic(faucetMnemonic.split(' '))
+        throw new Error('Private keys or mnemonic should be provided')
     } else {
         throw new Error('A set os keys and mnemonic are mutualy exclusive')
     }

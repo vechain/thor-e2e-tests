@@ -9,10 +9,7 @@ import { Client } from '../../../src/thor-client'
  * @group paris
  */
 describe('Simple Paris', () => {
-    const wallet: ThorWallet = ThorWallet.withFunds({
-        vet: '0x0',
-        vtho: 6000e18,
-    })
+    const wallet: ThorWallet = ThorWallet.withFunds()
 
     testCase(['solo', 'default-private', 'testnet'])(
         'should be able to deploy a paris contract',
