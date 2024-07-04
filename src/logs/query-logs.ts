@@ -16,10 +16,12 @@ const hasVetTransfer = (tx: TransactionsExpandedBlockDetail): boolean => {
 }
 
 const hasVthoTransfer = (tx: TransactionsExpandedBlockDetail): boolean => {
-    return tx.outputs[1]?.events[0].topics[0] ===
-        '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' &&
+    return (
+        tx.outputs[1]?.events[0].topics[0] ===
+            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' &&
         tx.outputs[1]?.events[0].address ===
-        '0x0000000000000000000000000000456e65726779'
+            '0x0000000000000000000000000000456e65726779'
+    )
 }
 
 export const getTransferIds = async (

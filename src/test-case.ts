@@ -13,14 +13,14 @@ const isMatching = (supportedEnvs: NetworkType[]) =>
  */
 export const testCase =
     (supportedEnvs: NetworkType[] | 'all') =>
-        (title: string, testFunc: ProvidesCallback) => {
-            if (supportedEnvs === 'all' || isMatching(supportedEnvs)) {
-                test(title, testFunc)
-            } else {
-                console.warn(`Skipping test: ${title}`)
-                test.skip(title, testFunc)
-            }
+    (title: string, testFunc: ProvidesCallback) => {
+        if (supportedEnvs === 'all' || isMatching(supportedEnvs)) {
+            test(title, testFunc)
+        } else {
+            console.warn(`Skipping test: ${title}`)
+            test.skip(title, testFunc)
         }
+    }
 
 /**
  * testCaseEach(['solo', 'default-private'])(
@@ -33,22 +33,22 @@ export const testCase =
  */
 export const testCaseEach =
     (supportedEnvs: NetworkType[] | 'all') =>
-        <T>(title: string, cases: T[], testFunc: (val: T) => void) => {
-            if (supportedEnvs === 'all' || isMatching(supportedEnvs)) {
-                test.each(cases)(title, testFunc)
-            } else {
-                console.warn(`Skipping test: ${title}`)
-                test.skip.each(cases)(title, testFunc)
-            }
+    <T>(title: string, cases: T[], testFunc: (val: T) => void) => {
+        if (supportedEnvs === 'all' || isMatching(supportedEnvs)) {
+            test.each(cases)(title, testFunc)
+        } else {
+            console.warn(`Skipping test: ${title}`)
+            test.skip.each(cases)(title, testFunc)
         }
+    }
 
 export const describeCases =
     (supportedEnvs: NetworkType[] | 'all') =>
-        (title: string, testFunc: EmptyFunction) => {
-            if (supportedEnvs === 'all' || isMatching(supportedEnvs)) {
-                describe(title, testFunc)
-            } else {
-                console.warn(`Skipping suite: ${title}`)
-                describe.skip(title, testFunc)
-            }
+    (title: string, testFunc: EmptyFunction) => {
+        if (supportedEnvs === 'all' || isMatching(supportedEnvs)) {
+            describe(title, testFunc)
+        } else {
+            console.warn(`Skipping suite: ${title}`)
+            describe.skip(title, testFunc)
         }
+    }

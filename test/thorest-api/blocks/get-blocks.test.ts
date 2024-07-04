@@ -14,28 +14,28 @@ import { testCase, testCaseEach } from '../../../src/test-case'
  * @group api
  * @group blocks
  */
-describe('GET /blocks/{revision}', function() {
+describe('GET /blocks/{revision}', function () {
     let transfer: Transfer
 
     beforeAll(async () => {
         transfer = await readRandomTransfer()
     })
 
-
     testCase(['solo', 'default-private'])(
-        'gas limit is equal to 40_000_000', async function() {
+        'gas limit is equal to 40_000_000',
+        async function () {
             const block = await Client.raw.getBlock(1, false)
 
             expect(block.success, 'API response should be a success').toBeTrue()
             expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(block.body?.gasLimit).toEqual(40_000_000)
-        })
-
+        },
+    )
 
     testCaseEach(['solo', 'default-private', 'testnet'])(
         'can get block for revision: %s',
         revisions.valid(true),
-        async function(revision) {
+        async function (revision) {
             const block = await Client.raw.getBlock(revision, false)
 
             expect(block.success, 'API response should be a success').toBeTrue()
@@ -63,11 +63,10 @@ describe('GET /blocks/{revision}', function() {
         },
     )
 
-
     testCaseEach(['solo', 'default-private', 'testnet'])(
         'valid revisions not found: %s',
         revisions.validNotFound,
-        async function(revision) {
+        async function (revision) {
             const block = await Client.raw.getBlock(revision, false)
 
             expect(block.success, 'API response should be a success').toBeTrue()
@@ -76,11 +75,10 @@ describe('GET /blocks/{revision}', function() {
         },
     )
 
-
     testCaseEach(['solo', 'default-private', 'testnet'])(
         'invalid revisions: %s',
         revisions.invalid,
-        async function(revision) {
+        async function (revision) {
             const block = await Client.raw.getBlock(revision, false)
 
             expect(block.success, 'API Call should fail').toBeFalse()
@@ -88,9 +86,9 @@ describe('GET /blocks/{revision}', function() {
         },
     )
 
-
     testCase(['solo', 'default-private', 'testnet'])(
-        'should be able get compressed blocks', async function() {
+        'should be able get compressed blocks',
+        async function () {
             const res = await Client.raw.getBlock(transfer.meta?.blockID, false)
 
             expect(res.success, 'API response should be a success').toBeTrue()
@@ -107,11 +105,12 @@ describe('GET /blocks/{revision}', function() {
 
             expect(relevantTx).toBeTruthy()
             expect(relevantTx).toEqual(transfer.meta?.txID)
-        })
-
+        },
+    )
 
     testCase(['solo', 'default-private', 'testnet'])(
-        'should be able get expanded blocks', async function() {
+        'should be able get expanded blocks',
+        async function () {
             const res = await Client.raw.getBlock(transfer.meta.blockID, true)
 
             expect(res.success, 'API response should be a success').toBeTrue()
@@ -123,7 +122,8 @@ describe('GET /blocks/{revision}', function() {
             const relevantTx = block.transactions!.find(
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error
-                (tx: components['schemas']['Tx']) => tx.id === transfer.meta.txID,
+                (tx: components['schemas']['Tx']) =>
+                    tx.id === transfer.meta.txID,
             )
 
             expect(relevantTx).toBeTruthy()
@@ -147,5 +147,6 @@ describe('GET /blocks/{revision}', function() {
                 reward: expect.stringMatching(HEX_REGEX),
                 size: expect.any(Number),
             })
-        })
+        },
+    )
 })

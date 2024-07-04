@@ -31,11 +31,9 @@ class TransactionDataDrivenFlow {
 
     private async postTransaction(): Promise<string | undefined> {
         const { rawTx, expectedResult } = this.plan.postTxStep
-        const sendTxResponse =
-            await Client.raw.sendTransaction({
-                raw: `0x${rawTx}`,
-            })
-
+        const sendTxResponse = await Client.raw.sendTransaction({
+            raw: `0x${rawTx}`,
+        })
 
         expectedResult(sendTxResponse)
 
@@ -58,7 +56,6 @@ class TransactionDataDrivenFlow {
         const tx = await Client.raw.getTransaction(txId, {
             pending: true,
         })
-
 
         expectedResult(tx)
     }
@@ -86,7 +83,7 @@ class TransactionDataDrivenFlow {
     }
 
     private async getLogTransfer(
-        block: components['schemas']['ReceiptMeta'] | undefined
+        block: components['schemas']['ReceiptMeta'] | undefined,
     ) {
         if (!this.plan.getLogTransferStep) {
             return
@@ -130,7 +127,7 @@ class TransactionDataDrivenFlow {
 }
 
 function createDefaultLogFilterRequest(
-    blockNumber: number | undefined
+    blockNumber: number | undefined,
 ): components['schemas']['TransferLogFilterRequest'] {
     return {
         range: {

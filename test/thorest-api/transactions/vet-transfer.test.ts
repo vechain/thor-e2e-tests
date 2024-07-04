@@ -6,7 +6,7 @@ import {
     checkTxInclusionInBlock,
     compareSentTxWithCreatedTx,
     successfulPostTx,
-    successfulReceipt
+    successfulReceipt,
 } from './setup/asserts'
 import { testCase } from '../../../src/test-case'
 import { fundingAmounts } from '../../../src/account-faucet'
@@ -22,9 +22,9 @@ describe('VET transfer, positive outcome', function () {
         await wallet.waitForFunding()
     })
 
-
     testCase(['solo', 'default-private', 'testnet'])(
-        'transfer VET amount from address A to address B', async function () {
+        'transfer VET amount from address A to address B',
+        async function () {
             const receivingAddr = generateAddress()
             const clauses = [
                 {
@@ -44,20 +44,29 @@ describe('VET transfer, positive outcome', function () {
                     expectedResult: successfulPostTx,
                 },
                 getTxStep: {
-                    expectedResult: (tx: any) => compareSentTxWithCreatedTx(tx, signedTx),
+                    expectedResult: (tx: any) =>
+                        compareSentTxWithCreatedTx(tx, signedTx),
                 },
                 getTxReceiptStep: {
-                    expectedResult: (receipt: any) => successfulReceipt(receipt, signedTx)
+                    expectedResult: (receipt: any) =>
+                        successfulReceipt(receipt, signedTx),
                 },
                 getLogTransferStep: {
-                    expectedResult: (input: any, block: any) => checkTransactionLogSuccess(input, block, signedTx, signedTx.body.clauses)
+                    expectedResult: (input: any, block: any) =>
+                        checkTransactionLogSuccess(
+                            input,
+                            block,
+                            signedTx,
+                            signedTx.body.clauses,
+                        ),
                 },
                 getTxBlockStep: {
-                    expectedResult: checkTxInclusionInBlock
-                }
+                    expectedResult: checkTxInclusionInBlock,
+                },
             }
 
             const ddt = new TransactionDataDrivenFlow(testPlan)
             await ddt.runTestFlow()
-        })
+        },
+    )
 })

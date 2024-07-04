@@ -53,11 +53,14 @@ describe('EVM Opcodes', () => {
         },
     )
 
-    testCase(['solo', 'default-private', 'testnet'])('Should revert', async () => {
-        const { wait } = await opcodes.transact.test_revert()
+    testCase(['solo', 'default-private', 'testnet'])(
+        'Should revert',
+        async () => {
+            const { wait } = await opcodes.transact.test_revert()
 
-        const tx = await wait()
+            const tx = await wait()
 
-        expect(tx?.reverted).toBe(true)
-    })
+            expect(tx?.reverted).toBe(true)
+        },
+    )
 })

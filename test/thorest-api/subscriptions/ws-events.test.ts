@@ -13,10 +13,11 @@ import { ThorWallet } from '../../../src/wallet'
  * @group websockets
  */
 describe('WS /subscriptions/event', () => {
-
     testCase(['solo', 'default-private', 'testnet'])(
-        'should be able to subscribe', async () => {
-            const events: components['schemas']['SubscriptionEventResponse'][] = []
+        'should be able to subscribe',
+        async () => {
+            const events: components['schemas']['SubscriptionEventResponse'][] =
+                []
             //const account = generateAddress()
             const wallet = ThorWallet.txBetweenFunding()
 
@@ -31,7 +32,6 @@ describe('WS /subscriptions/event', () => {
                 },
             )
 
-
             const receipt = await wallet.waitForFunding()
 
             //sleep for 1 sec to ensure the beat is received
@@ -42,5 +42,6 @@ describe('WS /subscriptions/event', () => {
             })
 
             expect(relevantEvent).not.toBeUndefined()
-        })
+        },
+    )
 })

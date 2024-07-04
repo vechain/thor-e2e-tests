@@ -10,10 +10,11 @@ import { testCase } from '../../../src/test-case'
  * @group websockets
  */
 describe('WS /subscriptions/beat2', () => {
-
     testCase(['solo', 'default-private', 'testnet'])(
-        'should be able to subscribe', async () => {
-            const beats: components['schemas']['SubscriptionBeat2Response'][] = []
+        'should be able to subscribe',
+        async () => {
+            const beats: components['schemas']['SubscriptionBeat2Response'][] =
+                []
 
             Client.raw.subscribeToBeats2((newBlock) => {
                 beats.push(newBlock)
@@ -22,7 +23,6 @@ describe('WS /subscriptions/beat2', () => {
             const wallet = ThorWallet.txBetweenFunding()
 
             const fundReceipt = await wallet.waitForFunding()
-
 
             //sleep for 1 sec to ensure the beat is received
             await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -42,5 +42,6 @@ describe('WS /subscriptions/beat2', () => {
             )
 
             expect(result).toEqual(true)
-        })
+        },
+    )
 })

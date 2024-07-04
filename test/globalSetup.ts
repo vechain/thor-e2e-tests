@@ -15,7 +15,7 @@ import { populatedData } from '../src/populated-data'
 import { getTransferIds } from '../src/logs/query-logs'
 import { Client } from '../src/thor-client'
 import { CompressedBlockDetail } from '@vechain/sdk-network'
-import * as fs from 'fs';
+import * as fs from 'fs'
 
 export const POPULATED_DATA_FILENAME = './.chain-data.json'
 
@@ -96,7 +96,7 @@ const populate = async () => {
     let details: TransferDetails
 
     if (!fs.existsSync('./keys')) {
-        fs.mkdirSync('./keys');
+        fs.mkdirSync('./keys')
     }
 
     let transferIds: string[] = []
@@ -125,7 +125,9 @@ const populate = async () => {
             for (let i = prevBlockHeight; i <= lastBlock?.number!; i++) {
                 const block = (await Client.raw.getBlock(i))?.body
 
-                const trxs = await Client.sdk.blocks.getBlockCompressed(block?.number!)
+                const trxs = await Client.sdk.blocks.getBlockCompressed(
+                    block?.number!,
+                )
 
                 transactionsAmount += trxs!.transactions.length
                 transferIds = transferIds.concat(trxs!.transactions)

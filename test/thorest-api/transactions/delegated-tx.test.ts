@@ -32,7 +32,6 @@ testCase(['solo', 'default-private', 'testnet'])(
         )
         expect(contract.address).toBeDefined()
 
-
         const parisInterface = ParisCounter.createInterface()
 
         const clauses = [

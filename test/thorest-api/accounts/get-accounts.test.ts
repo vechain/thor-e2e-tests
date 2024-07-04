@@ -2,7 +2,11 @@ import { Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { HEX_REGEX } from '../../../src/utils/hex-utils'
 import { revisions } from '../../../src/constants'
-import { populatedData, readRandomTransfer, Transfer } from '../../../src/populated-data'
+import {
+    populatedData,
+    readRandomTransfer,
+    Transfer,
+} from '../../../src/populated-data'
 import { FAUCET_AMOUNT_HEX } from '../../../src/account-faucet'
 import { testCase, testCaseEach } from '../../../src/test-case'
 import { ThorWallet } from '../../../src/wallet'
@@ -25,27 +29,34 @@ describe('GET /accounts/{address}', function () {
         transfer = await readRandomTransfer()
     })
 
-    testCase(['solo', 'default-private', 'testnet'])('correct balance', async function () {
+    testCase(['solo', 'default-private', 'testnet'])(
+        'correct balance',
+        async function () {
+            const emptyWallet = ThorWallet.empty()
 
-        const emptyWallet = ThorWallet.empty()
+            const clauses = [
+                {
+                    to: emptyWallet.address,
+                    value: '0x1',
+                    data: '0x',
+                },
+            ]
 
-        const clauses = [{
-            to: emptyWallet.address,
-            value: '0x1',
-            data: '0x',
-        }]
+            await ThorWallet.withFunds().sendClauses(clauses, true)
+            const newTransfer = await Client.raw.getAccount(emptyWallet.address)
 
-        await ThorWallet.withFunds().sendClauses(clauses, true)
-        const newTransfer = await Client.raw.getAccount(emptyWallet.address)
-
-        expect(newTransfer.success, 'API response should be a success').toBeTrue()
-        expect(newTransfer.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(newTransfer.body, 'Expected Response Body').toEqual({
-            balance: '0x1',
-            energy: expect.stringMatching(HEX_REGEX),
-            hasCode: false,
-        })
-    })
+            expect(
+                newTransfer.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(newTransfer.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(newTransfer.body, 'Expected Response Body').toEqual({
+                balance: '0x1',
+                energy: expect.stringMatching(HEX_REGEX),
+                hasCode: false,
+            })
+        },
+    )
 
     testCase(['solo', 'default-private', 'testnet'])(
         'contract account hasCode',

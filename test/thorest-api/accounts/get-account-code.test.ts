@@ -15,7 +15,6 @@ describe('GET /accounts/{address}/code', function () {
 
     const wallet = ThorWallet.new(true)
 
-
     testCaseEach(['solo', 'default-private', 'testnet'])(
         'should return no code for newly created address: %s',
         accountAddress,
@@ -34,7 +33,6 @@ describe('GET /accounts/{address}/code', function () {
         address.slice(2),
     )
 
-
     testCaseEach(['solo', 'default-private', 'testnet'])(
         'should return the code for %s: %s',
         [...Object.values(contractAddresses), ...noPrefix],
@@ -49,19 +47,21 @@ describe('GET /accounts/{address}/code', function () {
         },
     )
 
-
     testCaseEach(['solo', 'default-private', 'testnet'])(
-        `should return 400 for invalid address: %s`, [
-        'bad address', //not hex
-        '0x0001234', //too short
-        '0', //too short
-        false,
-    ], async function (addr) {
-        const res = await Client.raw.getAccountCode(addr as string)
+        `should return 400 for invalid address: %s`,
+        [
+            'bad address', //not hex
+            '0x0001234', //too short
+            '0', //too short
+            false,
+        ],
+        async function (addr) {
+            const res = await Client.raw.getAccountCode(addr as string)
 
-        expect(res.success, 'API Call should fail').toBeFalse()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
-    })
+            expect(res.success, 'API Call should fail').toBeFalse()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
+        },
+    )
 
     it('should be able to query historic revisions', async () => {
         const txReceipt = await wallet.sendClauses(

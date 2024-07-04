@@ -95,7 +95,9 @@ const validateEnv = async (): Promise<boolean> => {
 
     // ensure each account has a balance greater than 0
     for (const account of testEnv.keys) {
-        const address = addressUtils.fromPrivateKey(new Buffer(account.replace('0x', ''), 'hex'))
+        const address = addressUtils.fromPrivateKey(
+            new Buffer(account.replace('0x', ''), 'hex'),
+        )
         const balance = await client.accounts.getAccount(address)
         //0x2710
         const requiredBalance = unitsUtils.parseVET(BigInt('0x3e8').toString())

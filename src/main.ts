@@ -1,12 +1,8 @@
-
 import { testEnv } from './test-env'
 
 console.log(testEnv.urls)
 
-
 //import { ThorWallet } from './wallet'
-
-
 
 const parseAmount = (amount: number | string): number => {
     if (typeof amount === 'number') {
@@ -15,8 +11,6 @@ const parseAmount = (amount: number | string): number => {
 
     return parseInt(amount)
 }
-
-
 
 //const wallet = new ThorWallet(Buffer.from('99f0500549792796c14fed62011a51081dc5b5e68fe8bd8a13b86be829c4fd36', 'hex'))
 //
@@ -37,5 +31,3 @@ const parseAmount = (amount: number | string): number => {
 //}
 //
 //main().then(() => { })
-
-

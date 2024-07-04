@@ -1,6 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.contractAddresses = void 0;
+'use strict'
+Object.defineProperty(exports, '__esModule', { value: true })
+exports.contractAddresses = void 0
 exports.contractAddresses = {
     authority: '0x0000000000000000000000417574686f72697479',
     energy: '0x0000000000000000000000000000456e65726779',
@@ -8,4 +8,4 @@ exports.contractAddresses = {
     params: '0x0000000000000000000000000000506172616D73',
     // executor is not available on solo
     // executor: '0x0000000000000000000000004578656375746f72',
-};
+}

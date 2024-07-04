@@ -27,8 +27,7 @@ const writeTransferTransactions = async (): Promise<TransferDetails> => {
 
         const res = await Promise.all(
             Array.from({ length: 20 }, () => {
-                const reciept = ThorWallet.txBetweenFunding(
-                ).waitForFunding()
+                const reciept = ThorWallet.txBetweenFunding().waitForFunding()
                 return reciept
             }),
         )

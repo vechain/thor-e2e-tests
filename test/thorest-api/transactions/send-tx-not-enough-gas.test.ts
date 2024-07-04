@@ -15,7 +15,8 @@ describe('send tx with not enough gas', function () {
     const wallet = ThorWallet.empty()
 
     testCase(['solo', 'default-private', 'testnet'])(
-        'should fail when making a contract deployment', async function () {
+        'should fail when making a contract deployment',
+        async function () {
             // Prepare the transaction
             const deployContractClause = clauseBuilder.deployContract(
                 ParisCounter.bytecode,
@@ -40,10 +41,12 @@ describe('send tx with not enough gas', function () {
             // Run the test flow
             const ddt = new TransactionDataDrivenFlow(testPlan)
             await ddt.runTestFlow()
-        })
+        },
+    )
 
     testCase(['solo', 'default-private', 'testnet'])(
-        'should fail when making a VET transfer', async function () {
+        'should fail when making a VET transfer',
+        async function () {
             // Prepare the transaction
             const receivingAddr = generateAddress()
             const clauses = [
@@ -73,10 +76,12 @@ describe('send tx with not enough gas', function () {
             // Run the test flow
             const ddt = new TransactionDataDrivenFlow(testPlan)
             await ddt.runTestFlow()
-        })
+        },
+    )
 
     testCase(['solo', 'default-private', 'testnet'])(
-        'should fail when making a contract call', async function () {
+        'should fail when making a contract call',
+        async function () {
             // Preconditions - deploy a contract
             const contract = await deployer.deployContract(
                 ParisCounter.bytecode,
@@ -112,5 +117,6 @@ describe('send tx with not enough gas', function () {
             // Run the test flow
             const ddt = new TransactionDataDrivenFlow(testPlan)
             await ddt.runTestFlow()
-        })
+        },
+    )
 })

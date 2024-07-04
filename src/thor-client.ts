@@ -481,7 +481,7 @@ class ThorClient {
 
     private initBlockSubscription() {
         this.subscribeToBlocks(
-            (data: Schema['SubscriptionBlockResponse']) => { },
+            (data: Schema['SubscriptionBlockResponse']) => {},
         )
     }
 

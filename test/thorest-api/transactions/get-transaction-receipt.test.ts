@@ -6,8 +6,8 @@ import { readRandomTransfer } from '../../../src/populated-data'
  * @group api
  * @group transactions
  */
-describe('GET /transactions/{id}/receipt', function() {
-    it('should get transaction receipt', async function() {
+describe('GET /transactions/{id}/receipt', function () {
+    it('should get transaction receipt', async function () {
         const transfer = await readRandomTransfer()
 
         const tx = await Client.raw.getTransactionReceipt(transfer.meta.txID)

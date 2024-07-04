@@ -6,7 +6,12 @@ import {
     TransactionBody,
     TransactionClause,
 } from '@vechain/sdk-core'
-import { delegateTx, fundAccount, FundingAmounts, randomFunder } from './account-faucet'
+import {
+    delegateTx,
+    fundAccount,
+    FundingAmounts,
+    randomFunder,
+} from './account-faucet'
 import {
     generateNonce,
     pollReceipt,
@@ -15,7 +20,7 @@ import {
 import { getBlockRef } from './utils/block-utils'
 import { components } from './open-api-types'
 import { Client, Node1Client, SDKClient } from './thor-client'
-import * as fs from 'fs';
+import * as fs from 'fs'
 import { contractAddresses } from './contracts/addresses'
 import { interfaces } from './contracts/hardhat'
 
@@ -82,7 +87,11 @@ class ThorWallet {
 
         const addr = addressFromPrivateKey(privateKey)
 
-        fs.writeFile('./keys/' + addr + '.txt', privateKey.toString('hex'), err => { })
+        fs.writeFile(
+            './keys/' + addr + '.txt',
+            privateKey.toString('hex'),
+            (err) => {},
+        )
 
         return new ThorWallet(privateKey)
     }
@@ -102,7 +111,11 @@ class ThorWallet {
         const privateKey = secp256k1.generatePrivateKey()
 
         const addr = addressFromPrivateKey(privateKey)
-        fs.writeFile('./keys/' + addr + '.txt', privateKey.toString('hex'), err => { })
+        fs.writeFile(
+            './keys/' + addr + '.txt',
+            privateKey.toString('hex'),
+            (err) => {},
+        )
 
         const receipt = fundAccount(addr, amounts).then((res) => res.receipt)
 
@@ -115,11 +128,13 @@ class ThorWallet {
         while (sender == reciever) {
             reciever = randomFunder()
         }
-        const clauses = [{
-            to: addressFromPrivateKey(Buffer.from(reciever, 'hex')),
-            value: '0x1',
-            data: '0x',
-        }]
+        const clauses = [
+            {
+                to: addressFromPrivateKey(Buffer.from(reciever, 'hex')),
+                value: '0x1',
+                data: '0x',
+            },
+        ]
 
         clauses.push({
             to: contractAddresses.energy,
@@ -128,8 +143,7 @@ class ThorWallet {
                 addressFromPrivateKey(Buffer.from(reciever, 'hex')),
                 BigInt(1),
             ]),
-        }
-        )
+        })
 
         const senderWallet = new ThorWallet(Buffer.from(sender, 'hex'))
 
@@ -210,8 +224,8 @@ class ThorWallet {
         delegate?: boolean,
     ): Promise<
         T extends true
-        ? components['schemas']['GetTxReceiptResponse']
-        : components['schemas']['TXID']
+            ? components['schemas']['GetTxReceiptResponse']
+            : components['schemas']['TXID']
     > => {
         await this.waitForFunding()
 
@@ -251,7 +265,6 @@ class ThorWallet {
         }
 
         const receipt = await pollReceipt(res.body?.id ?? '')
-
 
         if (receipt.reverted) {
             console.error(

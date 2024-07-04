@@ -26,7 +26,6 @@ describe('Simple Paris', () => {
                 .getCounter()
                 .then((r) => r[0])
 
-
             expect(startValue).toBe(0n)
 
             const lastBlock = await Client.raw.getBlock('best')
