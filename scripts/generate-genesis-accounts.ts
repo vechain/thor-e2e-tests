@@ -29,7 +29,7 @@ const generateFaucetAccounts = (): AccountFaucet[] => {
     } else if (!options.pks && !options.mnemonic) {
         throw new Error('Private keys or mnemonic should be provided')
     } else {
-        throw new Error('A set os keys and mnemonic are mutualy exclusive')
+        throw new Error('A set of keys and mnemonic are mutualy exclusive')
     }
 
     for (let i = 0; i < faucetAccountLength; i++) {
