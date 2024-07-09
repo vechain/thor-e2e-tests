@@ -19,7 +19,7 @@ yarn test
 
 ```bash
 yarn docker:up
-yarn test:fast
+node e2e.js --pks <private_key1>,<private_key2>, ... --nodeURL http://127.0.0.1:8669 --networkType default-private 
 ```
 
 ### Custom Docker Image
@@ -30,19 +30,19 @@ yarn test:fast
 ```bash
 docker build -t vechain/thor:custom .
 export THOR_IMAGE=vechain/thor:custom
-yarn test
+node e2e.js --pks <private_key1>,<private_key2>, ... --nodeURL http://127.0.0.1:8669 --networkType default-private 
 ```
 
 ### Running a group of tests
 
 ```bash
-yarn test --group=accounts
+node e2e.js --pks <private_key1>,<private_key2>, ... --nodeURL http://127.0.0.1:8669 --networkType default-private -test <group/test>
 ```
 
 ### Custom solo url
 
 ```
-TEST_URL=http://localhost:8669
+--nodeURL http://localhost:8669
 ```
 
 This is added to be able to configure the url of the client for future network hub integration.
