@@ -7,15 +7,16 @@
 import { Client } from '../thor-client'
 import { ThorWallet } from '../wallet'
 import { TransferDetails } from '../types'
-import { fundingAmounts } from '../account-faucet'
 
 const writeTransferTransactions = async (): Promise<TransferDetails> => {
     console.log('\n')
 
     const transferCount = 20
     const iterations = 5
-    let firstBlock = 0
+
+    let firstBlock = (await Client.raw.getBlock('best')).body!.number!
     let lastBlock = 0
+
 
     for (let i = 0; i < iterations; i++) {
         let block = await Client.raw.getBlock('best')
@@ -32,16 +33,7 @@ const writeTransferTransactions = async (): Promise<TransferDetails> => {
             }),
         )
 
-        // TODO: move check outside of the loop
-        if (!firstBlock) {
-            firstBlock = res[0]!.meta!.blockNumber as number
-        }
-
-        // TODO: Do we need to check for it over and over?
-
-        //if (i === iterations - 1) {
         lastBlock = res[0]!.meta!.blockNumber as number
-        //}
     }
 
     return {
