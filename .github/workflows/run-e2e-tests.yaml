@@ -3,15 +3,15 @@ name: E2E Tests
 on:
     workflow_dispatch:
         inputs:
-          environment:
-            description: 'Environment to run tests against'
-            type: environment
-            required: true
-            default: 'default-private'
-          node_urls:
-            description: 'Optional: Override the environment node URLs. (Comma separated)'
-            type: string
-            required: false
+            environment:
+                description: 'Environment to run tests against'
+                type: environment
+                required: true
+                default: 'default-private'
+            node_urls:
+                description: 'Optional: Override the environment node URLs. (Comma separated)'
+                type: string
+                required: false
     push:
         branches:
             - 'main'
@@ -45,8 +45,8 @@ jobs:
 
             - name: Run Tests
               run: |
-                yarn docker:up
-                yarn test
+                  yarn docker:up
+                  yarn test
               env:
                   # use the provided node_urls or the default NODE_URLS
                   NODE_URLS: ${{ inputs.node_urls || vars.NODE_URLS }}

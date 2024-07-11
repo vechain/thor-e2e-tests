@@ -5,7 +5,6 @@ import { testEnv } from './test-env'
 import { ThorWallet } from './wallet'
 //import { unitsUtils } from '@vechain/sdk-core'
 
-
 // The funding amounts are not scaled, so `0x1` equals 1 wei
 type FundingAmounts = {
     vet: number | string
@@ -95,9 +94,4 @@ export const delegateTx = (txBody: TransactionBody, senderAddress: string) => {
     }
 }
 
-export {
-    randomFunder,
-    fundAccount,
-    fundingAmounts,
-    FundingAmounts,
-}
+export { randomFunder, fundAccount, fundingAmounts, FundingAmounts }

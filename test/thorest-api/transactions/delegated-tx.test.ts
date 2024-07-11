@@ -20,7 +20,7 @@ import { testCase } from '../../../src/test-case'
  */
 testCase(['solo', 'default-private', 'testnet'])(
     'should send a tx with delegated payer',
-    async function() {
+    async function () {
         const wallet = ThorWallet.withFunds()
         const emptyWallet = ThorWallet.empty()
 

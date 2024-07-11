@@ -15,7 +15,7 @@ import { fundingAmounts } from '../../../src/account-faucet'
  * @group api
  * @group transactions
  */
-describe('VET transfer, positive outcome', function() {
+describe('VET transfer, positive outcome', function () {
     const wallet = ThorWallet.withFunds()
 
     beforeAll(async () => {
@@ -24,7 +24,7 @@ describe('VET transfer, positive outcome', function() {
 
     testCase(['solo', 'default-private', 'testnet'])(
         'transfer VET amount from address A to address B',
-        async function() {
+        async function () {
             const receivingAddr = generateAddress()
             const clauses = [
                 {

@@ -502,7 +502,7 @@ contract IndividualOpCodes {
         }
         return y;
     }
-    
+
     function MSIZE() public payable returns (uint256) {
         uint256 z;
         assembly {

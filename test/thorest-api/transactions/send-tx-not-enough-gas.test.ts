@@ -10,13 +10,13 @@ import { fundingAmounts } from '../../../src/account-faucet'
  * @group api
  * @group transactions
  */
-describe('send tx with not enough gas', function() {
+describe('send tx with not enough gas', function () {
     const deployer = ThorWallet.withFunds()
     const wallet = ThorWallet.empty()
 
     testCase(['solo', 'default-private', 'testnet'])(
         'should fail when making a contract deployment',
-        async function() {
+        async function () {
             // Prepare the transaction
             const deployContractClause = clauseBuilder.deployContract(
                 ParisCounter.bytecode,
@@ -46,7 +46,7 @@ describe('send tx with not enough gas', function() {
 
     testCase(['solo', 'default-private', 'testnet'])(
         'should fail when making a VET transfer',
-        async function() {
+        async function () {
             // Prepare the transaction
             const receivingAddr = generateAddress()
             const clauses = [
@@ -81,7 +81,7 @@ describe('send tx with not enough gas', function() {
 
     testCase(['solo', 'default-private', 'testnet'])(
         'should fail when making a contract call',
-        async function() {
+        async function () {
             // Preconditions - deploy a contract
             const contract = await deployer.deployContract(
                 ParisCounter.bytecode,

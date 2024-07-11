@@ -46,7 +46,6 @@ export const transferDetails: Record<'test' | 'main', TransferDetails> = {
     },
 }
 
-
 const faucetAccountLength = 10
 
 export { faucetAccountLength }
