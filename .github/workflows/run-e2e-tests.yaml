@@ -52,7 +52,7 @@ jobs:
                   NODE_URLS: ${{ inputs.node_urls || vars.NODE_URLS }}
                   PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
                   MNEMONIC: ${{ secrets.MNEMONIC }}
-                  NETWORK_TYPE: ${{ inputs.environment }}
+                  NETWORK_TYPE: ${{ inputs.environment || 'default-private' }}
 
             - name: Publish Results
               uses: dorny/test-reporter@v1
