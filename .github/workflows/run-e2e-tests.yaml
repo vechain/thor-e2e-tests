@@ -2,13 +2,22 @@ name: E2E Tests
 
 on:
     workflow_dispatch:
-    workflow_call:
+        inputs:
+          environment:
+            description: 'Environment to run tests against'
+            type: environment
+            required: true
+            default: 'default-private'
+          node_urls:
+            description: 'Optional: Override the environment node URLs. (Comma separated)'
+            type: string
+            required: false
     push:
         branches:
-            - main
+            - 'main'
     pull_request:
         branches:
-            - main
+            - '*'
 
 permissions:
     checks: write
@@ -21,6 +30,7 @@ jobs:
         # large = 15 GB memory, 8 vCPUs
         # 7.0 = Ubuntu 22.04
         runs-on: codebuild-ThorE2E-GHA-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-large
+        environment: ${{ inputs.environment || 'default-private' }}
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -34,7 +44,15 @@ jobs:
               run: yarn install
 
             - name: Run Tests
-              run: yarn test
+              run: |
+                yarn docker:up
+                yarn test
+              env:
+                  # use the provided node_urls or the default NODE_URLS
+                  NODE_URLS: ${{ inputs.node_urls || vars.NODE_URLS }}
+                  PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
+                  MNEMONIC: ${{ secrets.MNEMONIC }}
+                  NETWORK_TYPE: ${{ inputs.environment }}
 
             - name: Publish Results
               uses: dorny/test-reporter@v1

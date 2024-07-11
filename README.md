@@ -10,16 +10,8 @@
 
 ```shell
 yarn install
-yarn test
-```
-
-### Debugging the tests
-
--   These steps are useful if you want to debug
-
-```bash
 yarn docker:up
-node e2e.js --pks <private_key1>,<private_key2>, ... --nodeURL http://127.0.0.1:8669 --networkType default-private 
+yarn test
 ```
 
 ### Custom Docker Image
@@ -30,13 +22,14 @@ node e2e.js --pks <private_key1>,<private_key2>, ... --nodeURL http://127.0.0.1:
 ```bash
 docker build -t vechain/thor:custom .
 export THOR_IMAGE=vechain/thor:custom
-node e2e.js --pks <private_key1>,<private_key2>, ... --nodeURL http://127.0.0.1:8669 --networkType default-private 
+yarn docker:up
+yarn test
 ```
 
 ### Running a group of tests
 
 ```bash
-node e2e.js --pks <private_key1>,<private_key2>, ... --nodeURL http://127.0.0.1:8669 --networkType default-private -test <group/test>
+yarn test -test <group/test>
 ```
 
 ### Custom solo url
