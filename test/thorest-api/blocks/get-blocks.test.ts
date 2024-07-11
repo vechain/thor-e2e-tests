@@ -1,4 +1,4 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { components } from '../../../src/open-api-types'
 import {
     HEX_REGEX,
@@ -20,22 +20,32 @@ describe('GET /blocks/{revision}', function () {
         transfer = await readRandomTransfer()
     })
 
-    test('gas limit it equal to 40_000_000', async function () {
-        const block = await Node1Client.getBlock(1, false)
-
-        expect(block.success, 'API response should be a success').toBeTrue()
-        expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(block.body?.gasLimit).toEqual(40_000_000)
-    })
-
-    it.each(revisions.valid(true))(
-        'can get block for revision: %s',
-        async function (revision) {
-            const block = await Node1Client.getBlock(revision, false)
+    it.e2eTest(
+        'gas limit is equal to 40_000_000',
+        ['solo', 'default-private'],
+        async () => {
+            const block = await Client.raw.getBlock(1, false)
 
             expect(block.success, 'API response should be a success').toBeTrue()
             expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(block.body, 'Expected Response Body').toEqual({
+            expect(block.body?.gasLimit).toEqual(40_000_000)
+        },
+    )
+
+    it.e2eTest('gas limit is equal to 10_000_000', ['testnet'], async () => {
+        const block = await Client.raw.getBlock(1, false)
+
+        expect(block.success, 'API response should be a success').toBeTrue()
+        expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(block.body?.gasLimit).toEqual(10_000_000)
+    })
+
+    revisions.valid(true).forEach((revision) => {
+        it.e2eTest(`valid revision ${revision}`, 'all', async () => {
+            const res = await Client.raw.getBlock(revision, false)
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Expected Response Body').toEqual({
                 beneficiary: expect.stringMatching(HEX_REGEX_40),
                 com: expect.any(Boolean),
                 gasLimit: expect.any(Number),
@@ -55,32 +65,40 @@ describe('GET /blocks/{revision}', function () {
                 txsFeatures: expect.any(Number),
                 txsRoot: expect.stringMatching(HEX_REGEX_64),
             })
-        },
-    )
+        })
+    })
 
-    it.each(revisions.validNotFound)(
-        'valid revisions not found: %s',
-        async function (revision) {
-            const block = await Node1Client.getBlock(revision, false)
+    revisions.validNotFound.forEach((revision) => {
+        it.e2eTest(`valid revision not found: ${revision}`, 'all', async () => {
+            const block = await Client.raw.getBlock(revision, false)
 
             expect(block.success, 'API response should be a success').toBeTrue()
             expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(block.body, 'Expected Response Body').toEqual(null)
-        },
-    )
+        })
+    })
 
-    it.each(revisions.invalid)(
-        'invalid revisions: %s',
-        async function (revision) {
-            const block = await Node1Client.getBlock(revision, false)
+    // testCaseEach('all')(
+    //     'invalid revisions: %s',
+    //     revisions.invalid,
+    //     async function (revision) {
+    //         const block = await Client.raw.getBlock(revision, false)
+    //
+    //         expect(block.success, 'API Call should fail').toBeFalse()
+    //         expect(block.httpCode, 'Expected HTTP Code').toEqual(400)
+    //     },
+    // )
+    revisions.invalid.forEach((revision) => {
+        it.e2eTest(`invalid revision: ${revision}`, 'all', async () => {
+            const block = await Client.raw.getBlock(revision, false)
 
             expect(block.success, 'API Call should fail').toBeFalse()
             expect(block.httpCode, 'Expected HTTP Code').toEqual(400)
-        },
-    )
+        })
+    })
 
-    it('should be able get compressed blocks', async function () {
-        const res = await Node1Client.getBlock(transfer.meta?.blockID, false)
+    it.e2eTest('should be able get compressed blocks', 'all', async () => {
+        const res = await Client.raw.getBlock(transfer.meta?.blockID, false)
 
         expect(res.success, 'API response should be a success').toBeTrue()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -98,8 +116,8 @@ describe('GET /blocks/{revision}', function () {
         expect(relevantTx).toEqual(transfer.meta?.txID)
     })
 
-    it('should be able get expanded blocks', async function () {
-        const res = await Node1Client.getBlock(transfer.meta.blockID, true)
+    it.e2eTest('should be able get expanded blocks', 'all', async () => {
+        const res = await Client.raw.getBlock(transfer.meta.blockID, true)
 
         expect(res.success, 'API response should be a success').toBeTrue()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)

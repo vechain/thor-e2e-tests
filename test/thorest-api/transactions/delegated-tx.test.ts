@@ -15,9 +15,11 @@ import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-
  * @group api
  * @group transactions
  */
-it('should send a tx with delegated payer', async function () {
-    const wallet = ThorWallet.new(true)
-    const emptyWallet = ThorWallet.new(false)
+it.e2eTest('should send a tx with delegated payer', 'all', async function () {
+    const wallet = ThorWallet.withFunds()
+    const emptyWallet = ThorWallet.empty()
+
+    await wallet.waitForFunding()
 
     const contract = await wallet.deployContract(
         ParisCounter.bytecode,

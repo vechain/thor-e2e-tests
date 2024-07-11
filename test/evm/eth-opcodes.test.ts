@@ -28,23 +28,27 @@ import { Contract } from '@vechain/sdk-network'
  */
 describe('EVM Opcodes', () => {
     let wallet: ThorWallet
-    let opcodes: Contract
+    let opcodes: Contract<typeof Opcodes.abi>
 
     beforeAll(async () => {
-        wallet = ThorWallet.new(true)
+        wallet = ThorWallet.withFunds()
         opcodes = await wallet.deployContract(Opcodes.bytecode, Opcodes.abi)
     })
 
-    it('Should run without errors the majority of opcodes', async () => {
-        await opcodes.transact.test()
-        await opcodes.transact.test_stop()
-    })
+    it.e2eTest(
+        'Should run without errors the majority of opcodes',
+        'all',
+        async () => {
+            await opcodes.transact.test()
+            await opcodes.transact.test_stop()
+        },
+    )
 
-    it('Should throw invalid op code', async () => {
+    it.e2eTest('Should throw invalid op code', 'all', async () => {
         await expect(() => opcodes.transact.test_invalid()).rejects.toThrow()
     })
 
-    it('Should revert', async () => {
+    it.e2eTest('Should revert', 'all', async () => {
         const { wait } = await opcodes.transact.test_revert()
 
         const tx = await wait()

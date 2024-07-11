@@ -5,9 +5,9 @@ import { ThorWallet } from '../../../src/wallet'
  * @group transactions
  */
 describe('POST /transactions', function () {
-    const wallet = ThorWallet.new(true)
+    const wallet = ThorWallet.txBetweenFunding()
 
-    it('should send a transaction', async function () {
+    it.e2eTest('should send a transaction', 'all', async () => {
         const fundReceipt = await wallet.waitForFunding()
 
         expect(

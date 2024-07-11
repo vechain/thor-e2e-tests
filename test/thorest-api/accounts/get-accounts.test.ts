@@ -1,9 +1,9 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import { HEX_REGEX } from '../../../src/utils/hex-utils'
 import { revisions } from '../../../src/constants'
 import { readRandomTransfer, Transfer } from '../../../src/populated-data'
-import { FAUCET_AMOUNT_HEX } from '../../../src/account-faucet'
+import { ThorWallet } from '../../../src/wallet'
 
 /**
  * @group api
@@ -23,21 +23,35 @@ describe('GET /accounts/{address}', function () {
         transfer = await readRandomTransfer()
     })
 
-    it('correct balance', async function () {
-        const res = await Node1Client.getAccount(transfer.vet.recipient)
+    it.e2eTest('correct balance', 'all', async function () {
+        const emptyWallet = ThorWallet.empty()
 
-        expect(res.success, 'API response should be a success').toBeTrue()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(res.body, 'Expected Response Body').toEqual({
-            balance: FAUCET_AMOUNT_HEX,
+        const clauses = [
+            {
+                to: emptyWallet.address,
+                value: '0x1',
+                data: '0x',
+            },
+        ]
+
+        await ThorWallet.withFunds().sendClauses(clauses, true)
+        const newTransfer = await Client.raw.getAccount(emptyWallet.address)
+
+        expect(
+            newTransfer.success,
+            'API response should be a success',
+        ).toBeTrue()
+        expect(newTransfer.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(newTransfer.body, 'Expected Response Body').toEqual({
+            balance: '0x1',
             energy: expect.stringMatching(HEX_REGEX),
             hasCode: false,
         })
     })
 
-    it('contract account hasCode', async function () {
+    it.e2eTest('contract account hasCode', 'all', async function () {
         const addr = contractAddresses.energy
-        const res = await Node1Client.getAccount(addr)
+        const res = await Client.raw.getAccount(addr)
 
         expect(res.success, 'API response should be a success').toBeTrue()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -48,10 +62,9 @@ describe('GET /accounts/{address}', function () {
         })
     })
 
-    it.each(revisions.valid(true))(
-        'valid revision %s',
-        async function (revision) {
-            const res = await Node1Client.getAccount(
+    revisions.valid(true).forEach((revision) => {
+        it.e2eTest(`valid revision ${revision}`, 'all', async () => {
+            const res = await Client.raw.getAccount(
                 transfer.vet.recipient,
                 revision,
             )
@@ -62,18 +75,26 @@ describe('GET /accounts/{address}', function () {
                 energy: expect.stringMatching(HEX_REGEX),
                 hasCode: false,
             })
-        },
-    )
-
-    it.each(invalidAddresses)('invalid address: %s', async (a) => {
-        const res = await Node1Client.getAccount(a as string)
-        expect(res.success, 'API Call should fail').toBeFalse()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
+        })
     })
 
-    it.each(revisions.invalid)('invalid revision: %s', async (r) => {
-        const res = await Node1Client.getAccount(transfer.vet.recipient, r)
-        expect(res.success, 'API Call should fail').toBeFalse()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
+    invalidAddresses.forEach((address) => {
+        it.e2eTest(`invalid address: ${address}`, 'all', async () => {
+            const res = await Client.raw.getAccount(address)
+
+            expect(res.success, 'API Call should fail').toBeFalse()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
+        })
+    })
+
+    revisions.invalid.forEach((revision) => {
+        it.e2eTest(`invalid revision: ${revision}`, 'all', async () => {
+            const res = await Client.raw.getAccount(
+                transfer.vet.recipient,
+                revision,
+            )
+            expect(res.success, 'API Call should fail').toBeFalse()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
+        })
     })
 })

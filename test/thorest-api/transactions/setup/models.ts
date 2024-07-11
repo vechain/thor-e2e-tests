@@ -15,11 +15,11 @@ type TestCasePlan = {
     }
     getTxReceiptStep?: {
         expectedResult: (input: any) => void
-    },
+    }
     getLogTransferStep?: {
         logFilters?: components['schemas']['TransferLogFilterRequest']
         expectedResult: (input: any, block: any) => void
-    },
+    }
     getTxBlockStep?: {
         expectedResult: (input: any) => void
     }

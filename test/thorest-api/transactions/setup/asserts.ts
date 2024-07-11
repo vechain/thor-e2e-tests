@@ -120,7 +120,9 @@ const checkTransactionLogSuccess = (
 
     transferLogs?.forEach((log, index) => {
         expect(log?.sender).toEqualCaseInsensitive(tx.origin)
-        expect(log?.recipient).toEqualCaseInsensitive(transferClauses[index].to!)
+        expect(log?.recipient).toEqualCaseInsensitive(
+            transferClauses[index].to!,
+        )
         const hexAmount = transferClauses[index].value.toString(16)
         expect(log?.amount).toEqual(hexUtils.addPrefix(hexAmount))
 
@@ -141,5 +143,5 @@ export {
     successfulReceipt,
     checkDelegatedTransactionReceipt,
     checkTxInclusionInBlock,
-    checkTransactionLogSuccess
+    checkTransactionLogSuccess,
 }

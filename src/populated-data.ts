@@ -1,9 +1,10 @@
-import type { PopulatedChainData } from '../test/globalSetup'
+import { PopulatedChainData, TransferDetails } from './types'
 import { POPULATED_DATA_FILENAME } from '../test/globalSetup'
 import fs from 'fs'
 import { components } from './open-api-types'
-import { Node1Client } from './thor-client'
+import { Client } from './thor-client'
 import { pollReceipt } from './transactions'
+import { staticEventsTransactions } from './logs/transactions'
 
 export type Transfer = {
     vet: Required<components['schemas']['Transfer']>
@@ -51,67 +52,41 @@ const formatTxReceipt = (
         meta: txReceipt.meta as Transfer['meta'],
     }
 }
-export const getGenesisBlockId = () => {
-    const data = readPopulatedData()
-
-    return data.genesisBlockId
-}
 
 export const readRandomTransfer = async (): Promise<Transfer> => {
-    const data = readPopulatedData()
-
-    const randomIndex = Math.floor(Math.random() * data.transfers.length)
-
-    const txReceipt = await Node1Client.getTransactionReceipt(
-        data.transfers[randomIndex],
+    const randomBlockIndex = Math.floor(
+        Math.random() * staticEventsTransactions.length,
     )
-
-    if (!txReceipt.body || !txReceipt.success) return readRandomTransfer()
-
+    const blockTxs = staticEventsTransactions[randomBlockIndex]
+    const randomBlockTxIndex = Math.floor(Math.random() * blockTxs.length)
+    const txId = blockTxs[randomBlockTxIndex].txId
+    const txReceipt = await Client.raw.getTransactionReceipt(txId)
     return formatTxReceipt(txReceipt.body!)
 }
 
-type TransferDetails = {
-    firstBlock: number
-    lastBlock: number
-    transferCount: number
+export const readTransferDetails = (): TransferDetails => {
+    return readPopulatedData().transferDetails
 }
 
-let transferDetails: TransferDetails | undefined
-
-export const getTransferDetails = async () => {
-    if (transferDetails) {
-        return transferDetails
-    }
-
-    const data = readPopulatedData()
-
-    const transfers = (
-        await Promise.all(
-            data.transfers.map(async (txId) => {
-                try {
-                    return pollReceipt(txId, 10_000)
-                } catch {
-                    /* empty */
-                }
-            }),
-        )
-    ).filter((t) => t) as Transfer[]
-
-    const sortedTransfers = transfers.sort((a, b) => {
-        return (a.meta.blockNumber ?? 0) - (b.meta.blockNumber ?? 0)
-    })
-
-    const firstBlock = sortedTransfers[0].meta.blockNumber ?? 0
-    const lastBlock =
-        sortedTransfers[sortedTransfers.length - 1].meta.blockNumber ?? 0
-    const transferCount = sortedTransfers.length
-
-    transferDetails = {
-        firstBlock,
-        lastBlock,
-        transferCount,
-    }
-
-    return transferDetails
+const populatedData = {
+    exists: () => {
+        return fs.existsSync(POPULATED_DATA_FILENAME)
+    },
+    remove: () => {
+        if (populatedData.exists()) {
+            fs.unlinkSync(POPULATED_DATA_FILENAME)
+        }
+    },
+    write: (data: PopulatedChainData) => {
+        fs.writeFileSync(POPULATED_DATA_FILENAME, JSON.stringify(data))
+    },
+    read: (): PopulatedChainData => {
+        if (!populatedData.exists()) {
+            throw new Error('Populated data file does not exist')
+        }
+        const data = fs.readFileSync(POPULATED_DATA_FILENAME, 'utf-8')
+        return JSON.parse(data) as PopulatedChainData
+    },
 }
+
+export { populatedData }

@@ -1,4 +1,4 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { testBloomForAddress } from '../../../src/utils/bloom'
 import assert from 'node:assert'
 import { ThorWallet } from '../../../src/wallet'
@@ -9,18 +9,16 @@ import { components } from '../../../src/open-api-types'
  * @group websockets
  */
 describe('WS /subscriptions/beat2', () => {
-    it('should be able to subscribe', async () => {
+    it.e2eTest('should be able to subscribe', 'all', async () => {
         const beats: components['schemas']['SubscriptionBeat2Response'][] = []
 
-        Node1Client.subscribeToBeats2((newBlock) => {
+        Client.raw.subscribeToBeats2((newBlock) => {
             beats.push(newBlock)
         })
 
-        const wallet = ThorWallet.new(true)
+        const wallet = ThorWallet.txBetweenFunding()
 
         const fundReceipt = await wallet.waitForFunding()
-
-        const sender = fundReceipt?.outputs?.[0].transfers?.[0].sender
 
         //sleep for 1 sec to ensure the beat is received
         await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -31,12 +29,12 @@ describe('WS /subscriptions/beat2', () => {
 
         assert(relevantBeat?.bloom, 'Beat not found')
         assert(relevantBeat?.k, 'Beat not found')
-        assert(sender, 'Sender not found')
+        assert(wallet.address, 'Sender not found')
 
         const result = testBloomForAddress(
             relevantBeat.bloom,
             relevantBeat.k,
-            sender,
+            wallet.address,
         )
 
         expect(result).toEqual(true)

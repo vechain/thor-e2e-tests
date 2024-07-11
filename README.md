@@ -10,16 +10,8 @@
 
 ```shell
 yarn install
-yarn test
-```
-
-### Debugging the tests
-
--   These steps are useful if you want to debug
-
-```bash
 yarn docker:up
-yarn test:fast
+yarn test
 ```
 
 ### Custom Docker Image
@@ -30,19 +22,23 @@ yarn test:fast
 ```bash
 docker build -t vechain/thor:custom .
 export THOR_IMAGE=vechain/thor:custom
+yarn docker:up
 yarn test
 ```
 
 ### Running a group of tests
+
 ```bash
-yarn test --group=accounts
+yarn test -test <group/test>
 ```
 
 ### Custom solo url
+
 ```
-TEST_URL=http://localhost:8669
+--nodeURL http://localhost:8669
 ```
-This is added to be able to configure the url of the client for future network hub integration. 
+
+This is added to be able to configure the url of the client for future network hub integration.
 We need to keep same genesis for now.
 
 ## Scripts

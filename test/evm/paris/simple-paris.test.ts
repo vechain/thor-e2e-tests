@@ -1,5 +1,6 @@
 import { ThorWallet } from '../../../src/wallet'
 import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-types'
+import { Client } from '../../../src/thor-client'
 
 /**
  * @group opcodes
@@ -7,13 +8,9 @@ import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-
  * @group paris
  */
 describe('Simple Paris', () => {
-    let wallet: ThorWallet
+    const wallet: ThorWallet = ThorWallet.withFunds()
 
-    beforeAll(() => {
-        wallet = ThorWallet.new(true)
-    })
-
-    it('should be able to deploy a paris contract', async () => {
+    it.e2eTest('should be able to deploy a paris contract', 'all', async () => {
         const contract = await wallet.deployContract(
             ParisCounter.bytecode,
             ParisCounter.abi,
@@ -23,7 +20,14 @@ describe('Simple Paris', () => {
 
         expect(startValue).toBe(0n)
 
+        const lastBlock = await Client.raw.getBlock('best')
         await contract.transact.incrementCounter().then((r) => r.wait())
+
+        let latestBlock = await Client.raw.getBlock('best')
+        while (latestBlock.body?.number! < lastBlock.body?.number! + 1) {
+            latestBlock = await Client.raw.getBlock('best')
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+        }
 
         const endValue = await contract.read.getCounter().then((r) => r[0])
 

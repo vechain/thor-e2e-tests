@@ -1,7 +1,7 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import {
-    getTransferDetails,
     readRandomTransfer,
+    readTransferDetails,
     Transfer,
 } from '../../../src/populated-data'
 import { components } from '../../../src/open-api-types'
@@ -37,14 +37,14 @@ type TransferLogFilterRequest =
  * @group events
  */
 describe('POST /logs/transfers', () => {
-    const transferDetails = getTransferDetails()
+    const transferDetails = readTransferDetails()
 
-    it('should find a log with all parameters set', async () => {
+    it.e2eTest('should find a log with all parameters set', 'all', async () => {
         const transfer = await readRandomTransfer()
 
         const request = buildRequestFromTransfer(transfer)
 
-        const response = await Node1Client.queryTransferLogs(request)
+        const response = await Client.raw.queryTransferLogs(request)
 
         const relevantLog = response.body?.find(
             (log) => log?.meta?.txID === transfer.meta.txID,
@@ -69,24 +69,31 @@ describe('POST /logs/transfers', () => {
         })
     })
 
-    it('should be able to omit all the parameters', async () => {
-        const transfer = await readRandomTransfer()
+    it.e2eTest(
+        'should be able to omit all the parameters',
+        ['solo', 'default-private'],
+        async () => {
+            const transfer = await readRandomTransfer()
 
-        const response = await Node1Client.queryTransferLogs({
-            range: null,
-            options: null,
-            criteriaSet: null,
-        })
+            const response = await Client.raw.queryTransferLogs({
+                range: null,
+                options: null,
+                criteriaSet: null,
+            })
 
-        expect(response.success, 'API response should be a success').toBeTrue()
-        expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
-        expect(
-            response.body?.some(
-                (log) => log?.meta?.txID === transfer.meta.txID,
-            ),
-            'The response body some contain the relevant log',
-        ).toBeTrue()
-    })
+            expect(
+                response.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                response.body?.some(
+                    (log) => log?.meta?.txID === transfer.meta.txID,
+                ),
+                'The response body some contain the relevant log',
+            ).toBeTrue()
+        },
+    )
 
     const runTransferLogsTest = async (
         modifyRequest: (
@@ -99,7 +106,7 @@ describe('POST /logs/transfers', () => {
 
         const modifiedRequest = modifyRequest(request, transfer)
 
-        const response = await Node1Client.queryTransferLogs(modifiedRequest)
+        const response = await Client.raw.queryTransferLogs(modifiedRequest)
 
         const relevantLog = response.body?.find(
             (log) => log?.meta?.txID === transfer.meta.txID,
@@ -124,24 +131,28 @@ describe('POST /logs/transfers', () => {
     }
 
     describe('query by "range"', () => {
-        it('should be able set the range to null', async () => {
+        it.e2eTest('should be able set the range to null', 'all', async () => {
             await runTransferLogsTest((request) => ({
                 ...request,
                 range: null,
             }))
         })
 
-        it('should be able to omit the "from" field', async () => {
-            await runTransferLogsTest((request) => ({
-                ...request,
-                range: {
-                    ...request.range,
-                    from: undefined,
-                },
-            }))
-        })
+        it.e2eTest(
+            'should be able to omit the "from" field',
+            'all',
+            async () => {
+                await runTransferLogsTest((request) => ({
+                    ...request,
+                    range: {
+                        ...request.range,
+                        from: undefined,
+                    },
+                }))
+            },
+        )
 
-        it('should be able to omit the "to" field', async () => {
+        it.e2eTest('should be able to omit the "to" field', 'all', async () => {
             await runTransferLogsTest((request) => ({
                 ...request,
                 range: {
@@ -151,7 +162,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        it('should be omit the "unit" field', async () => {
+        it.e2eTest('should be omit the "unit" field', 'all', async () => {
             await runTransferLogsTest((request) => ({
                 ...request,
                 range: {
@@ -161,7 +172,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        it('should be able query by time', async () => {
+        it.e2eTest('should be able query by time', 'all', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 range: {
@@ -172,7 +183,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        it('should be able query by block', async () => {
+        it.e2eTest('should be able query by block', 'all', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 range: {
@@ -185,55 +196,70 @@ describe('POST /logs/transfers', () => {
     })
 
     describe('query by "options"', () => {
-        it('should be able omit all the options', async () => {
+        it.e2eTest('should be able omit all the options', 'all', async () => {
             await runTransferLogsTest((request) => ({
                 ...request,
                 options: null,
             }))
         })
 
-        it('should be able to omit the "offset" field', async () => {
-            await runTransferLogsTest((request) => ({
-                ...request,
-                options: {
-                    limit: 1_000,
-                    offset: undefined,
-                },
-            }))
-        })
+        it.e2eTest(
+            'should be able to omit the "offset" field',
+            'all',
+            async () => {
+                await runTransferLogsTest((request) => ({
+                    ...request,
+                    options: {
+                        limit: 1_000,
+                        offset: undefined,
+                    },
+                }))
+            },
+        )
 
-        it('should be able to omit the "limit" field', async () => {
-            const request = {
-                options: {
-                    offset: 0,
-                },
-            }
+        it.e2eTest(
+            'should be able to omit the "limit" field',
+            'all',
+            async () => {
+                const request = {
+                    options: {
+                        offset: 0,
+                    },
+                }
 
-            const transferLogs = await Node1Client.queryTransferLogs(request)
+                const transferLogs = await Client.raw.queryTransferLogs(request)
 
-            expect(
-                transferLogs.success,
-                'API response should be a success',
-            ).toBeTrue()
-            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(transferLogs.body?.length).toEqual(0)
-        })
+                expect(
+                    transferLogs.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(transferLogs.body?.length).toEqual(0)
+            },
+        )
 
-        it('should have default maximum of 1000', async () => {
-            const request = {
-                options: {
-                    offset: 0,
-                    limit: 1001,
-                },
-            }
+        it.e2eTest(
+            'should have default maximum of 1000',
+            ['solo', 'default-private'],
+            async () => {
+                const request = {
+                    options: {
+                        offset: 0,
+                        limit: 1001,
+                    },
+                }
 
-            const transferLogs = await Node1Client.queryTransferLogs(request)
+                const transferLogs = await Client.raw.queryTransferLogs(request)
 
-            expect(transferLogs.success, 'API response should fail').toBeFalse()
-            expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(403)
-        })
+                expect(
+                    transferLogs.success,
+                    'API response should fail',
+                ).toBeFalse()
+                expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(403)
+            },
+        )
 
-        it('should have no minimum "limit"', async () => {
+        it.e2eTest('should have no minimum "limit"', 'all', async () => {
             const request = {
                 options: {
                     offset: 0,
@@ -241,7 +267,7 @@ describe('POST /logs/transfers', () => {
                 },
             }
 
-            const transferLogs = await Node1Client.queryTransferLogs(request)
+            const transferLogs = await Client.raw.queryTransferLogs(request)
 
             expect(
                 transferLogs.success,
@@ -251,7 +277,7 @@ describe('POST /logs/transfers', () => {
             expect(transferLogs.body?.length).toEqual(0)
         })
 
-        it('should be able paginate requests', async () => {
+        it.e2eTest('should be able paginate requests', 'all', async () => {
             const { firstBlock, lastBlock } = await transferDetails
 
             const pages = 5
@@ -259,7 +285,7 @@ describe('POST /logs/transfers', () => {
             const totalTransfers = pages * amountPerPage
 
             const query = async (offset: number, limit: number) =>
-                Node1Client.queryTransferLogs({
+                Client.raw.queryTransferLogs({
                     range: {
                         from: firstBlock,
                         to: lastBlock,
@@ -313,7 +339,7 @@ describe('POST /logs/transfers', () => {
     })
 
     describe('query by "criteriaSet"', () => {
-        it('should be able query by "sender"', async () => {
+        it.e2eTest('should be able query by "sender"', 'all', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 criteriaSet: [
@@ -324,7 +350,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        it('should be able query by "recipient"', async () => {
+        it.e2eTest('should be able query by "recipient"', 'all', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 criteriaSet: [
@@ -335,7 +361,7 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        it('should be able query by "txOrigin"', async () => {
+        it.e2eTest('should be able query by "txOrigin"', 'all', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 criteriaSet: [
@@ -346,68 +372,84 @@ describe('POST /logs/transfers', () => {
             }))
         })
 
-        it('should be able query by "sender" and "recipient"', async () => {
+        it.e2eTest(
+            'should be able query by "sender" and "recipient"',
+            'all',
+            async () => {
+                await runTransferLogsTest((request, transfer) => ({
+                    ...request,
+                    criteriaSet: [
+                        {
+                            sender: transfer.vet.sender,
+                            recipient: transfer.vet.recipient,
+                        },
+                    ],
+                }))
+            },
+        )
+
+        it.e2eTest(
+            'should be able query by "sender" and "txOrigin"',
+            'all',
+            async () => {
+                await runTransferLogsTest((request, transfer) => ({
+                    ...request,
+                    criteriaSet: [
+                        {
+                            sender: transfer.vet.sender,
+                            txOrigin: transfer.meta.txOrigin,
+                        },
+                    ],
+                }))
+            },
+        )
+
+        it.e2eTest(
+            'should be able query by "recipient" and "txOrigin"',
+            'all',
+            async () => {
+                await runTransferLogsTest((request, transfer) => ({
+                    ...request,
+                    criteriaSet: [
+                        {
+                            recipient: transfer.vet.recipient,
+                            txOrigin: transfer.meta.txOrigin,
+                        },
+                    ],
+                }))
+            },
+        )
+
+        it.e2eTest('should be able query by all criteria', 'all', async () => {
             await runTransferLogsTest((request, transfer) => ({
                 ...request,
                 criteriaSet: [
                     {
                         sender: transfer.vet.sender,
                         recipient: transfer.vet.recipient,
-                    },
-                ],
-            }))
-        })
-
-        it('should be able query by "sender" and "txOrigin"', async () => {
-            await runTransferLogsTest((request, transfer) => ({
-                ...request,
-                criteriaSet: [
-                    {
-                        sender: transfer.vet.sender,
                         txOrigin: transfer.meta.txOrigin,
                     },
                 ],
             }))
         })
 
-        it('should be able query by "recipient" and "txOrigin"', async () => {
-            await runTransferLogsTest((request, transfer) => ({
-                ...request,
-                criteriaSet: [
-                    {
-                        recipient: transfer.vet.recipient,
-                        txOrigin: transfer.meta.txOrigin,
-                    },
-                ],
-            }))
-        })
-
-        it('should be able query by all criteria', async () => {
-            await runTransferLogsTest((request, transfer) => ({
-                ...request,
-                criteriaSet: [
-                    {
-                        sender: transfer.vet.sender,
-                        recipient: transfer.vet.recipient,
-                        txOrigin: transfer.meta.txOrigin,
-                    },
-                ],
-            }))
-        })
-
-        it('should be able to omit the "criteriaSet" field', async () => {
-            await runTransferLogsTest((request) => ({
-                ...request,
-                criteriaSet: null,
-            }))
-        })
+        it.e2eTest(
+            'should be able to omit the "criteriaSet" field',
+            'all',
+            async () => {
+                await runTransferLogsTest((request) => ({
+                    ...request,
+                    criteriaSet: null,
+                }))
+            },
+        )
     })
 
     describe('query by "order"', () => {
         const queryTransferLogsTest = async (order?: 'asc' | 'desc' | null) => {
-            const { firstBlock, lastBlock } = await getTransferDetails()
+            const { firstBlock, lastBlock } = readTransferDetails()
 
-            const response = await Node1Client.queryTransferLogs({
+            const response = await Client.raw.queryTransferLogs({
                 range: {
                     from: firstBlock,
                     to: lastBlock,
@@ -454,19 +496,19 @@ describe('POST /logs/transfers', () => {
             )
         }
 
-        it('events should be ordered by DESC', async () => {
+        it.e2eTest('events should be ordered by DESC', 'all', async () => {
             await queryTransferLogsTest('desc')
         })
 
-        it('events should be ordered by ASC', async () => {
+        it.e2eTest('events should be ordered by ASC', 'all', async () => {
             await queryTransferLogsTest('asc')
         })
 
-        it('default should be asc', async () => {
+        it.e2eTest('default should be asc', 'all', async () => {
             await queryTransferLogsTest(undefined)
         })
 
-        it('default should be asc', async () => {
+        it.e2eTest('default should be asc', 'all', async () => {
             await queryTransferLogsTest(null)
         })
     })

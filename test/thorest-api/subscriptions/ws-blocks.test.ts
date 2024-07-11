@@ -1,4 +1,4 @@
-import { Node1Client } from '../../../src/thor-client'
+import { Client } from '../../../src/thor-client'
 import { components } from '../../../src/open-api-types'
 
 /**
@@ -6,15 +6,15 @@ import { components } from '../../../src/open-api-types'
  * @group websockets
  */
 describe('WS /subscriptions/blocks', () => {
-    it('should be able to subscribe', async () => {
+    it.e2eTest('should be able to subscribe', 'all', async () => {
         const beats: components['schemas']['SubscriptionBlockResponse'][] = []
 
-        const ws = Node1Client.subscribeToBlocks((newBlock) => {
+        const ws = Client.raw.subscribeToBlocks((newBlock) => {
             beats.push(newBlock)
         })
 
-        await Node1Client.waitForBlock()
-        await Node1Client.waitForBlock()
+        await Client.raw.waitForBlock()
+        await Client.raw.waitForBlock()
 
         //sleep for 1 sec to ensure the beat is received
         await new Promise((resolve) => setTimeout(resolve, 1000))

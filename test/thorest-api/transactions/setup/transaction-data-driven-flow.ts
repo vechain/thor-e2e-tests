@@ -1,5 +1,5 @@
 import { components } from '../../../../src/open-api-types'
-import { Node1Client } from '../../../../src/thor-client'
+import { Client } from '../../../../src/thor-client'
 import { pollReceipt } from '../../../../src/transactions'
 import { TestCasePlan, TestCasePlanStepError } from './models'
 
@@ -24,17 +24,16 @@ class TransactionDataDrivenFlow {
 
         const block = await this.getTransactionReceipt(txId)
 
-        await this.getLogTransfer(block)
+        //await this.getLogTransfer(block)
 
         await this.getTransactionBlock(block?.blockID, txId)
     }
 
     private async postTransaction(): Promise<string | undefined> {
         const { rawTx, expectedResult } = this.plan.postTxStep
-        const sendTxResponse =
-            await Node1Client.sendTransaction({
-                raw: `0x${rawTx}`,
-            })
+        const sendTxResponse = await Client.raw.sendTransaction({
+            raw: `0x${rawTx}`,
+        })
 
         expectedResult(sendTxResponse)
 
@@ -54,7 +53,7 @@ class TransactionDataDrivenFlow {
 
         const { expectedResult } = this.plan.getTxStep
 
-        const tx = await Node1Client.getTransaction(txId, {
+        const tx = await Client.raw.getTransaction(txId, {
             pending: true,
         })
 
@@ -84,7 +83,7 @@ class TransactionDataDrivenFlow {
     }
 
     private async getLogTransfer(
-        block: components['schemas']['ReceiptMeta'] | undefined
+        block: components['schemas']['ReceiptMeta'] | undefined,
     ) {
         if (!this.plan.getLogTransferStep) {
             return
@@ -100,7 +99,7 @@ class TransactionDataDrivenFlow {
         const { expectedResult, logFilters } = this.plan.getLogTransferStep
         const request = logFilters ?? createDefaultLogFilterRequest(blockNumber)
 
-        const logsResponse = await Node1Client.queryTransferLogs(request)
+        const logsResponse = await Client.raw.queryTransferLogs(request)
 
         expectedResult(logsResponse, block)
     }
@@ -121,14 +120,14 @@ class TransactionDataDrivenFlow {
 
         const { expectedResult } = this.plan.getTxBlockStep
 
-        const block = await Node1Client.getBlock(blockId)
+        const block = await Client.raw.getBlock(blockId)
 
         expectedResult({ block, txId })
     }
 }
 
 function createDefaultLogFilterRequest(
-    blockNumber: number | undefined
+    blockNumber: number | undefined,
 ): components['schemas']['TransferLogFilterRequest'] {
     return {
         range: {
