@@ -9,7 +9,7 @@ on:
             required: true
             default: 'default-private'
           node_urls:
-            description: 'Comma separated list of node URLs to test against'
+            description: 'Optional: Override the environment node URLs. (Comma separated)'
             type: string
             required: false
     push:
