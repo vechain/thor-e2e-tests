@@ -5,6 +5,7 @@ import { components } from './open-api-types'
 import { Client } from './thor-client'
 import { pollReceipt } from './transactions'
 import { staticEventsTransactions } from './logs/transactions'
+import { testEnv } from './test-env'
 
 export type Transfer = {
     vet: Required<components['schemas']['Transfer']>
@@ -54,14 +55,22 @@ const formatTxReceipt = (
 }
 
 export const readRandomTransfer = async (): Promise<Transfer> => {
-    const randomBlockIndex = Math.floor(
-        Math.random() * staticEventsTransactions.length,
-    )
-    const blockTxs = staticEventsTransactions[randomBlockIndex]
-    const randomBlockTxIndex = Math.floor(Math.random() * blockTxs.length)
-    const txId = blockTxs[randomBlockTxIndex].txId
-    const txReceipt = await Client.raw.getTransactionReceipt(txId)
-    return formatTxReceipt(txReceipt.body!)
+    if (testEnv.type === 'solo' || testEnv.type === 'default-private') {
+        const randomBlockIndex = Math.floor(
+            Math.random() * staticEventsTransactions.length,
+        )
+        const blockTxs = staticEventsTransactions[randomBlockIndex]
+        const randomBlockTxIndex = Math.floor(Math.random() * blockTxs.length)
+        const txId = blockTxs[randomBlockTxIndex].txId
+        const txReceipt = await Client.raw.getTransactionReceipt(txId)
+        return formatTxReceipt(txReceipt.body!)
+    } else {
+        const { transfersIds } = readPopulatedData()
+        const randomIndex = Math.floor(Math.random() * transfersIds.length)
+        const txId = transfersIds[randomIndex]
+        const txReceipt = await pollReceipt(txId)
+        return formatTxReceipt(txReceipt)
+    }
 }
 
 export const readTransferDetails = (): TransferDetails => {

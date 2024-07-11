@@ -1,7 +1,6 @@
 import { Client } from '../src/thor-client'
 import 'jest-expect-message'
 import 'dotenv/config'
-import './jest-types.d.ts'
 import { TransferDetails } from '../src/types'
 import { testEnv, validateEnv } from '../src/test-env'
 import { transferDetails } from '../src/constants'
@@ -20,7 +19,6 @@ const populate = async () => {
         fs.mkdirSync('./keys')
     }
 
-    const transferIds: string[] = []
     switch (testEnv.type) {
         case 'mainnet':
             details = transferDetails.main
