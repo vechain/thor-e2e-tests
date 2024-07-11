@@ -14,7 +14,6 @@ it.e2eTest = (
     if (supportedEnvs === 'all' || isMatching(supportedEnvs)) {
         test(title, testFunc)
     } else {
-        console.warn(`Skipping test: ${title}`)
         test.skip(title, testFunc)
     }
 }
