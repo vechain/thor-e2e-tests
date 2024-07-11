@@ -174,7 +174,7 @@ class ThorWallet {
     public buildTransaction = async (
         clauses: TransactionClause[],
     ): Promise<TransactionBody> => {
-        const bestBlockRef = await getBlockRef('0')
+        const bestBlockRef = await getBlockRef('best')
         const genesisBlock = await Client.raw.getBlock('0')
 
         if (!genesisBlock.success || !genesisBlock.body?.id) {
@@ -183,7 +183,7 @@ class ThorWallet {
 
         return {
             blockRef: bestBlockRef,
-            expiration: 100000,
+            expiration: 1000,
             clauses: clauses,
             gasPriceCoef: 0,
             gas: 1_000_000,
