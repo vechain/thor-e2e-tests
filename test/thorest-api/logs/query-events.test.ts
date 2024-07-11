@@ -2,7 +2,7 @@
 import { Client, Response, Schema } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import {
-    getTransferDetails,
+    readTransferDetails,
     readRandomTransfer,
     Transfer,
 } from '../../../src/populated-data'
@@ -12,11 +12,12 @@ import {
     HEX_REGEX_64,
 } from '../../../src/utils/hex-utils'
 import { components } from '../../../src/open-api-types'
-import { EventsContract__factory as EventsContract } from '../../../typechain-types'
+import { EventsContract__factory } from '../../../typechain-types'
 import { Contract, TransactionReceipt } from '@vechain/sdk-network'
-import { randomFunder } from '../../../src/account-faucet'
 import { addAddressPadding } from '../../../src/utils/padding-utils'
+import { ThorWallet } from '../../../src/wallet'
 import { testCase, testCaseEach } from '../../../src/test-case'
+import { fundingAmounts } from '../../../src/account-faucet'
 
 const buildRequestFromTransfer = (
     transfer: Transfer,
@@ -46,7 +47,7 @@ type EventLogFilterRequest = components['schemas']['EventLogFilterRequest']
  * @group events
  */
 describe('POST /logs/event', () => {
-    const transferDetails = getTransferDetails()
+    const transferDetails = readTransferDetails()
 
     testCase(['solo', 'default-private', 'testnet'])(
         'should find a log with all parameters set',
@@ -235,8 +236,7 @@ describe('POST /logs/event', () => {
 
     describe('query by "order"', () => {
         const runQueryEventLogsTest = async (order?: 'asc' | 'desc' | null) => {
-            const { firstBlock, lastBlock } = await getTransferDetails()
-
+            const { firstBlock, lastBlock } = readTransferDetails()
             const response = await Client.raw.queryEventLogs({
                 range: {
                     from: firstBlock,
@@ -509,7 +509,7 @@ describe('POST /logs/event', () => {
                 const res2 = await Client.raw.queryEventLogs({
                     range: {
                         unit: 'block',
-                        from: block.body?.number!,
+                        from: block.body?.number,
                     },
                     options: {
                         offset: 1_000_000,
@@ -529,18 +529,22 @@ describe('POST /logs/event', () => {
 
     describe('query by "criteriaSet"', () => {
         const eventHash =
-            EventsContract.createInterface().getEvent('MyEvent').topicHash
+            EventsContract__factory.createInterface().getEvent(
+                'MyEvent',
+            ).topicHash
 
-        let contract: Contract
+        let contract: Contract<typeof EventsContract__factory.abi>
         let receipt: TransactionReceipt
         let topics: string[]
         let range: any
 
         beforeAll(async () => {
+            const wallet = ThorWallet.newFunded(fundingAmounts.noVetBigVtho)
+            await wallet.waitForFunding()
             const contractFactory = Client.sdk.contracts.createContractFactory(
-                EventsContract.abi,
-                EventsContract.bytecode,
-                randomFunder(),
+                EventsContract__factory.abi,
+                EventsContract__factory.bytecode,
+                wallet.signer,
             )
             await contractFactory.startDeployment()
             contract = await contractFactory.waitForDeployment()
@@ -550,10 +554,9 @@ describe('POST /logs/event', () => {
                 throw new Error('Contract deployment failed')
             }
 
-            const eventAddresses = (
-                (await contract.read.getAddresses()) as string[][]
-            )[0]
-            topics = eventAddresses.map(addAddressPadding)
+            const eventAddresses =
+                (await contract.read.getAddresses()) as unknown as string[][]
+            topics = eventAddresses[0].map(addAddressPadding)
 
             range = {
                 to: receipt.meta.blockNumber + 1000,

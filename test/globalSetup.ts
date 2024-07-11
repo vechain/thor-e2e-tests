@@ -9,6 +9,8 @@ import { populatedData } from '../src/populated-data'
 import { getTransferIds } from '../src/logs/query-logs'
 import { CompressedBlockDetail } from '@vechain/sdk-network'
 import * as fs from 'fs'
+import { contractAddresses } from '../src/contracts/addresses'
+import { Energy__factory } from '../typechain-types'
 
 export const POPULATED_DATA_FILENAME = './.chain-data.json'
 
@@ -19,7 +21,7 @@ const populate = async () => {
         fs.mkdirSync('./keys')
     }
 
-    let transferIds: string[] = []
+    const transferIds: string[] = []
     switch (testEnv.type) {
         case 'mainnet':
             details = transferDetails.main
@@ -28,37 +30,7 @@ const populate = async () => {
             details = transferDetails.test
             break
         case 'default-private':
-            const maxDistance = 200
-            let lastBlock = (await Client.raw.getBlock('best'))!.body
-            console.log('Last block', lastBlock)
-            if (lastBlock!.number! <= 2) {
-                await writeTransferTransactions()
-            }
-
-            let prevBlockHeight = lastBlock?.number! - maxDistance
-            if (lastBlock?.number! < maxDistance) {
-                prevBlockHeight = 2
-            }
-            let transactionsAmount = 0
-            const prevBlock = (await Client.raw.getBlock(prevBlockHeight))?.body
-            lastBlock = (await Client.raw.getBlock('best'))!.body
-            for (let i = prevBlockHeight; i <= lastBlock?.number!; i++) {
-                const block = (await Client.raw.getBlock(i))?.body
-
-                const trxs = await Client.sdk.blocks.getBlockCompressed(
-                    block?.number!,
-                )
-
-                transactionsAmount += trxs!.transactions.length
-                transferIds = transferIds.concat(trxs!.transactions)
-            }
-
-            details = {
-                firstBlock: prevBlock!.number!,
-                lastBlock: lastBlock!.number!,
-                transferCount: transactionsAmount,
-            }
-
+            details = await writeTransferTransactions()
             break
         case 'solo': {
             details = await writeTransferTransactions()

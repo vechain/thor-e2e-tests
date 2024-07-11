@@ -1,4 +1,4 @@
-import { ThorWallet, addressFromPrivateKey } from '../../src/wallet'
+import { ThorWallet } from '../../src/wallet'
 import { Contract } from '@vechain/sdk-network'
 import {
     IndividualOpCodes__factory as Opcodes,
@@ -12,6 +12,7 @@ import {
 import { pollReceipt } from '../../src/transactions'
 import { testCase, testCaseEach } from '../../src/test-case'
 import { randomFunder } from '../../src/account-faucet'
+import { addressUtils } from '@vechain/sdk-core'
 
 const opcodesInterface = Opcodes.createInterface()
 
@@ -30,8 +31,10 @@ const opcodesInterface = Opcodes.createInterface()
  */
 describe('Individual OpCodes', () => {
     let wallet: ThorWallet
-    let opcodes: Contract
-    const caller = addressFromPrivateKey(Buffer.from(randomFunder(), 'hex'))
+    let opcodes: Contract<typeof Opcodes.abi>
+    const caller = addressUtils.fromPrivateKey(
+        Buffer.from(randomFunder(), 'hex'),
+    )
 
     const paddedCaller = addAddressPadding(caller) //remove 0x
         .slice(2)

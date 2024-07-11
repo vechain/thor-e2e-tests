@@ -65,22 +65,6 @@ class ThorClient {
         })
     }
 
-    private openWebsocket<T>(url: string, callback: (data: T) => void) {
-        const ws = new WebSocket(url)
-        ws.onmessage = (event: any) => {
-            const data = JSON.parse(event.data)
-            callback(data)
-        }
-
-        this.subscriptions.push(() => ws.close())
-
-        return {
-            unsubscribe: () => {
-                ws.close()
-            },
-        }
-    }
-
     // GET /accounts/{address}
     public async getAccount(
         address: string,
@@ -479,9 +463,25 @@ class ThorClient {
         }
     }
 
+    private openWebsocket<T>(url: string, callback: (data: T) => void) {
+        const ws = new WebSocket(url)
+        ws.onmessage = (event: any) => {
+            const data = JSON.parse(event.data)
+            callback(data)
+        }
+
+        this.subscriptions.push(() => ws.close())
+
+        return {
+            unsubscribe: () => {
+                ws.close()
+            },
+        }
+    }
+
     private initBlockSubscription() {
         this.subscribeToBlocks(
-            (data: Schema['SubscriptionBlockResponse']) => { },
+            (data: Schema['SubscriptionBlockResponse']) => {},
         )
     }
 

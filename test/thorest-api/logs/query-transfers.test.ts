@@ -1,12 +1,12 @@
 import { Client } from '../../../src/thor-client'
 import {
-    getTransferDetails,
     readRandomTransfer,
+    readTransferDetails,
     Transfer,
 } from '../../../src/populated-data'
 import { components } from '../../../src/open-api-types'
 import { HEX_REGEX_64 } from '../../../src/utils/hex-utils'
-import { testCase, testCaseEach } from '../../../src/test-case'
+import { testCase } from '../../../src/test-case'
 
 const buildRequestFromTransfer = (
     transfer: Transfer,
@@ -38,7 +38,7 @@ type TransferLogFilterRequest =
  * @group events
  */
 describe('POST /logs/transfers', () => {
-    const transferDetails = getTransferDetails()
+    const transferDetails = readTransferDetails()
 
     testCase(['solo', 'default-private', 'testnet'])(
         'should find a log with all parameters set',
@@ -480,7 +480,7 @@ describe('POST /logs/transfers', () => {
 
     describe('query by "order"', () => {
         const queryTransferLogsTest = async (order?: 'asc' | 'desc' | null) => {
-            const { firstBlock, lastBlock } = await getTransferDetails()
+            const { firstBlock, lastBlock } = readTransferDetails()
 
             const response = await Client.raw.queryTransferLogs({
                 range: {

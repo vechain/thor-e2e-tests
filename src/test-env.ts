@@ -24,7 +24,7 @@ const testEnv = {
         const hdNode = HDNode.fromMnemonic(_mnemonic.split(' '))
         const keys: any[] = []
         for (let i = 0; i < 10; i++) {
-            const child = hdNode.derive(i)
+            const child = hdNode.deriveChild(i)
             keys.push(Buffer.from(child.privateKey!).toString('hex'))
         }
 

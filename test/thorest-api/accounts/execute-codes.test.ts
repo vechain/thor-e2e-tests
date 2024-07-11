@@ -1,12 +1,13 @@
-//import { Client.raw } from '../../../src/thor-client'
 import { Client } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
-import { SimpleCounter__factory } from '../../../typechain-types'
+import {
+    GasEstimation__factory,
+    SimpleCounter__factory,
+} from '../../../typechain-types'
 import { interfaces } from '../../../src/contracts/hardhat'
 import { getBlockRef } from '../../../src/utils/block-utils'
 import { revisions } from '../../../src/constants'
-import { generateAddress, ThorWallet } from '../../../src/wallet'
-import { fundingAmounts } from '../../../src/account-faucet'
+import { ThorWallet } from '../../../src/wallet'
 import { testCase, testCaseEach } from '../../../src/test-case'
 
 const CALLER_ADDR = '0x435933c8064b4Ae76bE665428e0307eF2cCFBD68'
@@ -45,7 +46,7 @@ const READ_ONLY_REQUEST = (address: string) => {
  * @group api
  * @group accounts
  */
-describe('POST /accounts/*', function() {
+describe('POST /accounts/*', function () {
     const wallet = ThorWallet.withFunds()
     const fundedWallet = ThorWallet.newFunded({ vet: '0x0', vtho: 1e18 })
 
@@ -56,7 +57,7 @@ describe('POST /accounts/*', function() {
 
     testCase(['solo', 'default-private', 'testnet'])(
         'should execute an array of clauses',
-        async function() {
+        async () => {
             const to = ThorWallet.withFunds()
 
             const tokenAmount = '0x1'
@@ -243,7 +244,7 @@ describe('POST /accounts/*', function() {
     testCaseEach(['solo', 'default-private', 'testnet'])(
         'valid revisions not found: %s',
         revisions.validNotFound,
-        async function(revision) {
+        async function (revision) {
             const res = await Client.raw.executeAccountBatch(
                 {
                     clauses: [SEND_VTHO_CLAUSE],
@@ -417,5 +418,64 @@ describe('POST /accounts/*', function() {
                 expect(amount).toEqual(expiration)
             },
         )
+    })
+
+    it('should estimate correctly for the next block', async () => {
+        const factory = GasEstimation__factory
+
+        const gasInterface = factory.createInterface()
+
+        const contract = await wallet.deployContract(
+            factory.bytecode,
+            factory.abi,
+        )
+
+        const receipt = await contract.transact
+            .setNextBlock()
+            .then((tx) => tx.wait())
+
+        expect(receipt?.reverted).toBeFalse()
+
+        // Estimate the gas for the same block
+        const sameRevisionEstimation = await Client.raw.executeAccountBatch(
+            {
+                clauses: [
+                    {
+                        to: contract.address,
+                        value: '0x0',
+                        data: gasInterface.encodeFunctionData('setNextBlock'),
+                    },
+                ],
+            },
+            // explicitly set the revision to that of the previous transaction
+            receipt?.meta.blockID,
+        )
+
+        expect(
+            sameRevisionEstimation.success,
+            'Same revision should have a good response',
+        ).toBeTrue()
+
+        const nextBlockEstimation = await Client.raw.executeAccountBatch(
+            {
+                clauses: [
+                    {
+                        to: contract.address,
+                        value: '0x0',
+                        data: gasInterface.encodeFunctionData('setNextBlock'),
+                    },
+                ],
+            },
+            'next',
+        )
+        expect(
+            nextBlockEstimation.success,
+            "'next' revision should have a good response",
+        ).toBeTrue()
+
+        expect(
+            sameRevisionEstimation.body?.[0]?.gasUsed,
+            "'next' revision should have a higher gas cost",
+        ).toBeLessThan(nextBlockEstimation?.body?.[0]?.gasUsed as number)
     })
 })

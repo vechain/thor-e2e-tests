@@ -1,9 +1,10 @@
-import { PopulatedChainData } from './types'
+import { PopulatedChainData, TransferDetails } from './types'
 import { POPULATED_DATA_FILENAME } from '../test/globalSetup'
 import fs from 'fs'
 import { components } from './open-api-types'
 import { Client } from './thor-client'
 import { pollReceipt } from './transactions'
+import { staticEventsTransactions } from './logs/transactions'
 
 export type Transfer = {
     vet: Required<components['schemas']['Transfer']>
@@ -51,69 +52,20 @@ const formatTxReceipt = (
         meta: txReceipt.meta as Transfer['meta'],
     }
 }
-export const getGenesisBlockId = () => {
-    const data = readPopulatedData()
-
-    return data.genesisId
-}
 
 export const readRandomTransfer = async (): Promise<Transfer> => {
-    const data = readPopulatedData()
-
-    const randomIndex = Math.floor(Math.random() * data.transfersIds.length)
-
-    const txReceipt = await Client.raw.getTransactionReceipt(
-        data.transfersIds[randomIndex],
+    const randomBlockIndex = Math.floor(
+        Math.random() * staticEventsTransactions.length,
     )
-
-    if (!txReceipt.body || !txReceipt.success) return readRandomTransfer()
-
+    const blockTxs = staticEventsTransactions[randomBlockIndex]
+    const randomBlockTxIndex = Math.floor(Math.random() * blockTxs.length)
+    const txId = blockTxs[randomBlockTxIndex].txId
+    const txReceipt = await Client.raw.getTransactionReceipt(txId)
     return formatTxReceipt(txReceipt.body!)
 }
 
-type TransferDetails = {
-    firstBlock: number
-    lastBlock: number
-    transferCount: number
-}
-
-let transferDetails: TransferDetails | undefined
-
-export const getTransferDetails = async () => {
-    if (transferDetails) {
-        return transferDetails
-    }
-
-    const data = readPopulatedData()
-
-    const transfers = (
-        await Promise.all(
-            data.transfersIds.map(async (txId) => {
-                try {
-                    return pollReceipt(txId, 10_000)
-                } catch {
-                    /* empty */
-                }
-            }),
-        )
-    ).filter((t) => t) as Transfer[]
-
-    const sortedTransfers = transfers.sort((a, b) => {
-        return (a.meta.blockNumber ?? 0) - (b.meta.blockNumber ?? 0)
-    })
-
-    const firstBlock = sortedTransfers[0].meta.blockNumber ?? 0
-    const lastBlock =
-        sortedTransfers[sortedTransfers.length - 1].meta.blockNumber ?? 0
-    const transferCount = sortedTransfers.length
-
-    transferDetails = {
-        firstBlock,
-        lastBlock,
-        transferCount,
-    }
-
-    return transferDetails
+export const readTransferDetails = (): TransferDetails => {
+    return readPopulatedData().transferDetails
 }
 
 const populatedData = {

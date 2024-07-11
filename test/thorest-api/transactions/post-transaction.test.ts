@@ -10,7 +10,7 @@ describe('POST /transactions', function () {
 
     testCase(['solo', 'default-private', 'testnet'])(
         'should send a transaction',
-        async function () {
+        async () => {
             const fundReceipt = await wallet.waitForFunding()
 
             expect(

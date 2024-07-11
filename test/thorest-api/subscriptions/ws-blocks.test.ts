@@ -7,23 +7,21 @@ import { testCase } from '../../../src/test-case'
  * @group websockets
  */
 describe('WS /subscriptions/blocks', () => {
+    testCase('all')('should be able to subscribe', async () => {
+        const beats: components['schemas']['SubscriptionBlockResponse'][] = []
 
-    testCase(['testnet'])(
-        'should be able to subscribe', async () => {
-            const beats: components['schemas']['SubscriptionBlockResponse'][] = []
-
-            const ws = Client.raw.subscribeToBlocks((newBlock) => {
-                beats.push(newBlock)
-            })
-
-            await Client.raw.waitForBlock()
-            await Client.raw.waitForBlock()
-
-            //sleep for 1 sec to ensure the beat is received
-            await new Promise((resolve) => setTimeout(resolve, 1000))
-
-            expect(beats.length).toBeGreaterThanOrEqual(2)
-
-            ws.unsubscribe()
+        const ws = Client.raw.subscribeToBlocks((newBlock) => {
+            beats.push(newBlock)
         })
+
+        await Client.raw.waitForBlock()
+        await Client.raw.waitForBlock()
+
+        //sleep for 1 sec to ensure the beat is received
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
+        expect(beats.length).toBeGreaterThanOrEqual(2)
+
+        ws.unsubscribe()
+    })
 })

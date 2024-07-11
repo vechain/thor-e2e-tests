@@ -5,41 +5,54 @@
  * Writing to mainnet and testnet is not recommended as we only need to do that once.
  */
 import { Client } from '../thor-client'
-import { ThorWallet } from '../wallet'
 import { TransferDetails } from '../types'
+import { staticEventsTransactions } from './transactions'
 
 const writeTransferTransactions = async (): Promise<TransferDetails> => {
     console.log('\n')
 
-    const transferCount = 20
-    const iterations = 5
-
-    let firstBlock = (await Client.raw.getBlock('best')).body!.number!
+    let firstBlock = 0
     let lastBlock = 0
+    let transferCount = 0
 
+    for (let i = 0; i < staticEventsTransactions.length; i++) {
+        const blockTxs: { raw: string; txId: string }[] =
+            staticEventsTransactions[i]
 
-    for (let i = 0; i < iterations; i++) {
-        let block = await Client.raw.getBlock('best')
-        while (block.body?.number == lastBlock) {
-            block = await Client.raw.getBlock('best')
-        }
+        console.log(`Checking for batch ${i} of the event TXs...`)
 
-        console.log('Populating [block=' + (block.body!.number! + 1) + ']')
+        await Promise.all(
+            blockTxs.map(async (tx) => {
+                let receipt =
+                    await Client.sdk.transactions.getTransactionReceipt(tx.txId)
 
-        const res = await Promise.all(
-            Array.from({ length: 20 }, () => {
-                const reciept = ThorWallet.txBetweenFunding().waitForFunding()
-                return reciept
+                // deploy the tx and wait for it if it is not already deployed
+                if (receipt == null) {
+                    const newTx =
+                        await Client.sdk.transactions.sendRawTransaction(tx.raw)
+
+                    receipt = await newTx.wait()
+                }
+
+                if (!receipt || receipt.reverted) {
+                    throw new Error('Transaction failed')
+                }
+
+                if (firstBlock == 0) {
+                    firstBlock = receipt.meta.blockNumber
+                }
+
+                lastBlock = receipt.meta.blockNumber
+
+                transferCount++
             }),
         )
-
-        lastBlock = res[0]!.meta!.blockNumber as number
     }
 
     return {
         lastBlock,
         firstBlock,
-        transferCount: transferCount * iterations,
+        transferCount,
     }
 }
 

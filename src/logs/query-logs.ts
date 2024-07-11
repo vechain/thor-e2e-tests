@@ -10,6 +10,7 @@ import {
 } from '@vechain/sdk-network'
 import { Client } from '../thor-client'
 import { populatedData } from '../populated-data'
+import { staticEventsTransactions } from './transactions'
 
 const hasVetTransfer = (tx: TransactionsExpandedBlockDetail): boolean => {
     return tx.outputs[0]?.transfers.length > 0
@@ -43,22 +44,4 @@ export const getTransferIds = async (
             return hasVetTransfer(tx) && hasVthoTransfer(tx)
         })
         .map((tx) => tx.id)
-}
-
-const formatTxReceipt = (
-    txReceipt: components['schemas']['GetTxReceiptResponse'],
-): Transfer => {
-    return {
-        vet: txReceipt.outputs?.[0].transfers?.[0] as Transfer['vet'],
-        vtho: txReceipt.outputs?.[1].events?.[0] as Transfer['vtho'],
-        meta: txReceipt.meta as Transfer['meta'],
-    }
-}
-
-export const getRandomTransfer = async (): Promise<Transfer> => {
-    const data = populatedData.read()
-    const randomIndex = Math.floor(Math.random() * data.transfersIds.length)
-    const tx = data.transfersIds[randomIndex]
-    const txReceipt = await Client.raw.getTransactionReceipt(tx)
-    return formatTxReceipt(txReceipt.body!)
 }
