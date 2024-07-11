@@ -14,7 +14,7 @@ describe('send tx with not enough gas', function () {
 
     it.e2eTest(
         'should fail when making a contract deployment',
-        ['solo', 'default-private', 'testnet'],
+        'all',
         async function () {
             // Prepare the transaction
             const deployContractClause = clauseBuilder.deployContract(
@@ -45,7 +45,7 @@ describe('send tx with not enough gas', function () {
 
     it.e2eTest(
         'should fail when making a VET transfer',
-        ['solo', 'default-private', 'testnet'],
+        'all',
         async function () {
             // Prepare the transaction
             const receivingAddr = generateAddress()
@@ -81,7 +81,7 @@ describe('send tx with not enough gas', function () {
 
     it.e2eTest(
         'should fail when making a contract call',
-        ['solo', 'default-private', 'testnet'],
+        'all',
         async function () {
             // Preconditions - deploy a contract
             const contract = await deployer.deployContract(

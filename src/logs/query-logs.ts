@@ -2,15 +2,12 @@
  * @file query-logs.ts
  * @desc This file contains the functions to query VET and VTHO transfers from the blockchain.
  */
-import { Transfer, TransferDetails } from '../types'
-import { components } from '../open-api-types'
+import { TransferDetails } from '../types'
 import {
     ExpandedBlockDetail,
     TransactionsExpandedBlockDetail,
 } from '@vechain/sdk-network'
 import { Client } from '../thor-client'
-import { populatedData } from '../populated-data'
-import { staticEventsTransactions } from './transactions'
 
 const hasVetTransfer = (tx: TransactionsExpandedBlockDetail): boolean => {
     return tx.outputs[0]?.transfers.length > 0

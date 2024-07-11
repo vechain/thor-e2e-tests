@@ -161,71 +161,55 @@ describe('POST /logs/event', () => {
             },
         )
 
-        it.e2eTest(
-            'should be able to omit the "to" field',
-            ['solo', 'default-private', 'testnet'],
-            async () => {
-                await runEventLogsTest((request) => {
-                    return {
-                        ...request,
-                        range: {
-                            ...request.range,
-                            to: undefined,
-                        },
-                    }
-                })
-            },
-        )
+        it.e2eTest('should be able to omit the "to" field', 'all', async () => {
+            await runEventLogsTest((request) => {
+                return {
+                    ...request,
+                    range: {
+                        ...request.range,
+                        to: undefined,
+                    },
+                }
+            })
+        })
 
-        it.e2eTest(
-            'should be omit the "unit" field',
-            ['solo', 'default-private', 'testnet'],
-            async () => {
-                await runEventLogsTest((request) => {
-                    return {
-                        ...request,
-                        range: {
-                            ...request.range,
-                            unit: undefined,
-                        },
-                    }
-                })
-            },
-        )
+        it.e2eTest('should be omit the "unit" field', 'all', async () => {
+            await runEventLogsTest((request) => {
+                return {
+                    ...request,
+                    range: {
+                        ...request.range,
+                        unit: undefined,
+                    },
+                }
+            })
+        })
 
-        it.e2eTest(
-            'should be able query by time',
-            ['solo', 'default-private', 'testnet'],
-            async () => {
-                await runEventLogsTest((request, transfer) => {
-                    return {
-                        ...request,
-                        range: {
-                            to: transfer.meta.blockTimestamp + 1000,
-                            from: transfer.meta.blockTimestamp - 1000,
-                            unit: 'time',
-                        },
-                    }
-                })
-            },
-        )
+        it.e2eTest('should be able query by time', 'all', async () => {
+            await runEventLogsTest((request, transfer) => {
+                return {
+                    ...request,
+                    range: {
+                        to: transfer.meta.blockTimestamp + 1000,
+                        from: transfer.meta.blockTimestamp - 1000,
+                        unit: 'time',
+                    },
+                }
+            })
+        })
 
-        it.e2eTest(
-            'should be able query by block',
-            ['solo', 'default-private', 'testnet'],
-            async () => {
-                await runEventLogsTest((request, transfer) => {
-                    return {
-                        ...request,
-                        range: {
-                            to: transfer.meta.blockNumber,
-                            from: transfer.meta.blockNumber,
-                            unit: 'block',
-                        },
-                    }
-                })
-            },
-        )
+        it.e2eTest('should be able query by block', 'all', async () => {
+            await runEventLogsTest((request, transfer) => {
+                return {
+                    ...request,
+                    range: {
+                        to: transfer.meta.blockNumber,
+                        from: transfer.meta.blockNumber,
+                        unit: 'block',
+                    },
+                }
+            })
+        })
 
         it.e2eTest(
             'should be able to set the range to null',
@@ -298,33 +282,21 @@ describe('POST /logs/event', () => {
             )
         }
 
-        it.e2eTest(
-            'events should be ordered by DESC',
-            ['solo', 'default-private', 'testnet'],
-            async () => {
-                await runQueryEventLogsTest('desc')
-            },
-        )
+        it.e2eTest('events should be ordered by DESC', 'all', async () => {
+            await runQueryEventLogsTest('desc')
+        })
 
-        it.e2eTest(
-            'events should be ordered by ASC',
-            ['solo', 'default-private', 'testnet'],
-            async () => {
-                await runQueryEventLogsTest('asc')
-            },
-        )
+        it.e2eTest('events should be ordered by ASC', 'all', async () => {
+            await runQueryEventLogsTest('asc')
+        })
 
-        it.e2eTest(
-            'default should be asc',
-            ['solo', 'default-private', 'testnet'],
-            async () => {
-                await runQueryEventLogsTest(undefined)
-            },
-        )
+        it.e2eTest('default should be asc', 'all', async () => {
+            await runQueryEventLogsTest(undefined)
+        })
 
         it.e2eTest(
             'should be able to set the order to null',
-            ['solo', 'default-private', 'testnet'],
+            'all',
             async () => {
                 await runQueryEventLogsTest(null)
             },
@@ -332,22 +304,18 @@ describe('POST /logs/event', () => {
     })
 
     describe('query by "options"', () => {
-        it.e2eTest(
-            'should be able omit all the options',
-            ['solo', 'default-private', 'testnet'],
-            async () => {
-                await runEventLogsTest((request) => {
-                    return {
-                        ...request,
-                        options: null,
-                    }
-                })
-            },
-        )
+        it.e2eTest('should be able omit all the options', 'all', async () => {
+            await runEventLogsTest((request) => {
+                return {
+                    ...request,
+                    options: null,
+                }
+            })
+        })
 
         it.e2eTest(
             'should be able to omit the "offset" field',
-            ['solo', 'default-private', 'testnet'],
+            'all',
             async () => {
                 await runEventLogsTest((request) => {
                     return {
@@ -363,7 +331,7 @@ describe('POST /logs/event', () => {
 
         it.e2eTest(
             'should be able to omit the "limit" field',
-            ['solo', 'default-private', 'testnet'],
+            'all',
             async () => {
                 const request = {
                     options: {
@@ -403,107 +371,99 @@ describe('POST /logs/event', () => {
             },
         )
 
-        it.e2eTest(
-            'should have no minimum "limit"',
-            ['solo', 'default-private', 'testnet'],
-            async () => {
-                const request = {
-                    options: {
-                        offset: 0,
-                        limit: 0,
+        it.e2eTest('should have no minimum "limit"', 'all', async () => {
+            const request = {
+                options: {
+                    offset: 0,
+                    limit: 0,
+                },
+            }
+
+            const eventLogs = await Client.raw.queryEventLogs(request)
+
+            expect(
+                eventLogs.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(eventLogs.body?.length).toEqual(0)
+        })
+
+        it.e2eTest('should be able paginate requests', 'all', async () => {
+            const { firstBlock, lastBlock } = await transferDetails
+
+            const pages = 5
+            const amountPerPage = 10
+            const totalElements = pages * amountPerPage
+
+            const query = async (offset: number, limit: number) =>
+                Client.raw.queryEventLogs({
+                    range: {
+                        from: firstBlock,
+                        to: lastBlock,
+                        unit: 'block',
                     },
-                }
+                    options: {
+                        offset,
+                        limit,
+                    },
+                    criteriaSet: [
+                        {
+                            address: contractAddresses.energy,
+                        },
+                    ],
+                })
 
-                const eventLogs = await Client.raw.queryEventLogs(request)
+            const allElements = await query(0, totalElements)
+
+            expect(
+                allElements.success,
+                'API response should be a success',
+            ).toBeTrue()
+            expect(allElements.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(
+                allElements.body?.length,
+                'Should be able to query for all elements',
+            ).toEqual(totalElements)
+
+            const paginatedElements: components['schemas']['EventLogsResponse'][] =
+                []
+
+            for (let i = 0; i < pages; i++) {
+                const paginatedResponse = await query(
+                    paginatedElements.length,
+                    amountPerPage,
+                )
 
                 expect(
-                    eventLogs.success,
+                    paginatedResponse.success,
                     'API response should be a success',
                 ).toBeTrue()
-                expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-                expect(eventLogs.body?.length).toEqual(0)
-            },
-        )
-
-        it.e2eTest(
-            'should be able paginate requests',
-            ['solo', 'default-private', 'testnet'],
-            async () => {
-                const { firstBlock, lastBlock } = await transferDetails
-
-                const pages = 5
-                const amountPerPage = 10
-                const totalElements = pages * amountPerPage
-
-                const query = async (offset: number, limit: number) =>
-                    Client.raw.queryEventLogs({
-                        range: {
-                            from: firstBlock,
-                            to: lastBlock,
-                            unit: 'block',
-                        },
-                        options: {
-                            offset,
-                            limit,
-                        },
-                        criteriaSet: [
-                            {
-                                address: contractAddresses.energy,
-                            },
-                        ],
-                    })
-
-                const allElements = await query(0, totalElements)
-
                 expect(
-                    allElements.success,
-                    'API response should be a success',
-                ).toBeTrue()
-                expect(allElements.httpCode, 'Expected HTTP Code').toEqual(200)
+                    paginatedResponse.httpCode,
+                    'Expected HTTP Code',
+                ).toEqual(200)
                 expect(
-                    allElements.body?.length,
-                    'Should be able to query for all elements',
-                ).toEqual(totalElements)
+                    paginatedResponse.body?.length,
+                    'Should be able to query for a paginated amount',
+                ).toEqual(amountPerPage)
 
-                const paginatedElements: components['schemas']['EventLogsResponse'][] =
-                    []
+                const elements = paginatedResponse.body?.filter(
+                    (it) => it !== undefined,
+                ) as components['schemas']['EventLogsResponse'][]
 
-                for (let i = 0; i < pages; i++) {
-                    const paginatedResponse = await query(
-                        paginatedElements.length,
-                        amountPerPage,
-                    )
+                paginatedElements.push(...elements)
+            }
 
-                    expect(
-                        paginatedResponse.success,
-                        'API response should be a success',
-                    ).toBeTrue()
-                    expect(
-                        paginatedResponse.httpCode,
-                        'Expected HTTP Code',
-                    ).toEqual(200)
-                    expect(
-                        paginatedResponse.body?.length,
-                        'Should be able to query for a paginated amount',
-                    ).toEqual(amountPerPage)
-
-                    const elements = paginatedResponse.body?.filter(
-                        (it) => it !== undefined,
-                    ) as components['schemas']['EventLogsResponse'][]
-
-                    paginatedElements.push(...elements)
-                }
-
-                expect(
-                    allElements.body,
-                    'Paginated items should equal all elements',
-                ).toEqual(paginatedElements)
-            },
-        )
+            expect(
+                allElements.body,
+                'Paginated items should equal all elements',
+            ).toEqual(paginatedElements)
+        })
 
         it.e2eTest(
             'should be empty when pagination exceeds the total amount',
-            ['solo', 'default-private', 'testnet'],
+            'all',
             async () => {
                 // First, we need to make sure there are events
                 const res1 = await Client.raw.queryEventLogs({
@@ -613,7 +573,7 @@ describe('POST /logs/event', () => {
 
         it.e2eTest(
             'should be able query by contract address',
-            ['solo', 'default-private', 'testnet'],
+            'all',
             async () => {
                 const res = await Client.raw.queryEventLogs({
                     criteriaSet: [
@@ -630,7 +590,7 @@ describe('POST /logs/event', () => {
 
         it.e2eTest(
             'should be able query by topic0 address',
-            ['solo', 'default-private', 'testnet'],
+            'all',
             async () => {
                 const res = await Client.raw.queryEventLogs({
                     criteriaSet: [
@@ -648,7 +608,7 @@ describe('POST /logs/event', () => {
         Array.from([1, 2, 3]).forEach((topicIndex) => {
             it.e2eTest(
                 `should be able query by topic${topicIndex}`,
-                ['solo', 'default-private', 'testnet'],
+                'all',
                 async () => {
                     const res = await Client.raw.queryEventLogs({
                         criteriaSet: [
@@ -664,29 +624,25 @@ describe('POST /logs/event', () => {
             )
         })
 
-        it.e2eTest(
-            'should be able query by all topics',
-            ['solo', 'default-private', 'testnet'],
-            async () => {
-                const res = await Client.raw.queryEventLogs({
-                    criteriaSet: [
-                        {
-                            topic0: eventHash,
-                            topic1: topics[0],
-                            topic2: topics[1],
-                            topic3: topics[2],
-                        },
-                    ],
-                    range,
-                })
+        it.e2eTest('should be able query by all topics', 'all', async () => {
+            const res = await Client.raw.queryEventLogs({
+                criteriaSet: [
+                    {
+                        topic0: eventHash,
+                        topic1: topics[0],
+                        topic2: topics[1],
+                        topic3: topics[2],
+                    },
+                ],
+                range,
+            })
 
-                await expectOriginalEvent(res)
-            },
-        )
+            await expectOriginalEvent(res)
+        })
 
         it.e2eTest(
             'should be able query by all topics and address',
-            ['solo', 'default-private', 'testnet'],
+            'all',
             async () => {
                 const res = await Client.raw.queryEventLogs({
                     criteriaSet: [
@@ -707,7 +663,7 @@ describe('POST /logs/event', () => {
 
         it.e2eTest(
             'should be empty for matching topics and non-matching address',
-            ['solo', 'default-private', 'testnet'],
+            'all',
             async () => {
                 const res = await Client.raw.queryEventLogs({
                     criteriaSet: [
@@ -733,7 +689,7 @@ describe('POST /logs/event', () => {
 
         it.e2eTest(
             'should be empty for non-matching topics and matching address',
-            ['solo', 'default-private', 'testnet'],
+            'all',
             async () => {
                 const res = await Client.raw.queryEventLogs({
                     criteriaSet: [

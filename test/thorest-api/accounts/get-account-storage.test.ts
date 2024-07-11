@@ -54,30 +54,26 @@ describe('GET /accounts/{address}/storage', function () {
         simpleStorageAddress = txReceipt.outputs?.[0].contractAddress as string
     })
 
-    it.e2eTest(
-        'should return the storage value',
-        ['solo', 'default-private', 'testnet'],
-        async function () {
-            const amount = 973252
+    it.e2eTest('should return the storage value', 'all', async function () {
+        const amount = 973252
 
-            await setSimpleStorage(simpleStorageAddress, amount, wallet)
+        await setSimpleStorage(simpleStorageAddress, amount, wallet)
 
-            const res = await Client.raw.getAccountStorage(
-                simpleStorageAddress,
-                SIMPLE_STORAGE_KEY,
-            )
+        const res = await Client.raw.getAccountStorage(
+            simpleStorageAddress,
+            SIMPLE_STORAGE_KEY,
+        )
 
-            expect(res.success, 'API response should be a success').toBeTrue()
-            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(res.body, 'Expected Response Body').toEqual({
-                value: addPaddingWithPrefix(amount),
-            })
-        },
-    )
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Expected Response Body').toEqual({
+            value: addPaddingWithPrefix(amount),
+        })
+    })
 
     it.e2eTest(
         'should be able to query history storage values',
-        ['solo', 'default-private', 'testnet'],
+        'all',
         async () => {
             const contractState = await Client.raw.getAccountStorage(
                 simpleStorageAddress,

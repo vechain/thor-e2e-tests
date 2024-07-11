@@ -37,32 +37,22 @@ describe('EVM Opcodes', () => {
 
     it.e2eTest(
         'Should run without errors the majority of opcodes',
-        ['solo', 'default-private', 'testnet'],
+        'all',
         async () => {
             await opcodes.transact.test()
             await opcodes.transact.test_stop()
         },
     )
 
-    it.e2eTest(
-        'Should throw invalid op code',
-        ['solo', 'default-private', 'testnet'],
-        async () => {
-            await expect(() =>
-                opcodes.transact.test_invalid(),
-            ).rejects.toThrow()
-        },
-    )
+    it.e2eTest('Should throw invalid op code', 'all', async () => {
+        await expect(() => opcodes.transact.test_invalid()).rejects.toThrow()
+    })
 
-    it.e2eTest(
-        'Should revert',
-        ['solo', 'default-private', 'testnet'],
-        async () => {
-            const { wait } = await opcodes.transact.test_revert()
+    it.e2eTest('Should revert', 'all', async () => {
+        const { wait } = await opcodes.transact.test_revert()
 
-            const tx = await wait()
+        const tx = await wait()
 
-            expect(tx?.reverted).toBe(true)
-        },
-    )
+        expect(tx?.reverted).toBe(true)
+    })
 })

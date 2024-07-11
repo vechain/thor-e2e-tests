@@ -366,7 +366,7 @@ describe('Individual OpCodes', () => {
     opcode1TestsEntries.forEach(([name, { input, expected }]) => {
         it.e2eTest(
             `should give the correct output for opcode: ${name}`,
-            ['solo', 'default-private', 'testnet'],
+            'all',
             async () => {
                 const debugged = await traceContractCall(
                     opcodesInterface.encodeFunctionData(
@@ -386,7 +386,7 @@ describe('Individual OpCodes', () => {
 
     it.e2eTest(
         'should give the correct output for opcode: BALANCE',
-        ['solo', 'default-private', 'testnet'],
+        'all',
         async () => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('BALANCE', [caller]),
@@ -410,7 +410,7 @@ describe('Individual OpCodes', () => {
         (dupN) => {
             it.e2eTest(
                 `should give the correct output for opcode: DUP${dupN}`,
-                ['solo', 'default-private', 'testnet'],
+                'all',
                 async () => {
                     const debugged = await traceContractCall(
                         opcodesInterface.encodeFunctionData('DUP_ALL'),
@@ -440,7 +440,7 @@ describe('Individual OpCodes', () => {
 
         it.e2eTest(
             `should give the correct output for opcode: ${logN}`,
-            ['solo', 'default-private', 'testnet'],
+            'all',
             async () => {
                 const debugged = await traceContractCall(
                     opcodesInterface.encodeFunctionData(
@@ -472,7 +472,7 @@ describe('Individual OpCodes', () => {
 
     it.e2eTest(
         'should give the correct output for opcode: REVERT',
-        ['solo', 'default-private', 'testnet'],
+        'all',
         async () => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('REVERT'),
@@ -490,7 +490,7 @@ describe('Individual OpCodes', () => {
 
     it.e2eTest(
         'should give the correct output for opcode: INVALID',
-        ['solo', 'default-private', 'testnet'],
+        'all',
         async () => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('INVALID'),
@@ -506,7 +506,7 @@ describe('Individual OpCodes', () => {
 
     it.e2eTest(
         'should give the correct output for opcode: STOP',
-        ['solo', 'default-private', 'testnet'],
+        'all',
         async () => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('STOP'),
@@ -521,7 +521,7 @@ describe('Individual OpCodes', () => {
 
     it.e2eTest(
         'should give the correct output for opcode: ADDRESS',
-        ['solo', 'default-private', 'testnet'],
+        'all',
         async () => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('ADDRESS'),
@@ -536,7 +536,7 @@ describe('Individual OpCodes', () => {
 
     it.e2eTest(
         'should give the correct output for opcode: PUSH0',
-        ['solo', 'default-private', 'testnet'],
+        'all',
         async () => {
             const clauses = [
                 {

@@ -18,7 +18,7 @@ describe('GET /accounts/{address}/code', function () {
     accountAddress.forEach((address) => {
         it.e2eTest(
             `should return no code for newly created address: ${address}`,
-            ['solo', 'default-private', 'testnet'],
+            'all',
             async () => {
                 const res = await Client.raw.getAccountCode(address)
 
@@ -39,22 +39,15 @@ describe('GET /accounts/{address}/code', function () {
     )
 
     noPrefix.forEach((address) => {
-        it.e2eTest(
-            `should return the code for ${address}`,
-            ['solo', 'default-private', 'testnet'],
-            async () => {
-                const res = await Client.raw.getAccountCode(address)
+        it.e2eTest(`should return the code for ${address}`, 'all', async () => {
+            const res = await Client.raw.getAccountCode(address)
 
-                expect(
-                    res.success,
-                    'API response should be a success',
-                ).toBeTrue()
-                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-                expect(res.body, 'Expected Response Body').toEqual({
-                    code: expect.stringMatching(HEX_AT_LEAST_1),
-                })
-            },
-        )
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Expected Response Body').toEqual({
+                code: expect.stringMatching(HEX_AT_LEAST_1),
+            })
+        })
     })
 
     Array.from([
@@ -65,7 +58,7 @@ describe('GET /accounts/{address}/code', function () {
     ]).forEach((address) => {
         it.e2eTest(
             `should return 400 for invalid address: ${address}`,
-            ['solo', 'default-private', 'testnet'],
+            'all',
             async () => {
                 const res = await Client.raw.getAccountCode(address)
 

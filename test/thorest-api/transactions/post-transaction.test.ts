@@ -7,16 +7,12 @@ import { ThorWallet } from '../../../src/wallet'
 describe('POST /transactions', function () {
     const wallet = ThorWallet.txBetweenFunding()
 
-    it.e2eTest(
-        'should send a transaction',
-        ['solo', 'default-private', 'testnet'],
-        async () => {
-            const fundReceipt = await wallet.waitForFunding()
+    it.e2eTest('should send a transaction', 'all', async () => {
+        const fundReceipt = await wallet.waitForFunding()
 
-            expect(
-                fundReceipt?.reverted,
-                'Transaction should not be reverted',
-            ).toEqual(false)
-        },
-    )
+        expect(
+            fundReceipt?.reverted,
+            'Transaction should not be reverted',
+        ).toEqual(false)
+    })
 })

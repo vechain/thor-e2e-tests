@@ -22,7 +22,7 @@ describe('VET transfer, positive outcome', function () {
 
     it.e2eTest(
         'transfer VET amount from address A to address B',
-        ['solo', 'default-private', 'testnet'],
+        'all',
         async function () {
             const receivingAddr = generateAddress()
             const clauses = [
