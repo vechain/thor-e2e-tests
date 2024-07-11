@@ -2,8 +2,8 @@
 import { Client, Response, Schema } from '../../../src/thor-client'
 import { contractAddresses } from '../../../src/contracts/addresses'
 import {
-    readTransferDetails,
     readRandomTransfer,
+    readTransferDetails,
     Transfer,
 } from '../../../src/populated-data'
 import {
@@ -16,7 +16,6 @@ import { EventsContract__factory } from '../../../typechain-types'
 import { Contract, TransactionReceipt } from '@vechain/sdk-network'
 import { addAddressPadding } from '../../../src/utils/padding-utils'
 import { ThorWallet } from '../../../src/wallet'
-import { testCase, testCaseEach } from '../../../src/test-case'
 import { fundingAmounts } from '../../../src/account-faucet'
 
 const buildRequestFromTransfer = (
@@ -49,8 +48,9 @@ type EventLogFilterRequest = components['schemas']['EventLogFilterRequest']
 describe('POST /logs/event', () => {
     const transferDetails = readTransferDetails()
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should find a log with all parameters set',
+        ['solo', 'default-private'],
         async () => {
             const transfer = await readRandomTransfer()
 
@@ -84,8 +84,9 @@ describe('POST /logs/event', () => {
         },
     )
 
-    testCase(['solo', 'default-private'])(
+    it.e2eTest(
         'should be able to omit all the parameters',
+        ['solo', 'default-private'],
         async () => {
             const transfer = await readRandomTransfer()
             const response = await Client.raw.queryEventLogs({})
@@ -144,8 +145,9 @@ describe('POST /logs/event', () => {
     }
 
     describe('query by "range"', () => {
-        testCase(['solo', 'default-private'])(
+        it.e2eTest(
             'should be able to omit the "from" field',
+            ['solo', 'default-private'],
             async () => {
                 await runEventLogsTest((request) => {
                     return {
@@ -159,8 +161,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able to omit the "to" field',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runEventLogsTest((request) => {
                     return {
@@ -174,8 +177,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be omit the "unit" field',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runEventLogsTest((request) => {
                     return {
@@ -189,8 +193,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by time',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runEventLogsTest((request, transfer) => {
                     return {
@@ -205,8 +210,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by block',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runEventLogsTest((request, transfer) => {
                     return {
@@ -221,8 +227,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private'])(
+        it.e2eTest(
             'should be able to set the range to null',
+            ['solo', 'default-private'],
             async () => {
                 await runEventLogsTest((request) => {
                     return {
@@ -291,29 +298,33 @@ describe('POST /logs/event', () => {
             )
         }
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'events should be ordered by DESC',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runQueryEventLogsTest('desc')
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'events should be ordered by ASC',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runQueryEventLogsTest('asc')
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'default should be asc',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runQueryEventLogsTest(undefined)
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able to set the order to null',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runQueryEventLogsTest(null)
             },
@@ -321,8 +332,9 @@ describe('POST /logs/event', () => {
     })
 
     describe('query by "options"', () => {
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able omit all the options',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runEventLogsTest((request) => {
                     return {
@@ -333,8 +345,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able to omit the "offset" field',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runEventLogsTest((request) => {
                     return {
@@ -348,8 +361,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able to omit the "limit" field',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const request = {
                     options: {
@@ -368,8 +382,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private'])(
+        it.e2eTest(
             'should have default maximum of 1000',
+            ['solo', 'default-private'],
             async () => {
                 const request = {
                     options: {
@@ -388,8 +403,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should have no minimum "limit"',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const request = {
                     options: {
@@ -409,8 +425,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able paginate requests',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const { firstBlock, lastBlock } = await transferDetails
 
@@ -484,8 +501,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be empty when pagination exceeds the total amount',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 // First, we need to make sure there are events
                 const res1 = await Client.raw.queryEventLogs({
@@ -593,8 +611,9 @@ describe('POST /logs/event', () => {
             })
         }
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by contract address',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const res = await Client.raw.queryEventLogs({
                     criteriaSet: [
@@ -609,8 +628,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by topic0 address',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const res = await Client.raw.queryEventLogs({
                     criteriaSet: [
@@ -625,25 +645,28 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCaseEach(['solo', 'default-private', 'testnet'])(
-            `should be able query by topic%d`,
-            [1, 2, 3],
-            async (topicIndex) => {
-                const res = await Client.raw.queryEventLogs({
-                    criteriaSet: [
-                        {
-                            [`topic${topicIndex}`]: topics[topicIndex - 1],
-                        },
-                    ],
-                    range,
-                })
+        Array.from([1, 2, 3]).forEach((topicIndex) => {
+            it.e2eTest(
+                `should be able query by topic${topicIndex}`,
+                ['solo', 'default-private', 'testnet'],
+                async () => {
+                    const res = await Client.raw.queryEventLogs({
+                        criteriaSet: [
+                            {
+                                [`topic${topicIndex}`]: topics[topicIndex - 1],
+                            },
+                        ],
+                        range,
+                    })
 
-                await expectOriginalEvent(res)
-            },
-        )
+                    await expectOriginalEvent(res)
+                },
+            )
+        })
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by all topics',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const res = await Client.raw.queryEventLogs({
                     criteriaSet: [
@@ -661,8 +684,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by all topics and address',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const res = await Client.raw.queryEventLogs({
                     criteriaSet: [
@@ -681,8 +705,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be empty for matching topics and non-matching address',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const res = await Client.raw.queryEventLogs({
                     criteriaSet: [
@@ -706,8 +731,9 @@ describe('POST /logs/event', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be empty for non-matching topics and matching address',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const res = await Client.raw.queryEventLogs({
                     criteriaSet: [

@@ -28,6 +28,7 @@ import {
     VeChainProvider,
 } from '@vechain/sdk-network'
 import { Abi } from 'abitype'
+import { Uint } from 'web3'
 
 export const generateAddress = () => {
     return generateEmptyWallet().address.toLowerCase()
@@ -194,7 +195,7 @@ class ThorWallet {
 
     public signTransaction = async (
         transaction: Transaction,
-        delegationSignature?: Buffer,
+        delegationSignature?: Uint8Array,
     ) => {
         const signingHash = transaction.getSignatureHash()
         const signature = secp256k1.sign(signingHash, this.privateKey)

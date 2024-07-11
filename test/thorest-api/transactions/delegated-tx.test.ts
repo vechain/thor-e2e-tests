@@ -1,6 +1,5 @@
 import { secp256k1, Transaction } from '@vechain/sdk-core'
 import { ThorWallet } from '../../../src/wallet'
-import { Client } from '../../../src/thor-client'
 import {
     successfulPostTx,
     compareSentTxWithCreatedTx,
@@ -11,15 +10,14 @@ import {
 } from './setup/asserts'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
 import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-types'
-import { fundingAmounts } from '../../../src/account-faucet'
-import { testCase } from '../../../src/test-case'
 
 /**
  * @group api
  * @group transactions
  */
-testCase(['solo', 'default-private', 'testnet'])(
+it.e2eTest(
     'should send a tx with delegated payer',
+    ['solo', 'default-private', 'testnet'],
     async function () {
         const wallet = ThorWallet.withFunds()
         const emptyWallet = ThorWallet.empty()

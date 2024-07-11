@@ -3,8 +3,6 @@ import { generateAddress, ThorWallet } from '../../../src/wallet'
 import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-types'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
 import { revertedPostTx } from './setup/asserts'
-import { testCase } from '../../../src/test-case'
-import { fundingAmounts } from '../../../src/account-faucet'
 
 /**
  * @group api
@@ -14,8 +12,9 @@ describe('send tx with not enough gas', function () {
     const deployer = ThorWallet.withFunds()
     const wallet = ThorWallet.empty()
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should fail when making a contract deployment',
+        ['solo', 'default-private', 'testnet'],
         async function () {
             // Prepare the transaction
             const deployContractClause = clauseBuilder.deployContract(
@@ -44,8 +43,9 @@ describe('send tx with not enough gas', function () {
         },
     )
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should fail when making a VET transfer',
+        ['solo', 'default-private', 'testnet'],
         async function () {
             // Prepare the transaction
             const receivingAddr = generateAddress()
@@ -79,8 +79,9 @@ describe('send tx with not enough gas', function () {
         },
     )
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should fail when making a contract call',
+        ['solo', 'default-private', 'testnet'],
         async function () {
             // Preconditions - deploy a contract
             const contract = await deployer.deployContract(

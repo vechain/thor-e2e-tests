@@ -8,7 +8,6 @@ import { interfaces } from '../../../src/contracts/hardhat'
 import { getBlockRef } from '../../../src/utils/block-utils'
 import { revisions } from '../../../src/constants'
 import { ThorWallet } from '../../../src/wallet'
-import { testCase, testCaseEach } from '../../../src/test-case'
 
 const CALLER_ADDR = '0x435933c8064b4Ae76bE665428e0307eF2cCFBD68'
 const GAS_PAYER = '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed'
@@ -55,8 +54,9 @@ describe('POST /accounts/*', function () {
         await fundedWallet.waitForFunding()
     })
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should execute an array of clauses',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const to = ThorWallet.withFunds()
 
@@ -144,8 +144,9 @@ describe('POST /accounts/*', function () {
         },
     )
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should be able to query historic revisions',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const request = {
                 clauses: [SEND_VTHO_CLAUSE],
@@ -186,8 +187,9 @@ describe('POST /accounts/*', function () {
         },
     )
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should be able to call read only contract methods',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const request = READ_ONLY_REQUEST(wallet.address)
             const historicCall = await Client.raw.executeAccountBatch(
@@ -211,56 +213,50 @@ describe('POST /accounts/*', function () {
         },
     )
 
-    testCaseEach(['solo', 'default-private', 'testnet'])(
-        'should be able to call read only contract methods with valid revision: %s',
-        revisions.valid(),
-        async (revision) => {
-            const request = READ_ONLY_REQUEST(wallet.address)
-            const res = await Client.raw.executeAccountBatch(request, revision)
-            expect(res.success, 'API response should be a success').toBeTrue()
-            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(res.body?.[0]?.reverted).toEqual(false)
-            expect(res.body?.[1]?.reverted).toEqual(false)
-        },
-    )
+    revisions.valid().forEach((revision) => {
+        it.e2eTest(
+            `should be able to call read only contract methods with valid revision: ${revision}`,
+            ['solo', 'default-private', 'testnet'],
+            async () => {
+                const request = READ_ONLY_REQUEST(wallet.address)
+                const res = await Client.raw.executeAccountBatch(
+                    request,
+                    revision,
+                )
+                expect(
+                    res.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(res.body?.[0]?.reverted).toEqual(false)
+                expect(res.body?.[1]?.reverted).toEqual(false)
+            },
+        )
+    })
 
-    testCaseEach(['solo', 'default-private', 'testnet'])(
-        'should be able execute clauses for valid revision: %s',
-        revisions.valid(),
-        async (revision) => {
-            const res = await Client.raw.executeAccountBatch(
-                {
-                    clauses: [SEND_VTHO_CLAUSE],
-                    caller: wallet.address,
-                },
-                revision,
-            )
+    revisions.validNotFound.forEach((revision) => {
+        it.e2eTest(
+            `'valid revisions not found: ${revision}`,
+            ['solo', 'default-private', 'testnet'],
+            async () => {
+                const res = await Client.raw.executeAccountBatch(
+                    {
+                        clauses: [SEND_VTHO_CLAUSE],
+                        caller: wallet.address,
+                    },
+                    revision,
+                )
 
-            expect(res.success, 'API response should be a success').toBeTrue()
-            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        },
-    )
-
-    testCaseEach(['solo', 'default-private', 'testnet'])(
-        'valid revisions not found: %s',
-        revisions.validNotFound,
-        async function (revision) {
-            const res = await Client.raw.executeAccountBatch(
-                {
-                    clauses: [SEND_VTHO_CLAUSE],
-                    caller: wallet.address,
-                },
-                revision,
-            )
-
-            expect(res.success, 'API Call should fail').toBeFalse()
-            expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
-        },
-    )
+                expect(res.success, 'API Call should fail').toBeFalse()
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
+            },
+        )
+    })
 
     describe('execute with evm fields', () => {
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should return the correct block ref',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const blockRef = await getBlockRef('1')
 
@@ -296,8 +292,9 @@ describe('POST /accounts/*', function () {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should return the correct gas payer',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const requestBody = {
                     clauses: [
@@ -333,8 +330,9 @@ describe('POST /accounts/*', function () {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should return the correct proved work',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const provedWork = '191923'
 
@@ -376,8 +374,9 @@ describe('POST /accounts/*', function () {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should return the correct expiration',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const expiration = 13627
 
@@ -420,62 +419,70 @@ describe('POST /accounts/*', function () {
         )
     })
 
-    it('should estimate correctly for the next block', async () => {
-        const factory = GasEstimation__factory
+    it.e2eTest(
+        'should estimate correctly for the next block',
+        'all',
+        async () => {
+            const factory = GasEstimation__factory
 
-        const gasInterface = factory.createInterface()
+            const gasInterface = factory.createInterface()
 
-        const contract = await wallet.deployContract(
-            factory.bytecode,
-            factory.abi,
-        )
+            const contract = await wallet.deployContract(
+                factory.bytecode,
+                factory.abi,
+            )
 
-        const receipt = await contract.transact
-            .setNextBlock()
-            .then((tx) => tx.wait())
+            const receipt = await contract.transact
+                .setNextBlock()
+                .then((tx) => tx.wait())
 
-        expect(receipt?.reverted).toBeFalse()
+            expect(receipt?.reverted).toBeFalse()
 
-        // Estimate the gas for the same block
-        const sameRevisionEstimation = await Client.raw.executeAccountBatch(
-            {
-                clauses: [
-                    {
-                        to: contract.address,
-                        value: '0x0',
-                        data: gasInterface.encodeFunctionData('setNextBlock'),
-                    },
-                ],
-            },
-            // explicitly set the revision to that of the previous transaction
-            receipt?.meta.blockID,
-        )
+            // Estimate the gas for the same block
+            const sameRevisionEstimation = await Client.raw.executeAccountBatch(
+                {
+                    clauses: [
+                        {
+                            to: contract.address,
+                            value: '0x0',
+                            data: gasInterface.encodeFunctionData(
+                                'setNextBlock',
+                            ),
+                        },
+                    ],
+                },
+                // explicitly set the revision to that of the previous transaction
+                receipt?.meta.blockID,
+            )
 
-        expect(
-            sameRevisionEstimation.success,
-            'Same revision should have a good response',
-        ).toBeTrue()
+            expect(
+                sameRevisionEstimation.success,
+                'Same revision should have a good response',
+            ).toBeTrue()
 
-        const nextBlockEstimation = await Client.raw.executeAccountBatch(
-            {
-                clauses: [
-                    {
-                        to: contract.address,
-                        value: '0x0',
-                        data: gasInterface.encodeFunctionData('setNextBlock'),
-                    },
-                ],
-            },
-            'next',
-        )
-        expect(
-            nextBlockEstimation.success,
-            "'next' revision should have a good response",
-        ).toBeTrue()
+            const nextBlockEstimation = await Client.raw.executeAccountBatch(
+                {
+                    clauses: [
+                        {
+                            to: contract.address,
+                            value: '0x0',
+                            data: gasInterface.encodeFunctionData(
+                                'setNextBlock',
+                            ),
+                        },
+                    ],
+                },
+                'next',
+            )
+            expect(
+                nextBlockEstimation.success,
+                "'next' revision should have a good response",
+            ).toBeTrue()
 
-        expect(
-            sameRevisionEstimation.body?.[0]?.gasUsed,
-            "'next' revision should have a higher gas cost",
-        ).toBeLessThan(nextBlockEstimation?.body?.[0]?.gasUsed as number)
-    })
+            expect(
+                sameRevisionEstimation.body?.[0]?.gasUsed,
+                "'next' revision should have a higher gas cost",
+            ).toBeLessThan(nextBlockEstimation?.body?.[0]?.gasUsed as number)
+        },
+    )
 })

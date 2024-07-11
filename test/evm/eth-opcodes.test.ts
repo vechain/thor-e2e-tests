@@ -17,7 +17,6 @@
 import { ThorWallet } from '../../src/wallet'
 import { OpCodes__factory as Opcodes } from '../../typechain-types'
 import { Contract } from '@vechain/sdk-network'
-import { testCase, testCaseEach } from '../../src/test-case'
 
 /**
  * @notice - Copied from: https://github.com/ethereum/go-ethereum/blob/master/tests/solidity/test/opCodes.js
@@ -29,23 +28,25 @@ import { testCase, testCaseEach } from '../../src/test-case'
  */
 describe('EVM Opcodes', () => {
     let wallet: ThorWallet
-    let opcodes: Contract
+    let opcodes: Contract<typeof Opcodes.abi>
 
     beforeAll(async () => {
         wallet = ThorWallet.withFunds()
         opcodes = await wallet.deployContract(Opcodes.bytecode, Opcodes.abi)
     })
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'Should run without errors the majority of opcodes',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             await opcodes.transact.test()
             await opcodes.transact.test_stop()
         },
     )
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'Should throw invalid op code',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             await expect(() =>
                 opcodes.transact.test_invalid(),
@@ -53,8 +54,9 @@ describe('EVM Opcodes', () => {
         },
     )
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'Should revert',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const { wait } = await opcodes.transact.test_revert()
 

@@ -3,15 +3,15 @@ import { testBloomForAddress } from '../../../src/utils/bloom'
 import assert from 'node:assert'
 import { ThorWallet } from '../../../src/wallet'
 import { components } from '../../../src/open-api-types'
-import { testCase } from '../../../src/test-case'
 
 /**
  * @group api
  * @group websockets
  */
 describe('WS /subscriptions/beat2', () => {
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should be able to subscribe',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const beats: components['schemas']['SubscriptionBeat2Response'][] =
                 []

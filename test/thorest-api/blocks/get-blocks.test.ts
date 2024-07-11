@@ -8,7 +8,6 @@ import {
 } from '../../../src/utils/hex-utils'
 import { revisions } from '../../../src/constants'
 import { readRandomTransfer, Transfer } from '../../../src/populated-data'
-import { testCase, testCaseEach } from '../../../src/test-case'
 
 /**
  * @group api
@@ -21,8 +20,9 @@ describe('GET /blocks/{revision}', function () {
         transfer = await readRandomTransfer()
     })
 
-    testCase(['solo', 'default-private'])(
+    it.e2eTest(
         'gas limit is equal to 40_000_000',
+        ['solo', 'default-private'],
         async () => {
             const block = await Client.raw.getBlock(1, false)
 
@@ -31,7 +31,7 @@ describe('GET /blocks/{revision}', function () {
             expect(block.body?.gasLimit).toEqual(40_000_000)
         },
     )
-    testCase(['testnet'])('gas limit is equal to 10_000_000', async () => {
+    it.e2eTest('gas limit is equal to 10_000_000', ['testnet'], async () => {
         const block = await Client.raw.getBlock(1, false)
 
         expect(block.success, 'API response should be a success').toBeTrue()
@@ -39,62 +39,84 @@ describe('GET /blocks/{revision}', function () {
         expect(block.body?.gasLimit).toEqual(10_000_000)
     })
 
-    testCaseEach(['solo', 'default-private', 'testnet'])(
-        'can get block for revision: %s',
-        revisions.valid(true),
-        async (revision) => {
-            const block = await Client.raw.getBlock(revision, false)
+    revisions.valid(true).forEach((revision) => {
+        it.e2eTest(
+            `valid revision ${revision}`,
+            ['solo', 'default-private', 'testnet'],
+            async () => {
+                const res = await Client.raw.getBlock(revision, false)
+                expect(
+                    res.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(res.body, 'Expected Response Body').toEqual({
+                    beneficiary: expect.stringMatching(HEX_REGEX_40),
+                    com: expect.any(Boolean),
+                    gasLimit: expect.any(Number),
+                    gasUsed: expect.any(Number),
+                    id: expect.stringMatching(HEX_REGEX_64),
+                    isFinalized: expect.any(Boolean),
+                    isTrunk: expect.any(Boolean),
+                    number: expect.any(Number),
+                    parentID: expect.stringMatching(HEX_REGEX_64),
+                    receiptsRoot: expect.stringMatching(HEX_REGEX_64),
+                    signer: expect.stringMatching(HEX_REGEX_40),
+                    size: expect.any(Number),
+                    stateRoot: expect.stringMatching(HEX_REGEX_64),
+                    timestamp: expect.any(Number),
+                    totalScore: expect.any(Number),
+                    transactions: expect.any(Array),
+                    txsFeatures: expect.any(Number),
+                    txsRoot: expect.stringMatching(HEX_REGEX_64),
+                })
+            },
+        )
+    })
 
-            expect(block.success, 'API response should be a success').toBeTrue()
-            expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(block.body, 'Expected Response Body').toEqual({
-                beneficiary: expect.stringMatching(HEX_REGEX_40),
-                com: expect.any(Boolean),
-                gasLimit: expect.any(Number),
-                gasUsed: expect.any(Number),
-                id: expect.stringMatching(HEX_REGEX_64),
-                isFinalized: expect.any(Boolean),
-                isTrunk: expect.any(Boolean),
-                number: expect.any(Number),
-                parentID: expect.stringMatching(HEX_REGEX_64),
-                receiptsRoot: expect.stringMatching(HEX_REGEX_64),
-                signer: expect.stringMatching(HEX_REGEX_40),
-                size: expect.any(Number),
-                stateRoot: expect.stringMatching(HEX_REGEX_64),
-                timestamp: expect.any(Number),
-                totalScore: expect.any(Number),
-                transactions: expect.any(Array),
-                txsFeatures: expect.any(Number),
-                txsRoot: expect.stringMatching(HEX_REGEX_64),
-            })
-        },
-    )
+    revisions.validNotFound.forEach((revision) => {
+        it.e2eTest(
+            `valid revision not found: ${revision}`,
+            ['solo', 'default-private', 'testnet'],
+            async () => {
+                const block = await Client.raw.getBlock(revision, false)
 
-    testCaseEach(['solo', 'default-private', 'testnet'])(
-        'valid revisions not found: %s',
-        revisions.validNotFound,
-        async function (revision) {
-            const block = await Client.raw.getBlock(revision, false)
+                expect(
+                    block.success,
+                    'API response should be a success',
+                ).toBeTrue()
+                expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
+                expect(block.body, 'Expected Response Body').toEqual(null)
+            },
+        )
+    })
 
-            expect(block.success, 'API response should be a success').toBeTrue()
-            expect(block.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(block.body, 'Expected Response Body').toEqual(null)
-        },
-    )
+    // testCaseEach(['solo', 'default-private', 'testnet'])(
+    //     'invalid revisions: %s',
+    //     revisions.invalid,
+    //     async function (revision) {
+    //         const block = await Client.raw.getBlock(revision, false)
+    //
+    //         expect(block.success, 'API Call should fail').toBeFalse()
+    //         expect(block.httpCode, 'Expected HTTP Code').toEqual(400)
+    //     },
+    // )
+    revisions.invalid.forEach((revision) => {
+        it.e2eTest(
+            `invalid revision: ${revision}`,
+            ['solo', 'default-private', 'testnet'],
+            async () => {
+                const block = await Client.raw.getBlock(revision, false)
 
-    testCaseEach(['solo', 'default-private', 'testnet'])(
-        'invalid revisions: %s',
-        revisions.invalid,
-        async function (revision) {
-            const block = await Client.raw.getBlock(revision, false)
+                expect(block.success, 'API Call should fail').toBeFalse()
+                expect(block.httpCode, 'Expected HTTP Code').toEqual(400)
+            },
+        )
+    })
 
-            expect(block.success, 'API Call should fail').toBeFalse()
-            expect(block.httpCode, 'Expected HTTP Code').toEqual(400)
-        },
-    )
-
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should be able get compressed blocks',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const res = await Client.raw.getBlock(transfer.meta?.blockID, false)
 
@@ -115,8 +137,9 @@ describe('GET /blocks/{revision}', function () {
         },
     )
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should be able get expanded blocks',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const res = await Client.raw.getBlock(transfer.meta.blockID, true)
 

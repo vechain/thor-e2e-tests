@@ -3,7 +3,6 @@ import { interfaces } from './contracts/hardhat'
 import { secp256k1, Transaction, TransactionBody } from '@vechain/sdk-core'
 import { testEnv } from './test-env'
 import { ThorWallet } from './wallet'
-//import { unitsUtils } from '@vechain/sdk-core'
 
 // The funding amounts are not scaled, so `0x1` equals 1 wei
 type FundingAmounts = {

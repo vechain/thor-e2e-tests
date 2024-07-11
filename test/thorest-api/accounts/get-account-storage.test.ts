@@ -4,7 +4,6 @@ import { addUintPadding } from '../../../src/utils/padding-utils'
 import { revisions } from '../../../src/constants'
 import { HEX_REGEX_64 } from '../../../src/utils/hex-utils'
 import { ThorWallet } from '../../../src/wallet'
-import { testCase, testCaseEach } from '../../../src/test-case'
 
 const SIMPLE_STORAGE_KEY =
     '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -55,8 +54,9 @@ describe('GET /accounts/{address}/storage', function () {
         simpleStorageAddress = txReceipt.outputs?.[0].contractAddress as string
     })
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should return the storage value',
+        ['solo', 'default-private', 'testnet'],
         async function () {
             const amount = 973252
 
@@ -75,8 +75,9 @@ describe('GET /accounts/{address}/storage', function () {
         },
     )
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should be able to query history storage values',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const contractState = await Client.raw.getAccountStorage(
                 simpleStorageAddress,
@@ -123,10 +124,8 @@ describe('GET /accounts/{address}/storage', function () {
         },
     )
 
-    testCaseEach(['solo', 'default-private', 'testnet'])(
-        'valid revision %s',
-        revisions.valid(),
-        async function (revision) {
+    revisions.valid().forEach((revision) => {
+        it.e2eTest(`valid revision ${revision}`, 'all', async () => {
             const res = await Client.raw.getAccountStorage(
                 simpleStorageAddress,
                 SIMPLE_STORAGE_KEY,
@@ -137,21 +136,18 @@ describe('GET /accounts/{address}/storage', function () {
             expect(res.body, 'Expected Response Body').toEqual({
                 value: expect.stringMatching(HEX_REGEX_64),
             })
-        },
-    )
+        })
+    })
 
-    testCaseEach(['solo', 'default-private', 'testnet'])(
-        'invalid revision: %s',
-        revisions.invalid,
-        async (r) => {
+    revisions.invalid.forEach((revision) => {
+        it.e2eTest(`invalid revision ${revision}`, 'all', async () => {
             const res = await Client.raw.getAccountStorage(
                 simpleStorageAddress,
                 SIMPLE_STORAGE_KEY,
-                r,
+                revision,
             )
-
             expect(res.success, 'API Call should fail').toBeFalse()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
-        },
-    )
+        })
+    })
 })

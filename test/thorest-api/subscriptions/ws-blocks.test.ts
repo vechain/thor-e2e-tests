@@ -1,13 +1,12 @@
 import { Client } from '../../../src/thor-client'
 import { components } from '../../../src/open-api-types'
-import { testCase } from '../../../src/test-case'
 
 /**
  * @group api
  * @group websockets
  */
 describe('WS /subscriptions/blocks', () => {
-    testCase('all')('should be able to subscribe', async () => {
+    it.e2eTest('should be able to subscribe', 'all', async () => {
         const beats: components['schemas']['SubscriptionBlockResponse'][] = []
 
         const ws = Client.raw.subscribeToBlocks((newBlock) => {

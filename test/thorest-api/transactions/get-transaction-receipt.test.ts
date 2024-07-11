@@ -7,7 +7,7 @@ import { readRandomTransfer } from '../../../src/populated-data'
  * @group transactions
  */
 describe('GET /transactions/{id}/receipt', function () {
-    it('should get transaction receipt', async () => {
+    it.e2eTest('should get transaction receipt', 'all', async () => {
         const transfer = await readRandomTransfer()
 
         const tx = await Client.raw.getTransactionReceipt(transfer.meta.txID)

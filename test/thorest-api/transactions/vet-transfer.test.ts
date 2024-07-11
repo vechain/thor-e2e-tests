@@ -8,8 +8,6 @@ import {
     successfulPostTx,
     successfulReceipt,
 } from './setup/asserts'
-import { testCase } from '../../../src/test-case'
-import { fundingAmounts } from '../../../src/account-faucet'
 
 /**
  * @group api
@@ -22,8 +20,9 @@ describe('VET transfer, positive outcome', function () {
         await wallet.waitForFunding()
     })
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'transfer VET amount from address A to address B',
+        ['solo', 'default-private', 'testnet'],
         async function () {
             const receivingAddr = generateAddress()
             const clauses = [

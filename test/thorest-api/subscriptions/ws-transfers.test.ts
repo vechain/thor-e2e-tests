@@ -1,7 +1,6 @@
 import { Client } from '../../../src/thor-client'
 import { components } from '../../../src/open-api-types'
 import { fundingAmounts, fundAccount } from '../../../src/account-faucet'
-import { testCase } from '../../../src/test-case'
 import { generateAddress } from '../../../src/wallet'
 
 /**
@@ -9,8 +8,9 @@ import { generateAddress } from '../../../src/wallet'
  * @group websockets
  */
 describe('WS /subscriptions/transfer', () => {
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should be able to subscribe',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const events: components['schemas']['SubscriptionTransferResponse'][] =
                 []

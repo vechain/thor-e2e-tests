@@ -3,9 +3,6 @@ import { contractAddresses } from '../../../src/contracts/addresses'
 import { interfaces } from '../../../src/contracts/hardhat'
 import { addAddressPadding } from '../../../src/utils/padding-utils'
 import { components } from '../../../src/open-api-types'
-import { generateAddress } from '../../../src/wallet'
-import { fundingAmounts } from '../../../src/account-faucet'
-import { testCase } from '../../../src/test-case'
 import { ThorWallet } from '../../../src/wallet'
 
 /**
@@ -13,8 +10,9 @@ import { ThorWallet } from '../../../src/wallet'
  * @group websockets
  */
 describe('WS /subscriptions/event', () => {
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should be able to subscribe',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const events: components['schemas']['SubscriptionEventResponse'][] =
                 []

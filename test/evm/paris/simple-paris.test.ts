@@ -1,6 +1,5 @@
 import { ThorWallet } from '../../../src/wallet'
 import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-types'
-import { testCase } from '../../../src/test-case'
 import { Client } from '../../../src/thor-client'
 
 /**
@@ -11,8 +10,9 @@ import { Client } from '../../../src/thor-client'
 describe('Simple Paris', () => {
     const wallet: ThorWallet = ThorWallet.withFunds()
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should be able to deploy a paris contract',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const contract = await wallet.deployContract(
                 ParisCounter.bytecode,

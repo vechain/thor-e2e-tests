@@ -10,7 +10,6 @@ import {
     addUintPadding,
 } from '../../src/utils/padding-utils'
 import { pollReceipt } from '../../src/transactions'
-import { testCase, testCaseEach } from '../../src/test-case'
 import { randomFunder } from '../../src/account-faucet'
 import { addressUtils } from '@vechain/sdk-core'
 
@@ -88,7 +87,12 @@ describe('Individual OpCodes', () => {
         return simulated.body
     }
 
-    const reusableTests = {
+    type OpcodeTest = {
+        input: bigint[] | string[]
+        expected: string
+    }
+
+    const reusableTests: Record<string, OpcodeTest> = {
         ADD: { input: [10n, 20n], expected: addUintPadding(30n) },
         MUL: { input: [10n, 20n], expected: addUintPadding(200n) },
         SUB: { input: [10000n, 10n], expected: addUintPadding(9990n) },
@@ -352,26 +356,37 @@ describe('Individual OpCodes', () => {
             input: [caller],
             expected: '',
         },
-    }
+    } as const
 
-    testCaseEach(['solo', 'default-private', 'testnet'])(
-        'should give the correct output for opcode: %s',
-        Object.entries(reusableTests),
-        async (name, { input, expected }) => {
-            const debugged = await traceContractCall(
-                opcodesInterface.encodeFunctionData(name as any, input as any),
-                name,
-            )
+    const opcode1TestsEntries = Object.entries(reusableTests) as [
+        string,
+        { input: bigint[]; expected: string },
+    ][]
 
-            expect(
-                debugged.structLogs.some((log: any) => log.op === name),
-            ).toEqual(true)
-            expect(debugged.returnValue).toBe(expected)
-        },
-    )
+    opcode1TestsEntries.forEach(([name, { input, expected }]) => {
+        it.e2eTest(
+            `should give the correct output for opcode: ${name}`,
+            ['solo', 'default-private', 'testnet'],
+            async () => {
+                const debugged = await traceContractCall(
+                    opcodesInterface.encodeFunctionData(
+                        name as any,
+                        input as any,
+                    ),
+                    name,
+                )
 
-    testCase(['solo', 'default-private', 'testnet'])(
+                expect(
+                    debugged.structLogs.some((log: any) => log.op === name),
+                ).toEqual(true)
+                expect(debugged.returnValue).toBe(expected)
+            },
+        )
+    })
+
+    it.e2eTest(
         'should give the correct output for opcode: BALANCE',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('BALANCE', [caller]),
@@ -391,20 +406,24 @@ describe('Individual OpCodes', () => {
      * DUP_N
      */
 
-    testCaseEach(['solo', 'default-private', 'testnet'])(
-        'should give the correct output for opcode: DUP%s',
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-        async (dupN) => {
-            const debugged = await traceContractCall(
-                opcodesInterface.encodeFunctionData('DUP_ALL'),
-                `DUP${dupN}`,
-            )
+    Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]).forEach(
+        (dupN) => {
+            it.e2eTest(
+                `should give the correct output for opcode: DUP${dupN}`,
+                ['solo', 'default-private', 'testnet'],
+                async () => {
+                    const debugged = await traceContractCall(
+                        opcodesInterface.encodeFunctionData('DUP_ALL'),
+                        `DUP${dupN}`,
+                    )
 
-            const relevantStructLogs = debugged.structLogs.filter(
-                (log: any) => log.op === `DUP${dupN}`,
-            )
+                    const relevantStructLogs = debugged.structLogs.filter(
+                        (log: any) => log.op === `DUP${dupN}`,
+                    )
 
-            expect(relevantStructLogs.length).toBeGreaterThan(0)
+                    expect(relevantStructLogs.length).toBeGreaterThan(0)
+                },
+            )
         },
     )
 
@@ -414,35 +433,46 @@ describe('Individual OpCodes', () => {
         LOG2: [1n, 3n, 5n, 7n],
         LOG3: [1n, 3n, 5n, 7n, 9n],
         LOG4: [1n, 3n, 5n, 7n, 9n, 11n],
-    }
+    } as const
 
-    testCaseEach(['solo', 'default-private', 'testnet'])(
-        'should give the correct output for opcode: %s',
-        Object.entries(logTests),
-        async (logN, input) => {
-            const debugged = await traceContractCall(
-                opcodesInterface.encodeFunctionData(logN as any, input as any),
-                logN,
-            )
+    Object.entries(logTests).forEach((testCase) => {
+        const [logN, input] = testCase
 
-            const relevantStructLogs = debugged.structLogs.filter(
-                (log: any) => log.op === logN,
-            )
+        it.e2eTest(
+            `should give the correct output for opcode: ${logN}`,
+            ['solo', 'default-private', 'testnet'],
+            async () => {
+                const debugged = await traceContractCall(
+                    opcodesInterface.encodeFunctionData(
+                        logN as any,
+                        input as any,
+                    ),
+                    logN,
+                )
 
-            expect(relevantStructLogs.length).toBeGreaterThan(0)
+                const relevantStructLogs = debugged.structLogs.filter(
+                    (log: any) => log.op === logN,
+                )
 
-            const simulation = await simulateContractCall(
-                opcodesInterface.encodeFunctionData(logN as any, input as any),
-            )
-            const relevantEvent = simulation?.[0]?.events?.[0]
+                expect(relevantStructLogs.length).toBeGreaterThan(0)
 
-            expect(relevantEvent).toBeDefined()
-            expect(relevantEvent?.topics?.length).toBe(input.length - 2)
-        },
-    )
+                const simulation = await simulateContractCall(
+                    opcodesInterface.encodeFunctionData(
+                        logN as any,
+                        input as any,
+                    ),
+                )
+                const relevantEvent = simulation?.[0]?.events?.[0]
 
-    testCase(['solo', 'default-private', 'testnet'])(
+                expect(relevantEvent).toBeDefined()
+                expect(relevantEvent?.topics?.length).toBe(input.length - 2)
+            },
+        )
+    })
+
+    it.e2eTest(
         'should give the correct output for opcode: REVERT',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('REVERT'),
@@ -458,8 +488,9 @@ describe('Individual OpCodes', () => {
         },
     )
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should give the correct output for opcode: INVALID',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('INVALID'),
@@ -473,8 +504,9 @@ describe('Individual OpCodes', () => {
         },
     )
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should give the correct output for opcode: STOP',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('STOP'),
@@ -487,8 +519,9 @@ describe('Individual OpCodes', () => {
         },
     )
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should give the correct output for opcode: ADDRESS',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('ADDRESS'),
@@ -501,8 +534,9 @@ describe('Individual OpCodes', () => {
         },
     )
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should give the correct output for opcode: PUSH0',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const clauses = [
                 {

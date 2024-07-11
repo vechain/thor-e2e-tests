@@ -6,7 +6,6 @@ import {
 } from '../../../src/populated-data'
 import { components } from '../../../src/open-api-types'
 import { HEX_REGEX_64 } from '../../../src/utils/hex-utils'
-import { testCase } from '../../../src/test-case'
 
 const buildRequestFromTransfer = (
     transfer: Transfer,
@@ -40,8 +39,9 @@ type TransferLogFilterRequest =
 describe('POST /logs/transfers', () => {
     const transferDetails = readTransferDetails()
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should find a log with all parameters set',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const transfer = await readRandomTransfer()
 
@@ -73,8 +73,9 @@ describe('POST /logs/transfers', () => {
         },
     )
 
-    testCase(['solo', 'default-private'])(
+    it.e2eTest(
         'should be able to omit all the parameters',
+        ['solo', 'default-private'],
         async () => {
             const transfer = await readRandomTransfer()
 
@@ -134,8 +135,9 @@ describe('POST /logs/transfers', () => {
     }
 
     describe('query by "range"', () => {
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able set the range to null',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request) => ({
                     ...request,
@@ -144,8 +146,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able to omit the "from" field',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request) => ({
                     ...request,
@@ -157,8 +160,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able to omit the "to" field',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request) => ({
                     ...request,
@@ -170,8 +174,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be omit the "unit" field',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request) => ({
                     ...request,
@@ -183,8 +188,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by time',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request, transfer) => ({
                     ...request,
@@ -197,8 +203,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by block',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request, transfer) => ({
                     ...request,
@@ -213,8 +220,9 @@ describe('POST /logs/transfers', () => {
     })
 
     describe('query by "options"', () => {
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able omit all the options',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request) => ({
                     ...request,
@@ -223,8 +231,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able to omit the "offset" field',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request) => ({
                     ...request,
@@ -236,8 +245,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able to omit the "limit" field',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const request = {
                     options: {
@@ -256,8 +266,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private'])(
+        it.e2eTest(
             'should have default maximum of 1000',
+            ['solo', 'default-private'],
             async () => {
                 const request = {
                     options: {
@@ -276,8 +287,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should have no minimum "limit"',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const request = {
                     options: {
@@ -297,8 +309,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able paginate requests',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 const { firstBlock, lastBlock } = await transferDetails
 
@@ -364,8 +377,9 @@ describe('POST /logs/transfers', () => {
     })
 
     describe('query by "criteriaSet"', () => {
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by "sender"',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request, transfer) => ({
                     ...request,
@@ -378,8 +392,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by "recipient"',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request, transfer) => ({
                     ...request,
@@ -392,8 +407,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by "txOrigin"',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request, transfer) => ({
                     ...request,
@@ -406,8 +422,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by "sender" and "recipient"',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request, transfer) => ({
                     ...request,
@@ -421,8 +438,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by "sender" and "txOrigin"',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request, transfer) => ({
                     ...request,
@@ -436,8 +454,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by "recipient" and "txOrigin"',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request, transfer) => ({
                     ...request,
@@ -451,8 +470,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able query by all criteria',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request, transfer) => ({
                     ...request,
@@ -467,8 +487,9 @@ describe('POST /logs/transfers', () => {
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'should be able to omit the "criteriaSet" field',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await runTransferLogsTest((request) => ({
                     ...request,
@@ -529,29 +550,33 @@ describe('POST /logs/transfers', () => {
             )
         }
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'events should be ordered by DESC',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await queryTransferLogsTest('desc')
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'events should be ordered by ASC',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await queryTransferLogsTest('asc')
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'default should be asc',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await queryTransferLogsTest(undefined)
             },
         )
 
-        testCase(['solo', 'default-private', 'testnet'])(
+        it.e2eTest(
             'default should be asc',
+            ['solo', 'default-private', 'testnet'],
             async () => {
                 await queryTransferLogsTest(null)
             },

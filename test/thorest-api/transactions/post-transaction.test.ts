@@ -1,5 +1,4 @@
 import { ThorWallet } from '../../../src/wallet'
-import { testCase } from '../../../src/test-case'
 
 /**
  * @group api
@@ -8,8 +7,9 @@ import { testCase } from '../../../src/test-case'
 describe('POST /transactions', function () {
     const wallet = ThorWallet.txBetweenFunding()
 
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should send a transaction',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const fundReceipt = await wallet.waitForFunding()
 

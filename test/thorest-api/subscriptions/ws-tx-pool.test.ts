@@ -1,15 +1,14 @@
 import { Client } from '../../../src/thor-client'
 import { ThorWallet } from '../../../src/wallet'
-import { fundingAmounts } from '../../../src/account-faucet'
-import { testCase } from '../../../src/test-case'
 
 /**
  * @group api
  * @group websockets
  */
 describe('WS /subscriptions/txpool', () => {
-    testCase(['solo', 'default-private', 'testnet'])(
+    it.e2eTest(
         'should be able to subscribe',
+        ['solo', 'default-private', 'testnet'],
         async () => {
             const txs: { id: string }[] = []
 
