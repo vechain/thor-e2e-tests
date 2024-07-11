@@ -1,4 +1,5 @@
 import { Client } from '../src/thor-client'
+import 'dotenv/config'
 
 jest.retryTimes(3, { logErrorsBeforeRetry: false })
 
