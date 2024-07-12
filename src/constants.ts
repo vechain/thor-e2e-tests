@@ -45,7 +45,3 @@ export const transferDetails: Record<'test' | 'main', TransferDetails> = {
         transferCount: 50 * 5,
     },
 }
-
-const faucetAccountLength = 10
-
-export { faucetAccountLength }

@@ -7,10 +7,16 @@ const nodeUrls = process.env.NODE_URLS
 const privateKeys = process.env.PRIVATE_KEYS
 const networkType = process.env.NETWORK_TYPE
 
-const NetworkTypes = ['solo', 'default-private', 'testnet', 'mainnet'] as const
-type NetworkType = (typeof NetworkTypes)[number]
+export const NetworkTypes = [
+    'solo',
+    'default-private',
+    'testnet',
+    'mainnet',
+] as const
 
-const testEnv = {
+export type NetworkType = (typeof NetworkTypes)[number]
+
+export const testEnv = {
     get keys(): string[] {
         if (privateKeys) {
             return privateKeys.split(',')
@@ -50,7 +56,7 @@ const testEnv = {
     },
 }
 
-const validateEnv = async (): Promise<boolean> => {
+export const validateEnv = async (): Promise<boolean> => {
     const genesisIds: string[] = []
 
     if (nodeUrls) {
@@ -106,5 +112,3 @@ const validateEnv = async (): Promise<boolean> => {
 
     return true
 }
-
-export { validateEnv, testEnv, NetworkType, NetworkTypes }

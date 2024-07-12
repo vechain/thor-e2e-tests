@@ -43,16 +43,19 @@ jobs:
             - name: Install Node Modules
               run: yarn install
 
+            - name: Start Docker Network
+              if: ${{ inputs.environment != 'mainnet' || inputs.environment != 'testnet' }}
+              run: yarn docker:up
+
             - name: Run Tests
-              run: |
-                  yarn docker:up
-                  yarn test
+              run: yarn test
               env:
                   # use the provided node_urls or the default NODE_URLS
                   NODE_URLS: ${{ inputs.node_urls || vars.NODE_URLS }}
                   PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
                   MNEMONIC: ${{ secrets.MNEMONIC }}
                   NETWORK_TYPE: ${{ inputs.environment || 'default-private' }}
+                  MAX_WORKERS: ${{ vars.MAX_WORKERS }}
 
             - name: Publish Results
               uses: dorny/test-reporter@v1

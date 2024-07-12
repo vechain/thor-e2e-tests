@@ -552,6 +552,4 @@ class LoadBalancedClient {
     }
 }
 
-const Client = new LoadBalancedClient(testEnv.urls)
-
-export { Client }
+export const Client = new LoadBalancedClient(testEnv.urls)

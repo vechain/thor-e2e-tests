@@ -1,6 +1,7 @@
 import type { Config } from 'jest'
 
 const IS_GH_ACTIONS = process.env.GITHUB_ACTIONS === 'true'
+const MAX_WORKERS = process.env.MAX_WORKERS
 
 const config: Config = {
     verbose: true,
@@ -32,7 +33,7 @@ const config: Config = {
     // ms to wait before throwing a timeout error
     testTimeout: 60_000,
     json: true,
-    maxWorkers: 3,
+    maxWorkers: MAX_WORKERS ? parseInt(MAX_WORKERS) : '3',
     setupFilesAfterEnv: [
         './test/setupAfterEnv.ts',
         'jest-extended/all',

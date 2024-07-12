@@ -14,6 +14,15 @@ yarn docker:up
 yarn test
 ```
 
+### Debugging the tests
+
+```shell
+# Start a thor solo instance so your tests can run quickly
+yarn docker:solo:up
+# Run a single test / test suite
+yarn test -t 'GET /accounts/{address}/storage'
+```
+
 ### Custom Docker Image
 
 -   You can specify a custom docker image by running the following in the [vechain/thor](https://github.com/vechain/thor)

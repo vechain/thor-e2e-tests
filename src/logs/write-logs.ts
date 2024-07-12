@@ -8,7 +8,7 @@ import { Client } from '../thor-client'
 import { TransferDetails } from '../types'
 import { staticEventsTransactions } from './transactions'
 
-const writeTransferTransactions = async (): Promise<TransferDetails> => {
+export const writeTransferTransactions = async (): Promise<TransferDetails> => {
     console.log('\n')
 
     let firstBlock = 0
@@ -55,5 +55,3 @@ const writeTransferTransactions = async (): Promise<TransferDetails> => {
         transferCount,
     }
 }
-
-export { writeTransferTransactions }

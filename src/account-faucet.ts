@@ -5,12 +5,12 @@ import { testEnv } from './test-env'
 import { ThorWallet } from './wallet'
 
 // The funding amounts are not scaled, so `0x1` equals 1 wei
-type FundingAmounts = {
-    vet: number | string
-    vtho: number | string
+export type FundingAmounts = {
+    vet?: number | string | bigint | undefined
+    vtho?: number | string | bigint | undefined
 }
 
-const fundingAmounts = {
+export const fundingAmounts = {
     tinyVetTinyVtho: { vet: '0x1', vtho: '0x1' },
     tinyVetNoVtho: { vet: '0x1', vtho: '0x0' },
     tinyVetBigVtho: { vet: '0x1', vtho: 1000e18 },
@@ -20,38 +20,60 @@ const fundingAmounts = {
     noVetTinyVtho: { vet: '0x0', vtho: '0x1' },
 }
 
-const randomFunder = () => {
+export const randomFunder = () => {
     const randomIndex = Math.floor(Math.random() * testEnv.keys.length)
     return testEnv.keys[randomIndex]
 }
 
-const parseAmount = (amount: number | string): number => {
+const hexAmount = (amount?: number | string | bigint | undefined) => {
+    if (amount === undefined) {
+        return '0x0'
+    }
+
     if (typeof amount === 'number') {
+        return amount.toString(16)
+    }
+
+    if (typeof amount === 'bigint') {
+        return amount.toString(16)
+    }
+
+    if (amount.startsWith('0x')) {
         return amount
     }
 
-    return parseInt(amount)
+    return BigInt(amount).toString(16)
+}
+
+const parseAmount = (amount?: number | string | bigint | undefined) => {
+    const hex = hexAmount(amount)
+
+    if (hex.startsWith('0x')) {
+        return hex
+    }
+
+    return `0x${hex}`
 }
 
 /**
  * Fund an account using the faucet. VET and VTHO will be sent to the account
  * @param account
  */
-const fundAccount = async (account: string, amounts: FundingAmounts) => {
+export const fundAccount = async (account: string, amounts: FundingAmounts) => {
     const wallet = new ThorWallet(Buffer.from(randomFunder(), 'hex'))
 
     const clauses = []
     const vetAmount = parseAmount(amounts.vet)
-    if (vetAmount > 0) {
+    if (vetAmount !== '0x0' && vetAmount !== '0') {
         clauses.push({
             to: account,
-            value: vetAmount.toString(16),
+            value: vetAmount,
             data: '0x',
         })
     }
 
     const vthoAmount = parseAmount(amounts.vtho)
-    if (vthoAmount > 0) {
+    if (vthoAmount !== '0x0' && vthoAmount !== '0') {
         clauses.push({
             to: contractAddresses.energy,
             value: '0x0',
@@ -92,5 +114,3 @@ export const delegateTx = (txBody: TransactionBody, senderAddress: string) => {
         signature,
     }
 }
-
-export { randomFunder, fundAccount, fundingAmounts, FundingAmounts }

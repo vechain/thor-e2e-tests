@@ -2,46 +2,12 @@ import { PopulatedChainData, TransferDetails } from './types'
 import { POPULATED_DATA_FILENAME } from '../test/globalSetup'
 import fs from 'fs'
 import { components } from './open-api-types'
-import { Client } from './thor-client'
 import { pollReceipt } from './transactions'
-import { staticEventsTransactions } from './logs/transactions'
-import { testEnv } from './test-env'
 
 export type Transfer = {
     vet: Required<components['schemas']['Transfer']>
     vtho: Required<components['schemas']['Event']>
     meta: Required<components['schemas']['ReceiptMeta']>
-}
-
-let populateData: PopulatedChainData | undefined
-
-export const populatedDataExists = () => {
-    return fs.existsSync(POPULATED_DATA_FILENAME)
-}
-
-export const writePopulatedData = (data: PopulatedChainData) => {
-    fs.writeFileSync(POPULATED_DATA_FILENAME, JSON.stringify(data))
-}
-
-export const removePopulatedData = () => {
-    if (populatedDataExists()) {
-        fs.unlinkSync(POPULATED_DATA_FILENAME)
-    }
-}
-
-export const readPopulatedData = (): PopulatedChainData => {
-    if (populateData) {
-        return populateData
-    }
-
-    if (!fs.existsSync(POPULATED_DATA_FILENAME)) {
-        throw new Error('Chain data not populated')
-    }
-
-    const data = fs.readFileSync(POPULATED_DATA_FILENAME, 'utf-8')
-    populateData = JSON.parse(data) as PopulatedChainData
-
-    return populateData
 }
 
 const formatTxReceipt = (
@@ -55,29 +21,14 @@ const formatTxReceipt = (
 }
 
 export const readRandomTransfer = async (): Promise<Transfer> => {
-    if (testEnv.type === 'solo' || testEnv.type === 'default-private') {
-        const randomBlockIndex = Math.floor(
-            Math.random() * staticEventsTransactions.length,
-        )
-        const blockTxs = staticEventsTransactions[randomBlockIndex]
-        const randomBlockTxIndex = Math.floor(Math.random() * blockTxs.length)
-        const txId = blockTxs[randomBlockTxIndex].txId
-        const txReceipt = await Client.raw.getTransactionReceipt(txId)
-        return formatTxReceipt(txReceipt.body!)
-    } else {
-        const { transfersIds } = readPopulatedData()
-        const randomIndex = Math.floor(Math.random() * transfersIds.length)
-        const txId = transfersIds[randomIndex]
-        const txReceipt = await pollReceipt(txId)
-        return formatTxReceipt(txReceipt)
-    }
+    const { transfersIds } = populatedData.read()
+    const randomIndex = Math.floor(Math.random() * transfersIds.length)
+    const txId = transfersIds[randomIndex]
+    const txReceipt = await pollReceipt(txId)
+    return formatTxReceipt(txReceipt)
 }
 
-export const readTransferDetails = (): TransferDetails => {
-    return readPopulatedData().transferDetails
-}
-
-const populatedData = {
+export const populatedData = {
     exists: () => {
         return fs.existsSync(POPULATED_DATA_FILENAME)
     },
@@ -98,4 +49,6 @@ const populatedData = {
     },
 }
 
-export { populatedData }
+export const readTransferDetails = (): TransferDetails => {
+    return populatedData.read().transferDetails
+}

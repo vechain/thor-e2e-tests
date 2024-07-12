@@ -519,13 +519,10 @@ describe('POST /logs/event', () => {
         beforeAll(async () => {
             const wallet = ThorWallet.newFunded(fundingAmounts.noVetBigVtho)
             await wallet.waitForFunding()
-            const contractFactory = Client.sdk.contracts.createContractFactory(
-                EventsContract__factory.abi,
+            contract = await wallet.deployContract(
                 EventsContract__factory.bytecode,
-                wallet.signer,
+                EventsContract__factory.abi,
             )
-            await contractFactory.startDeployment()
-            contract = await contractFactory.waitForDeployment()
             receipt = contract.deployTransactionReceipt as TransactionReceipt
 
             if (!receipt || receipt.reverted) {

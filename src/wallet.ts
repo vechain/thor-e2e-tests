@@ -4,6 +4,7 @@ import {
     Transaction,
     TransactionBody,
     TransactionClause,
+    unitsUtils,
 } from '@vechain/sdk-core'
 import {
     delegateTx,
@@ -19,7 +20,6 @@ import {
 import { getBlockRef } from './utils/block-utils'
 import { components } from './open-api-types'
 import { Client } from './thor-client'
-import * as fs from 'fs'
 import { contractAddresses } from './contracts/addresses'
 import { interfaces } from './contracts/hardhat'
 import {
@@ -28,7 +28,6 @@ import {
     VeChainProvider,
 } from '@vechain/sdk-network'
 import { Abi } from 'abitype'
-import { Uint } from 'web3'
 
 export const generateAddress = () => {
     return generateEmptyWallet().address.toLowerCase()
@@ -56,8 +55,8 @@ class ThorWallet {
     public readonly address: string
     public readonly privateKey: Uint8Array
     public readonly waitForFunding: WaitForFunding
-    public provider: VeChainProvider
-    public signer: VeChainPrivateKeySigner
+    private readonly signer: VeChainPrivateKeySigner
+    private readonly provider: VeChainProvider
 
     constructor(privateKey: Uint8Array, waitForFunding?: WaitForFunding) {
         this.privateKey = privateKey
@@ -82,26 +81,8 @@ class ThorWallet {
         )
     }
 
-    public static new(requireFunds: boolean) {
-        const privateKey = secp256k1.generatePrivateKey()
-
-        if (!requireFunds) {
-            return new ThorWallet(privateKey)
-        }
-
-        return new ThorWallet(privateKey)
-    }
-
     public static empty() {
         const privateKey = secp256k1.generatePrivateKey()
-
-        const addr = addressUtils.fromPrivateKey(privateKey)
-
-        fs.writeFileSync(
-            './keys/' + addr + '.txt',
-            Buffer.from(privateKey).toString('hex'),
-        )
-
         return new ThorWallet(privateKey)
     }
 
@@ -111,14 +92,7 @@ class ThorWallet {
 
     public static newFunded(amounts: FundingAmounts) {
         const privateKey = secp256k1.generatePrivateKey()
-
         const addr = addressUtils.fromPrivateKey(privateKey)
-        fs.writeFile(
-            './keys/' + addr + '.txt',
-            Buffer.from(privateKey).toString('hex'),
-            () => {},
-        )
-
         const receipt = fundAccount(addr, amounts).then((res) => res.receipt)
 
         return new ThorWallet(privateKey, () => receipt)
@@ -152,6 +126,29 @@ class ThorWallet {
         const receipt = senderWallet.sendClauses(clauses, true)
 
         return new ThorWallet(Buffer.from(reciever, 'hex'), () => receipt)
+    }
+
+    public startingEnergy = async () => {
+        const receipt = await this.waitForFunding()
+        if (!receipt) {
+            throw new Error('Could not get funding')
+        }
+        const account = await Client.sdk.accounts.getAccount(this.address, {
+            revision: receipt.meta?.blockID,
+        })
+        return account.energy
+    }
+
+    public currentEnergy = async () => {
+        const account = await Client.sdk.accounts.getAccount(this.address)
+        return account.energy
+    }
+
+    public consumedEnergy = async () => {
+        const start = await this.startingEnergy()
+        const current = await this.currentEnergy()
+
+        return unitsUtils.formatVET(BigInt(start) - BigInt(current))
     }
 
     public deployContract = async <TAbi extends Abi>(
