@@ -55,7 +55,7 @@ class ThorWallet {
     public readonly address: string
     public readonly privateKey: Uint8Array
     public readonly waitForFunding: WaitForFunding
-    private readonly signer: VeChainPrivateKeySigner
+    public readonly signer: VeChainPrivateKeySigner
     private readonly provider: VeChainProvider
 
     constructor(privateKey: Uint8Array, waitForFunding?: WaitForFunding) {
