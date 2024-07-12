@@ -44,7 +44,7 @@ jobs:
               run: yarn install
 
             - name: Start Docker Network
-              if: ${{ inputs.environment != 'mainnet' || inputs.environment != 'testnet' }}
+              if: ${{ inputs.environment != 'mainnet' && inputs.environment != 'testnet' }}
               run: yarn docker:up
 
             - name: Run Tests
