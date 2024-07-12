@@ -7,14 +7,14 @@ const nodeUrls = process.env.NODE_URLS
 const privateKeys = process.env.PRIVATE_KEYS
 const networkType = process.env.NETWORK_TYPE
 
-export const NetworkTypes = [
+export const E2eTestTags = [
     'solo',
     'default-private',
     'testnet',
     'mainnet',
 ] as const
 
-export type NetworkType = (typeof NetworkTypes)[number]
+export type E2eTestTag = (typeof E2eTestTags)[number]
 
 export const testEnv = {
     get keys(): string[] {
@@ -43,10 +43,10 @@ export const testEnv = {
 
         return ['http://localhost:8669']
     },
-    get type(): NetworkType {
+    get type(): E2eTestTag {
         if (networkType) {
-            const type = networkType as NetworkType
-            if (!NetworkTypes.includes(type)) {
+            const type = networkType as E2eTestTag
+            if (!E2eTestTags.includes(type)) {
                 throw new Error('Invalid network type')
             }
             return type

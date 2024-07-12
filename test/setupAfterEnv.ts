@@ -1,17 +1,14 @@
 import { Client } from '../src/thor-client'
 import 'dotenv/config'
 import './jest-types.d.ts'
-import { NetworkType, testEnv } from '../src/test-env'
-
-const isMatching = (supportedEnvs: NetworkType[]) =>
-    supportedEnvs.includes(testEnv.type)
+import { E2eTestTag, testEnv } from '../src/test-env'
 
 it.e2eTest = (
     title: string,
-    supportedEnvs: NetworkType[] | 'all',
+    tags: E2eTestTag[] | 'all',
     testFunc: jest.ProvidesCallback,
 ) => {
-    if (supportedEnvs === 'all' || isMatching(supportedEnvs)) {
+    if (tags === 'all' || tags.includes(testEnv.type)) {
         test(title, testFunc)
     } else {
         test.skip(title, testFunc)

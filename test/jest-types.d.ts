@@ -1,11 +1,11 @@
 /**
  * Extend the jest global `it` to have an `e2eTest`
  */
-import { NetworkType } from '../src/test-env'
+import { E2eTestTag } from '../src/test-env'
 
 type E2eTest = (
     title: string,
-    supportedEnvs: NetworkType[] | 'all',
+    tags: E2eTestTag[] | 'all',
     testFunc: jest.ProvidesCallback,
 ) => void
 
