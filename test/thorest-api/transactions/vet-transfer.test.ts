@@ -5,8 +5,10 @@ import {
     checkTransactionLogSuccess,
     checkTxInclusionInBlock,
     compareSentTxWithCreatedTx,
+    revertedPostTx,
     successfulPostTx,
     successfulReceipt,
+    unsuccessfulReceipt,
 } from './setup/asserts'
 import {
     AuthorizeTransaction__factory as AuthorizeTransaction,
@@ -23,6 +25,9 @@ describe('VET transfer, positive outcome', function() {
     const wallet = ThorWallet.withFunds()
 
     let counter: Contract<typeof SimpleCounter.abi>
+    let failingClauses = undefined
+    const receivingAddr = generateAddress()
+    const invalidSelector = "0xdeadbeef"
 
     beforeAll(async () => {
         await wallet.waitForFunding()
@@ -30,14 +35,38 @@ describe('VET transfer, positive outcome', function() {
             SimpleCounter.bytecode,
             SimpleCounter.abi,
         )
-        console.log("Contract address", counter.address)
+
+        failingClauses = [[
+            {
+                value: 0,
+                data: invalidSelector,
+                to: counter.address
+            },
+            {
+                value: 1,
+                data: '0x',
+                to: receivingAddr,
+            },
+        ], [
+            {
+                value: 1,
+                data: '0x',
+                to: receivingAddr,
+            },
+            {
+                value: 0,
+                data: invalidSelector,
+                to: counter.address
+            },
+        ]]
+
     })
+
 
     it.e2eTest(
         'transfer VET amount from address A to address B',
         'all',
         async function() {
-            const receivingAddr = generateAddress()
             const clauses = [
                 {
                     value: 1,
@@ -83,7 +112,7 @@ describe('VET transfer, positive outcome', function() {
     )
 
     it.e2eTest(
-        'Multiple clauses',
+        'Multiple clauses success',
         'all',
         async function() {
             //const getCounter = "0x8ada066e"
@@ -146,4 +175,141 @@ describe('VET transfer, positive outcome', function() {
             await ddt.runTestFlow()
         },
     )
+})
+
+
+
+describe('VET transfer, negative outcome', function() {
+
+    const wallet = ThorWallet.withFunds()
+
+    let counter: Contract<typeof SimpleCounter.abi>
+    const recievingWallet = ThorWallet.withFunds()
+    const invalidSelector = "0xdeadbeef"
+
+    beforeAll(async () => {
+        await wallet.waitForFunding()
+        counter = await wallet.deployContract(
+            SimpleCounter.bytecode,
+            SimpleCounter.abi,
+        )
+
+    });
+
+
+
+    it.e2eTest(
+        'Multiple clauses first failure',
+        'all',
+        async function() {
+            const receivingAddr = generateAddress()
+            const clauses = [
+                {
+                    value: 0,
+                    data: invalidSelector,
+                    to: counter.address
+                },
+                {
+                    value: 1,
+                    data: '0x',
+                    to: receivingAddr,
+                },
+            ]
+
+            const txBody = await wallet.buildTransaction(clauses)
+            const tx = new Transaction(txBody)
+            const signedTx = await wallet.signTransaction(tx)
+
+            const testPlan = {
+                postTxStep: {
+                    rawTx: signedTx.encoded.toString('hex'),
+                    expectedResult: successfulPostTx,
+                },
+                getTxStep: {
+                    expectedResult: (tx: any) => {
+                        compareSentTxWithCreatedTx(tx, signedTx)
+                    },
+                },
+                getTxReceiptStep: {
+                    expectedResult: (receipt: any) => {
+                        unsuccessfulReceipt(receipt, signedTx)
+                        expect(receipt.outputs.length).toEqual(0)
+                    },
+                },
+                getLogTransferStep: {
+                    expectedResult: (input: any, block: any) =>
+                        checkTransactionLogSuccess(
+                            input,
+                            block,
+                            signedTx,
+                            signedTx.body.clauses,
+                        ),
+                },
+                getTxBlockStep: {
+                    expectedResult: checkTxInclusionInBlock,
+                },
+            }
+
+            const ddt = new TransactionDataDrivenFlow(testPlan)
+            await ddt.runTestFlow()
+        },
+    )
+
+    it.e2eTest(
+        'Multiple clauses second failure',
+        'all',
+        async function() {
+            const receivingAddr = generateAddress()
+            const clauses = [
+                {
+                    value: 1,
+                    data: '0x',
+                    to: receivingAddr,
+                },
+                {
+                    value: 0,
+                    data: invalidSelector,
+                    to: counter.address
+                },
+            ]
+
+            const txBody = await wallet.buildTransaction(clauses)
+            const tx = new Transaction(txBody)
+            const signedTx = await wallet.signTransaction(tx)
+
+            const testPlan = {
+                postTxStep: {
+                    rawTx: signedTx.encoded.toString('hex'),
+                    expectedResult: successfulPostTx,
+                },
+                getTxStep: {
+                    expectedResult: (tx: any) => {
+                        compareSentTxWithCreatedTx(tx, signedTx)
+                    },
+                },
+                getTxReceiptStep: {
+                    expectedResult: (receipt: any) => {
+                        unsuccessfulReceipt(receipt, signedTx)
+                        expect(receipt.outputs.length).toEqual(0)
+                    },
+                },
+                getLogTransferStep: {
+                    expectedResult: (input: any, block: any) =>
+                        checkTransactionLogSuccess(
+                            input,
+                            block,
+                            signedTx,
+                            signedTx.body.clauses,
+                        ),
+                },
+                getTxBlockStep: {
+                    expectedResult: checkTxInclusionInBlock,
+                },
+            }
+
+            const ddt = new TransactionDataDrivenFlow(testPlan)
+            await ddt.runTestFlow()
+        },
+    )
+
 })
