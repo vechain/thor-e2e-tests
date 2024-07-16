@@ -16,6 +16,7 @@ services:
             - --cache=1024 # megabytes of ram allocated to trie nodes cache
             - --verbosity=4
             - --persist
+            - --enable-debug
         volumes:
             - type: bind
               source: ./config

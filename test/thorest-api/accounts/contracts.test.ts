@@ -24,7 +24,7 @@ describe('Contracts', () => {
     })
 
     it.e2eTest(
-        'Should be able to deploy a contract a verify it',
+        'Should be able to deploy a contract and verify it',
         'all',
         async () => {
             const byteCode = await Client.sdk.accounts.getBytecode(
@@ -67,6 +67,32 @@ describe('Contracts', () => {
             const newValue = await counter.read.getCounter()
 
             expect(newValue[0]).toBe(startValue[0] + 1n)
+        },
+    )
+
+    it.e2eTest(
+        'Should be able to execute multiple clauses in a single transaction',
+        'all',
+        async () => {
+            const startValue = await counter.read.getCounter()
+            const incrementCounterClause = counter.clause.incrementCounter()
+
+            const tx =
+                await Client.sdk.contracts.executeMultipleClausesTransaction(
+                    [
+                        incrementCounterClause,
+                        incrementCounterClause,
+                        incrementCounterClause,
+                    ],
+                    wallet.signer,
+                )
+
+            const receipt = await tx.wait()
+            expect(receipt).toBeDefined()
+            expect(receipt!.reverted).toBe(false)
+
+            const newValue = await counter.read.getCounter()
+            expect(newValue[0]).toBe(startValue[0] + 3n)
         },
     )
 
