@@ -16,10 +16,6 @@ import {
 describe('Send transaction with clauses', function () {
     const wallet = ThorWallet.withFunds()
 
-    beforeAll(async () => {
-        await wallet.waitForFunding()
-    })
-
     it.e2eTest('clauses list is empty', 'all', async function () {
         const txBody = await wallet.buildTransaction([])
         const tx = new Transaction(txBody)
