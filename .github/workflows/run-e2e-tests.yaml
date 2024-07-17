@@ -57,6 +57,10 @@ jobs:
                   NETWORK_TYPE: ${{ inputs.environment || 'default-private' }}
                   MAX_WORKERS: ${{ vars.MAX_WORKERS }}
 
+            - name: Print Docker logs
+              if: ${{ inputs.environment != 'mainnet' && inputs.environment != 'testnet' }}
+              run: yarn docker:logs
+
             - name: Publish Results
               uses: dorny/test-reporter@v1
               id: test-reporter

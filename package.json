@@ -6,7 +6,8 @@
     "license": "MIT",
     "scripts": {
         "postinstall": "hardhat compile",
-        "docker:up": "docker compose -f network/docker-compose.yaml up -d --wait && docker compose -f network/docker-compose.yaml logs -f -t",
+        "docker:up": "docker compose -f network/docker-compose.yaml up -d --wait",
+        "docker:logs": "docker compose -f network/docker-compose.yaml logs -f",
         "docker:down": "docker compose -f network/docker-compose.yaml down",
         "docker:restart": "yarn docker:down && yarn docker:up",
         "docker:solo:up": "docker compose -f network/docker-compose-solo.yaml up -d --wait",
