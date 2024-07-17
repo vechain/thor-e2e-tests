@@ -29,7 +29,7 @@ class TransactionDataDrivenFlow {
         await this.getTransactionBlock(block?.blockID, txId)
     }
 
-    private async postTransaction(): Promise<string | undefined> {
+    public async postTransaction(): Promise<string | undefined> {
         const { rawTx, expectedResult } = this.plan.postTxStep
         const sendTxResponse = await Client.raw.sendTransaction({
             raw: `0x${rawTx}`,
@@ -40,7 +40,7 @@ class TransactionDataDrivenFlow {
         return sendTxResponse.body?.id
     }
 
-    private async getTransaction(txId?: string) {
+    public async getTransaction(txId?: string) {
         if (!this.plan.getTxStep) {
             return
         }
@@ -60,7 +60,7 @@ class TransactionDataDrivenFlow {
         expectedResult(tx)
     }
 
-    private async getTransactionReceipt(
+    public async getTransactionReceipt(
         txId?: string,
     ): Promise<components['schemas']['ReceiptMeta'] | undefined> {
         if (!this.plan.getTxReceiptStep) {
@@ -82,7 +82,7 @@ class TransactionDataDrivenFlow {
         return receipt.meta
     }
 
-    private async getLogTransfer(
+    public async getLogTransfer(
         block: components['schemas']['ReceiptMeta'] | undefined,
     ) {
         if (!this.plan.getLogTransferStep) {
@@ -104,7 +104,7 @@ class TransactionDataDrivenFlow {
         expectedResult(logsResponse, block)
     }
 
-    private async getTransactionBlock(
+    public async getTransactionBlock(
         blockId: string | undefined,
         txId: string | undefined,
     ) {
