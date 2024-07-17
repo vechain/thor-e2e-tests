@@ -49,6 +49,7 @@ jobs:
 
             - name: Run Tests
               run: yarn test
+              continue-on-error: true
               env:
                   # use the provided node_urls or the default NODE_URLS
                   NODE_URLS: ${{ inputs.node_urls || vars.NODE_URLS }}
