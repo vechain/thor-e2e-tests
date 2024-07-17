@@ -8,21 +8,27 @@ import { MultipleTransactionDataDrivenFlow } from './setup/multiple-transactions
 /**
  * @group api
  * @group transactions
+ * @group dependant
  */
 describe('dependant transaction', function () {
-    const walletA = ThorWallet.withFunds()
-    const walletB = ThorWallet.withFunds()
-
     it.e2eTest(
         'should succeed when sending two transactions where the second one is dependant on the first one',
         'all',
         async function () {
+            const initialFunds = 1000
+            const transferAmount = initialFunds ** 2
+
+            const walletA = ThorWallet.withFunds()
+            const walletB = ThorWallet.newFunded({
+                vet: `0x${BigInt(initialFunds).toString(16)}`,
+                vtho: 1000e18,
+            })
             const thirdAddress = generateAddress()
 
             // Prepare the first transaction
             const clausesA = [
                 {
-                    value: 1000,
+                    value: transferAmount,
                     data: '0x',
                     to: walletB.address,
                 },
@@ -34,7 +40,7 @@ describe('dependant transaction', function () {
             // Prepare the second transaction
             const clausesB = [
                 {
-                    value: 1000,
+                    value: transferAmount,
                     data: '0x',
                     to: thirdAddress,
                 },
