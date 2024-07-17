@@ -170,6 +170,7 @@ class ThorWallet {
 
     public buildTransaction = async (
         clauses: TransactionClause[],
+        options?: { dependsOn: string },
     ): Promise<TransactionBody> => {
         const bestBlockRef = await getBlockRef('best')
         const genesisBlock = await Client.raw.getBlock('0')
@@ -184,7 +185,7 @@ class ThorWallet {
             clauses: clauses,
             gasPriceCoef: 0,
             gas: 1_000_000,
-            dependsOn: null,
+            dependsOn: options?.dependsOn ?? null,
             nonce: generateNonce(),
             chainTag: parseInt(genesisBlock.body.id.slice(-2), 16),
         }
