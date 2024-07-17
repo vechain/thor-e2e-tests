@@ -31,9 +31,6 @@ jobs:
     # 7.0 = Ubuntu 22.04
     runs-on: codebuild-ThorE2E-GHA-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-xlarge
     environment: ${{ inputs.environment || 'default-private' }}
-    strategy:
-      matrix:
-        test: [ 1, 2, 3 ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,10 +57,6 @@ jobs:
           MNEMONIC: ${{ secrets.MNEMONIC }}
           NETWORK_TYPE: ${{ inputs.environment || 'default-private' }}
           MAX_WORKERS: ${{ vars.MAX_WORKERS }}
-
-      #            - name: Print Docker logs
-      #              if: ${{ inputs.environment != 'mainnet' && inputs.environment != 'testnet' }}
-      #              run: yarn docker:logs
 
       - name: Publish Results
         uses: dorny/test-reporter@v1
