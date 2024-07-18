@@ -15,7 +15,7 @@ it.e2eTest = (
     }
 }
 
-jest.retryTimes(3, { logErrorsBeforeRetry: false })
+jest.retryTimes(3, { logErrorsBeforeRetry: true })
 
 afterAll(async () => {
     Client.raw.closeAllSubscriptions()

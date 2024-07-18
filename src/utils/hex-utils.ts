@@ -14,7 +14,7 @@ export const HEX_REGEX_40 = /^(0x)?[a-fA-F0-9]{40}$/
 export const HEX_REGEX_64 = /^(0x)?[a-fA-F0-9]{64}$/
 
 /**
- * Returns the provied hex string with the hex prefix removed.
+ * Returns the provided hex string with the hex prefix removed.
  * If the prefix doesn't exist the hex is returned unmodified
  * @param hex - the input hex string
  * @returns the input hex string with the hex prefix removed

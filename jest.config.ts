@@ -6,7 +6,7 @@ const MAX_WORKERS = process.env.MAX_WORKERS
 const config: Config = {
     verbose: true,
     // seconds to be considered slow
-    slowTestThreshold: 25,
+    slowTestThreshold: 20,
     reporters: [
         IS_GH_ACTIONS ? ['github-actions', { silent: false }] : 'default',
         [
@@ -33,7 +33,8 @@ const config: Config = {
     // ms to wait before throwing a timeout error
     testTimeout: 60_000,
     json: true,
-    maxWorkers: MAX_WORKERS ? parseInt(MAX_WORKERS) : '3',
+    maxWorkers: MAX_WORKERS ? parseInt(MAX_WORKERS) : '6',
+    workerThreads: true,
     setupFilesAfterEnv: [
         './test/setupAfterEnv.ts',
         'jest-extended/all',

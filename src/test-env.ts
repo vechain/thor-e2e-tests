@@ -25,9 +25,7 @@ export const testEnv = {
         if (!mnemonic) {
             throw new Error('No mnemonic provided')
         }
-        const _mnemonic = mnemonic
-
-        const hdNode = HDNode.fromMnemonic(_mnemonic.split(' '))
+        const hdNode = HDNode.fromMnemonic(mnemonic.split(' '))
         const keys: any[] = []
         for (let i = 0; i < 10; i++) {
             const child = hdNode.deriveChild(i)

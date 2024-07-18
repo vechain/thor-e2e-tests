@@ -58,6 +58,7 @@ const parseAmount = (amount?: number | string | bigint | undefined) => {
 /**
  * Fund an account using the faucet. VET and VTHO will be sent to the account
  * @param account
+ * @param amounts
  */
 export const fundAccount = async (account: string, amounts: FundingAmounts) => {
     const wallet = new ThorWallet(Buffer.from(randomFunder(), 'hex'))
