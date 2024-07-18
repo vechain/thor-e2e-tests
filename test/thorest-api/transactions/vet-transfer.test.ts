@@ -397,7 +397,8 @@ describe('VET transfer, negative outcome', function() {
                 }
             ]
 
-            const txBody = await wallet.buildTransaction(clauses, estimatedGas)
+            const txBody = await wallet.buildTransaction(clauses)
+            txBody.gas = estimatedGas
             const tx = new Transaction(txBody)
             const signedTx = await wallet.signTransaction(tx)
 

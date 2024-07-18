@@ -54,5 +54,4 @@ describe('POST /transactions', function() {
             await ddt.runTestFlow()
         },
     )
-
 })

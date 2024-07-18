@@ -137,7 +137,8 @@ describe('send tx with not enough gas', function() {
                     ]),
                 }
             ]
-            const txBody = await wallet.buildTransaction(clauses, 0)
+            const txBody = await wallet.buildTransaction(clauses)
+            txBody.gas = 0
             const tx = new Transaction(txBody)
             const rawTx = await wallet.signAndEncodeTx(tx)
 
