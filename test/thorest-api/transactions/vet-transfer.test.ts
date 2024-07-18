@@ -11,9 +11,7 @@ import {
     unsuccessfulReceipt,
 } from './setup/asserts'
 import {
-    AuthorizeTransaction__factory as AuthorizeTransaction,
     SimpleCounter__factory as SimpleCounter,
-    Stringer__factory,
 } from '../../../typechain-types'
 import { Contract } from '@vechain/sdk-network'
 import { Client } from '../../../src/thor-client'
@@ -116,7 +114,6 @@ describe('VET transfer, positive outcome', function() {
         'Multiple clauses success',
         'all',
         async function() {
-            //const getCounter = "0x8ada066e"
             const incrementCounter = "0x5b34b966"
 
             const receivingAddr = generateAddress()
@@ -186,6 +183,7 @@ describe('VET transfer, negative outcome', function() {
 
     let counter: Contract<typeof SimpleCounter.abi>
     const invalidSelector = "0xdeadbeef"
+    const incrementCounter = "0x5b34b966"
 
     beforeAll(async () => {
         await wallet.waitForFunding()
@@ -373,4 +371,50 @@ describe('VET transfer, negative outcome', function() {
         },
     )
 
+    it.e2eTest(
+        'Multiple clauses second lacks gas',
+        'all',
+        async function() {
+            const receivingAddr = generateAddress()
+            const clausesFirst = [
+                {
+                    value: 1,
+                    data: '0x',
+                    to: receivingAddr,
+                },
+            ]
+            const estimatedGas = (await Client.sdk.gas.estimateGas(clausesFirst)).totalGas
+            const clauses = [
+                {
+                    value: 1,
+                    data: '0x',
+                    to: receivingAddr,
+                },
+                {
+                    value: 0,
+                    data: incrementCounter,
+                    to: counter.address
+                }
+            ]
+
+            const txBody = await wallet.buildTransaction(clauses, estimatedGas)
+            const tx = new Transaction(txBody)
+            const signedTx = await wallet.signTransaction(tx)
+
+            const testPlan = {
+                postTxStep: {
+                    rawTx: signedTx.encoded.toString('hex'),
+                    expectedResult: (data: any) =>
+                        revertedPostTx(
+                            data,
+                            'bad tx: intrinsic gas exceeds provided gas',
+                        ),
+                },
+
+            }
+
+            const ddt = new TransactionDataDrivenFlow(testPlan)
+            await ddt.runTestFlow()
+        },
+    )
 })
