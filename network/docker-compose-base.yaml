@@ -16,5 +16,5 @@ services:
         deploy:
             resources:
                 limits:
-                    cpus: '6'
-                    memory: 8192M
+                    cpus: '8'
+                    memory: 16384M
