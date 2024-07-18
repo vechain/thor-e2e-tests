@@ -59,7 +59,7 @@ jobs:
           MAX_WORKERS: ${{ vars.MAX_WORKERS }}
 
       - name: Print Docker logs
-        if: ${{ failure() && (inputs.environment != 'mainnet' && inputs.environment != 'testnet') }}
+        if: ${{ (success() || failure()) && (inputs.environment != 'mainnet' && inputs.environment != 'testnet') }}
         run: yarn docker:logs
 
       - name: Publish Results

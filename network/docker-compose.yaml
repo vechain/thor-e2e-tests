@@ -8,8 +8,8 @@ services:
         deploy:
             resources:
                 limits:
-                    cpus: '2'
-                    memory: 2048M
+                    cpus: '4'
+                    memory: 4096M
 
     authority-node-1:
         extends:
