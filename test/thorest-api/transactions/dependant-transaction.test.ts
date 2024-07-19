@@ -1,7 +1,13 @@
 import { Transaction } from '@vechain/sdk-core'
 import { generateAddress, ThorWallet } from '../../../src/wallet'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
-import { checkTransactionLogSuccess, checkTxInclusionInBlock, compareSentTxWithCreatedTx, successfulPostTx, successfulReceipt } from './setup/asserts'
+import {
+    checkTransactionLogSuccess,
+    checkTxInclusionInBlock,
+    compareSentTxWithCreatedTx,
+    successfulPostTx,
+    successfulReceipt,
+} from './setup/asserts'
 import { TestCasePlan } from './setup/models'
 import { MultipleTransactionDataDrivenFlow } from './setup/multiple-transactions-data-driven-flow'
 
@@ -45,7 +51,9 @@ describe('dependant transaction', function () {
                     to: thirdAddress,
                 },
             ]
-            const txBodyB = await walletB.buildTransaction(clausesB, { dependsOn: signedTxA.id })
+            const txBodyB = await walletB.buildTransaction(clausesB, {
+                dependsOn: signedTxA.id,
+            })
             const txB = new Transaction(txBodyB)
             const signedTxB = await walletB.signTransaction(txB)
 
@@ -74,7 +82,7 @@ describe('dependant transaction', function () {
                 },
                 getTxBlockStep: {
                     expectedResult: checkTxInclusionInBlock,
-                }
+                },
             } as TestCasePlan
 
             const testPlanB = {
@@ -101,14 +109,17 @@ describe('dependant transaction', function () {
                 },
                 getTxBlockStep: {
                     expectedResult: checkTxInclusionInBlock,
-                }
+                },
             } as TestCasePlan
 
             // Run the test flow
             const ddtA = new TransactionDataDrivenFlow(testPlanA)
             const ddtB = new TransactionDataDrivenFlow(testPlanB)
 
-            const multipleDdt = new MultipleTransactionDataDrivenFlow([ddtA, ddtB])
+            const multipleDdt = new MultipleTransactionDataDrivenFlow([
+                ddtA,
+                ddtB,
+            ])
             await multipleDdt.runTestFlow()
         },
     )

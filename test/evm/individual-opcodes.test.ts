@@ -10,7 +10,7 @@ import {
     addUintPadding,
 } from '../../src/utils/padding-utils'
 import { pollReceipt } from '../../src/transactions'
-import { randomFunder } from '../../src/account-faucet'
+import { funder, randomFunder } from '../../src/account-faucet'
 import { addressUtils } from '@vechain/sdk-core'
 
 const opcodesInterface = Opcodes.createInterface()
@@ -388,10 +388,19 @@ describe('Individual OpCodes', () => {
         'should give the correct output for opcode: BALANCE',
         'all',
         async () => {
+            const constantFunder = addressUtils.fromPrivateKey(
+                Buffer.from(funder(0), 'hex'),
+            )
+
             const debugged = await traceContractCall(
-                opcodesInterface.encodeFunctionData('BALANCE', [caller]),
+                opcodesInterface.encodeFunctionData('BALANCE', [
+                    constantFunder,
+                ]),
                 'BALANCE',
             )
+
+            console.log(debugged)
+            console.log(constantFunder)
 
             const balance = BigInt(`0x${debugged.returnValue}`)
 

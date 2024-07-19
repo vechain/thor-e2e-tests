@@ -25,6 +25,10 @@ export const randomFunder = () => {
     return testEnv.keys[randomIndex]
 }
 
+export const funder = (index: number) => {
+    return testEnv.keys[index]
+}
+
 const hexAmount = (amount?: number | string | bigint | undefined) => {
     if (amount === undefined) {
         return '0x0'

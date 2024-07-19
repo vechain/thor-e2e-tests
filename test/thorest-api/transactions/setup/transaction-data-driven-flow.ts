@@ -1,6 +1,6 @@
 import { components } from '../../../../src/open-api-types'
 import { Client } from '../../../../src/thor-client'
-import { pollReceipt } from '../../../../src/transactions'
+import { pollReceipt, pollTransaction } from '../../../../src/transactions'
 import { TestCasePlan, TestCasePlanStepError } from './models'
 
 /**
@@ -53,7 +53,7 @@ class TransactionDataDrivenFlow {
 
         const { expectedResult } = this.plan.getTxStep
 
-        const tx = await Client.raw.getTransaction(txId, {
+        const tx = await pollTransaction(txId, {
             pending: true,
         })
 
