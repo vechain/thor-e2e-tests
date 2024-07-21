@@ -389,7 +389,7 @@ describe('Individual OpCodes', () => {
         'all',
         async () => {
             const constantFunder = addressUtils.fromPrivateKey(
-                Buffer.from(funder(0), 'hex'),
+                Buffer.from(funder(1), 'hex'),
             )
 
             const debugged = await traceContractCall(
