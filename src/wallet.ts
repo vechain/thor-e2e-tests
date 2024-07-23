@@ -227,8 +227,8 @@ class ThorWallet {
         delegate?: boolean,
     ): Promise<
         T extends true
-            ? components['schemas']['GetTxReceiptResponse']
-            : components['schemas']['TXID']
+        ? components['schemas']['GetTxReceiptResponse']
+        : components['schemas']['TXID']
     > => {
         await this.waitForFunding()
 
