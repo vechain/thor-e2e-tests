@@ -399,9 +399,6 @@ describe('Individual OpCodes', () => {
                 'BALANCE',
             )
 
-            console.log(debugged)
-            console.log(constantFunder)
-
             const balance = BigInt(`0x${debugged.returnValue}`)
 
             expect(
