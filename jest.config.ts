@@ -34,7 +34,7 @@ const config: Config = {
     testTimeout: 60_000,
     json: true,
     maxWorkers: MAX_WORKERS ? parseInt(MAX_WORKERS) : '6',
-    workerThreads: true,
+    workerThreads: false,
     setupFilesAfterEnv: [
         './test/setupAfterEnv.ts',
         'jest-extended/all',
