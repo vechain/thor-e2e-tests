@@ -86,7 +86,9 @@ export const writeTransferTransactions = async (): Promise<TransferDetails> => {
     // run a function every 100ms until cancel
     const blockInterval = setInterval(async () => {
         const bestBlock = await Client.sdk.blocks.getBestBlockExpanded()
-        console.log(`Current block: ${bestBlock?.number} @ ${bestBlock?.id}`)
+        console.log(
+            `Current block: ${bestBlock?.number} @ ${bestBlock?.id} (Parent=${bestBlock?.parentID})`,
+        )
     }, 50)
 
     const written = await checkAlreadyWritten()
