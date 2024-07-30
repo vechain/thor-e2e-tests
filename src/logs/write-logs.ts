@@ -7,6 +7,7 @@
 import { Client } from '../thor-client'
 import { TransferDetails } from '../types'
 import { staticEventsTransactions } from './transactions'
+import { pollReceipt } from '../transactions'
 
 export const writeTransferTransactions = async (): Promise<TransferDetails> => {
     console.log('\n')
@@ -34,7 +35,12 @@ export const writeTransferTransactions = async (): Promise<TransferDetails> => {
                     const newTx =
                         await client.sdk.transactions.sendRawTransaction(tx.raw)
 
-                    receipt = await newTx.wait()
+                    await pollReceipt(newTx.id)
+
+                    receipt =
+                        await client.sdk.transactions.getTransactionReceipt(
+                            newTx.id,
+                        )
                 }
 
                 if (!receipt || receipt.reverted) {

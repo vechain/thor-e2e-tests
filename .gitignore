@@ -27,3 +27,4 @@ jest-report.html
 /.yarnrc.yml
 
 /keys
+network/node-*-data/
