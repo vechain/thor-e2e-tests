@@ -38,15 +38,16 @@ const writeTransfers = async () => {
         const blockTxs: { raw: string; txId: string }[] =
             staticEventsTransactions[i]
 
+        console.log(`Sending transactions @ batch ${i}`)
+
         const transactions = (await Promise.all(
-            blockTxs.map(async ({ raw }) => {
-                const tx = await Client.sdk.transactions.sendRawTransaction(raw)
+            blockTxs.map(async ({ raw, txId }) => {
+                await Client.raw.sendTransaction({ raw })
 
-                await pollReceipt(tx.id)
+                await pollReceipt(txId)
 
-                const receipt = await tx.wait()
-
-                console.log(receipt?.meta)
+                const receipt =
+                    await Client.sdk.transactions.waitForTransaction(txId)
 
                 return receipt!
             }),
@@ -54,6 +55,8 @@ const writeTransfers = async () => {
 
         txs.push(...transactions)
     }
+
+    console.log(txs.map((tx) => tx.meta.blockID))
 
     return txs
 }
@@ -83,14 +86,17 @@ export const writeTransferTransactions = async (): Promise<TransferDetails> => {
     // run a function every 100ms until cancel
     const blockInterval = setInterval(async () => {
         const bestBlock = await Client.sdk.blocks.getBestBlockExpanded()
-        console.log(bestBlock)
-    }, 100)
+        console.log(`Current block: ${bestBlock?.number} @ ${bestBlock?.id}`)
+    }, 50)
 
     const written = await checkAlreadyWritten()
 
-    if (written) {
+    if (!written) {
+        console.log('Writing transfers...')
         await writeTransfers()
         await Client.raw.waitForBlock()
+    } else {
+        console.log('Transfers already written to chain')
     }
 
     const txs = await readTransfers()
@@ -106,11 +112,15 @@ export const writeTransferTransactions = async (): Promise<TransferDetails> => {
         return tx.meta.blockNumber > max ? tx.meta.blockNumber : max
     }, txs[0].meta.blockNumber)
 
-    clearInterval(blockInterval)
-
-    return {
+    const details: TransferDetails = {
         firstBlock,
         lastBlock,
         transferCount: txs.length,
     }
+
+    console.log('Transfer details:', details)
+
+    clearInterval(blockInterval)
+
+    return details
 }
