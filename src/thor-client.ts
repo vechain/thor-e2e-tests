@@ -507,7 +507,7 @@ class ThorClient {
 }
 
 class LoadBalancedClient {
-    private readonly clients: ThorClient[]
+    public readonly clients: ThorClient[]
     private readonly sdkClients: _ThorClient[]
 
     constructor(urls: string[]) {
