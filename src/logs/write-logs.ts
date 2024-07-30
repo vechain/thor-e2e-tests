@@ -8,69 +8,109 @@ import { Client } from '../thor-client'
 import { TransferDetails } from '../types'
 import { staticEventsTransactions } from './transactions'
 import { pollReceipt } from '../transactions'
+import { TransactionReceipt } from '@vechain/sdk-network'
 
-export const writeTransferTransactions = async (): Promise<TransferDetails> => {
-    console.log('\n')
+const checkAlreadyWritten = async () => {
+    for (let i = 0; i < staticEventsTransactions.length; i++) {
+        const blockTxs: { raw: string; txId: string }[] =
+            staticEventsTransactions[i]
 
-    let firstBlock = 0
-    let lastBlock = 0
-    let transferCount = 0
+        for (let j = 0; j < blockTxs.length; j++) {
+            const tx = blockTxs[j]
+            const receipt = await Client.sdk.transactions.getTransactionReceipt(
+                tx.txId,
+            )
+            if (receipt != null && !receipt.reverted) {
+                return true
+            }
+        }
+    }
 
-    const client = Client.index(0)
-    await client.raw.waitForBlock()
+    return false
+}
+
+const writeTransfers = async () => {
+    const txs: TransactionReceipt[] = []
+
+    await Client.raw.waitForBlock()
 
     for (let i = 0; i < staticEventsTransactions.length; i++) {
         const blockTxs: { raw: string; txId: string }[] =
             staticEventsTransactions[i]
 
-        console.log(`Checking for batch ${i} of the event TXs...`)
+        const transactions = (await Promise.all(
+            blockTxs.map(async ({ raw }) => {
+                const tx = await Client.sdk.transactions.sendRawTransaction(raw)
 
-        const receipts = await Promise.all(
-            blockTxs.map(async (tx) => {
-                let receipt =
-                    await client.sdk.transactions.getTransactionReceipt(tx.txId)
+                await pollReceipt(tx.id)
 
-                // deploy the tx and wait for it if it is not already deployed
-                if (receipt == null) {
-                    const newTx =
-                        await client.sdk.transactions.sendRawTransaction(tx.raw)
+                const receipt = await tx.wait()
 
-                    await pollReceipt(newTx.id)
+                console.log(receipt?.meta)
 
-                    receipt =
-                        await client.sdk.transactions.getTransactionReceipt(
-                            newTx.id,
-                        )
-                }
-
-                if (!receipt || receipt.reverted) {
-                    throw new Error('Transaction failed')
-                }
-
-                if (firstBlock == 0) {
-                    firstBlock = receipt.meta.blockNumber
-                }
-
-                lastBlock = receipt.meta.blockNumber
-
-                transferCount++
-
-                return receipt
+                return receipt!
             }),
-        )
+        )) as TransactionReceipt[]
 
-        const blocks = new Set(
-            receipts.map((receipt) => receipt.meta.blockNumber),
-        )
-
-        console.log(
-            `Batch ${i} of the event TXs are in blocks: ${Array.from(blocks).join(', ')}\n`,
-        )
+        txs.push(...transactions)
     }
 
+    return txs
+}
+
+const readTransfers = async () => {
+    const txs: TransactionReceipt[] = []
+
+    for (let i = 0; i < staticEventsTransactions.length; i++) {
+        const blockTxs: { raw: string; txId: string }[] =
+            staticEventsTransactions[i]
+
+        for (let j = 0; j < blockTxs.length; j++) {
+            const tx = blockTxs[j]
+            const receipt = await Client.sdk.transactions.getTransactionReceipt(
+                tx.txId,
+            )
+            txs.push(receipt!)
+        }
+    }
+
+    return txs
+}
+
+export const writeTransferTransactions = async (): Promise<TransferDetails> => {
+    console.log('\n')
+
+    // run a function every 100ms until cancel
+    const blockInterval = setInterval(async () => {
+        const bestBlock = await Client.sdk.blocks.getBestBlockExpanded()
+        console.log(bestBlock)
+    }, 100)
+
+    const written = await checkAlreadyWritten()
+
+    if (written) {
+        await writeTransfers()
+        await Client.raw.waitForBlock()
+    }
+
+    const txs = await readTransfers()
+
+    console.log(txs.map((tx) => tx.meta))
+
+    // get the min block in all receipts
+    const firstBlock = txs.reduce((min, tx) => {
+        return tx.meta.blockNumber < min ? tx.meta.blockNumber : min
+    }, txs[0].meta.blockNumber)
+
+    const lastBlock = txs.reduce((max, tx) => {
+        return tx.meta.blockNumber > max ? tx.meta.blockNumber : max
+    }, txs[0].meta.blockNumber)
+
+    clearInterval(blockInterval)
+
     return {
-        lastBlock,
         firstBlock,
-        transferCount,
+        lastBlock,
+        transferCount: txs.length,
     }
 }
