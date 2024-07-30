@@ -12,7 +12,7 @@ echo $response
 number=$(echo $response | grep -o '"number":[^,}]*' | awk -F: '{print $2}' | tr -d '[:space:]')
 
 # Check if the number is greater than 1
-if [ $number -gt 1 ]; then
+if [ $number -gt 0 ]; then
   echo "Health check passed! Number is greater than 0."
   exit 0
 else

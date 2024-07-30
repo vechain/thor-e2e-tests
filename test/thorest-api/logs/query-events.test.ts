@@ -228,6 +228,23 @@ describe('POST /logs/event', () => {
     describe('query by "order"', () => {
         const runQueryEventLogsTest = async (order?: 'asc' | 'desc' | null) => {
             const { firstBlock, lastBlock } = readTransferDetails()
+            console.log({
+                range: {
+                    from: firstBlock,
+                    to: lastBlock,
+                    unit: 'block',
+                },
+                options: {
+                    offset: 0,
+                    limit: 1_000,
+                },
+                criteriaSet: [
+                    {
+                        address: contractAddresses.energy,
+                    },
+                ],
+                order: order,
+            })
             const response = await Client.raw.queryEventLogs({
                 range: {
                     from: firstBlock,
@@ -246,6 +263,7 @@ describe('POST /logs/event', () => {
                 order: order,
             })
 
+            console.log(response.body)
             expect(
                 response.success,
                 'API response should be a success',
