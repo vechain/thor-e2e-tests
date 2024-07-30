@@ -8,6 +8,7 @@ import { interfaces } from '../../../src/contracts/hardhat'
 import { getBlockRef } from '../../../src/utils/block-utils'
 import { revisions } from '../../../src/constants'
 import { ThorWallet } from '../../../src/wallet'
+import { pollReceipt } from '../../../src/transactions'
 
 const CALLER_ADDR = '0x435933c8064b4Ae76bE665428e0307eF2cCFBD68'
 const GAS_PAYER = '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed'
@@ -393,9 +394,9 @@ describe('POST /accounts/*', function () {
                 factory.abi,
             )
 
-            const receipt = await contract.transact
-                .setNextBlock()
-                .then((tx) => tx.wait())
+            const setBlock = await contract.transact.setNextBlock()
+            await pollReceipt(setBlock.id)
+            const receipt = await setBlock.wait()
 
             expect(receipt?.reverted).toBeFalse()
 

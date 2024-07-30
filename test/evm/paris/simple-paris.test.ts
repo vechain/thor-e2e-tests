@@ -1,5 +1,6 @@
 import { ThorWallet } from '../../../src/wallet'
 import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-types'
+import { pollReceipt } from '../../../src/transactions'
 
 /**
  * @group opcodes
@@ -18,7 +19,8 @@ describe('Simple Paris', () => {
         const startValue = await contract.read.getCounter().then((r) => r[0])
 
         expect(startValue).toBe(0n)
-        await contract.transact.incrementCounter().then((r) => r.wait())
+        const increment = await contract.transact.incrementCounter()
+        await pollReceipt(increment.id)
 
         const endValue = await contract.read.getCounter().then((r) => r[0])
         expect(endValue).toBe(1n)
