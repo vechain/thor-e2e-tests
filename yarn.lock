@@ -2352,7 +2352,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/ws@^8.5.10":
+"@types/ws@^8.5.10", "@types/ws@^8.5.11":
   version "8.5.12"
   resolved "https://registry.yarnpkg.com/@types/ws/-/ws-8.5.12.tgz#619475fe98f35ccca2a2f6c137702d85ec247b7e"
   integrity sha512-3tPRkv1EtkDpzlgyKyI8pGsGZAGPEaXeu0DOj5DI25Ja91bdAYddYHbADRYVrZMRbfW+1l5YwXVDKohDJNQxkQ==
@@ -2462,47 +2462,46 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
-"@vechain/sdk-core@1.0.0-beta.21":
-  version "1.0.0-beta.21"
-  resolved "https://registry.yarnpkg.com/@vechain/sdk-core/-/sdk-core-1.0.0-beta.21.tgz#0075c93b7d63d38960e92bdc211c0481b88279f0"
-  integrity sha512-Qoq60eNzXtQSZjocds5hd6xHHtFbxnLwksP+04iEbkkmxNMGpsd4Y5BPjArOJ/iroFW8l7hSJCrq6HOjh1x1jA==
+"@vechain/sdk-core@1.0.0-beta.24":
+  version "1.0.0-beta.24"
+  resolved "https://registry.yarnpkg.com/@vechain/sdk-core/-/sdk-core-1.0.0-beta.24.tgz#8dafdf41bfef8ab82fec0ddb8c7827b77809dda6"
+  integrity sha512-Gc8zPethcrJoe4i/zdtlidYenSbltGefz6NGRmxxkf0A7wJWyNy+Ha9VjScrv9JWBHFycOiNiMxCf5w8H0mVVA==
   dependencies:
     "@ethereumjs/rlp" "^5.0.2"
     "@noble/ciphers" "^0.5.2"
     "@scure/bip32" "^1.4.0"
     "@scure/bip39" "^1.3.0"
     "@types/elliptic" "^6.4.18"
-    "@vechain/sdk-errors" "1.0.0-beta.21"
-    "@vechain/sdk-logging" "1.0.0-beta.21"
+    "@vechain/sdk-errors" "1.0.0-beta.24"
+    "@vechain/sdk-logging" "1.0.0-beta.24"
     bignumber.js "^9.1.2"
     blakejs "^1.2.1"
-    elliptic "^6.5.5"
+    elliptic "^6.5.6"
     ethers "6.13.1"
     fast-json-stable-stringify "^2.1.0"
 
-"@vechain/sdk-errors@1.0.0-beta.21":
-  version "1.0.0-beta.21"
-  resolved "https://registry.yarnpkg.com/@vechain/sdk-errors/-/sdk-errors-1.0.0-beta.21.tgz#49d62ba6d973ce3c60a951f506c84b9126fd742b"
-  integrity sha512-dRDjIeKsklKA9DnouGXjLU88a6nnUsrIJeQK0pXFJuAcwU4Dtjh0cUFcT+lPnw4NLf8JncnBUyNIxoNB+4fSPw==
+"@vechain/sdk-errors@1.0.0-beta.24":
+  version "1.0.0-beta.24"
+  resolved "https://registry.yarnpkg.com/@vechain/sdk-errors/-/sdk-errors-1.0.0-beta.24.tgz#4ab483ae6747eccf69226da2d74fafb61b704f37"
+  integrity sha512-evB+y904J5di65o1HTpt2/fgaC+HivoISwqjSRvWiBo7mOIAYDN5xK405dySBHcpl9rhOxGWp3NPRJwSdmUH9Q==
 
-"@vechain/sdk-logging@1.0.0-beta.21":
-  version "1.0.0-beta.21"
-  resolved "https://registry.yarnpkg.com/@vechain/sdk-logging/-/sdk-logging-1.0.0-beta.21.tgz#7c43b6b58a12c97e884225702a340dfdac1ed624"
-  integrity sha512-88wxq7hMb+pMy4pp80TwfmYHQ9IsOVpazoAXnhE0gd9ZeVposn8mGuAzIRy/xqLLRcLK3lK1aQA63U1YmJBnhg==
+"@vechain/sdk-logging@1.0.0-beta.24":
+  version "1.0.0-beta.24"
+  resolved "https://registry.yarnpkg.com/@vechain/sdk-logging/-/sdk-logging-1.0.0-beta.24.tgz#bc33466aa51653a209c53ba22b65c61997db490a"
+  integrity sha512-qGBtjEf+JXAOJh4etAN4ry0CmpvQbkMCESPga7awyQuQLP+C8Kw78B9loD5ji3U1OYyvx7Yu+STi+S91yhDN0g==
   dependencies:
-    "@vechain/sdk-errors" "1.0.0-beta.21"
+    "@vechain/sdk-errors" "1.0.0-beta.24"
 
-"@vechain/sdk-network@1.0.0-beta.21":
-  version "1.0.0-beta.21"
-  resolved "https://registry.yarnpkg.com/@vechain/sdk-network/-/sdk-network-1.0.0-beta.21.tgz#c78e7ff90db757ed19c20e183c163366056e6df9"
-  integrity sha512-lLpY2bf4XfMBfocJKD1yfzWAE27JPt8up9/d805FRbYzt1Y06LXu9VSroPZpN7xQbD2ZxjYJ/rKPzScLA+s/2Q==
+"@vechain/sdk-network@1.0.0-beta.24":
+  version "1.0.0-beta.24"
+  resolved "https://registry.yarnpkg.com/@vechain/sdk-network/-/sdk-network-1.0.0-beta.24.tgz#62d6b26271cf9b5c57a23989be55db787ec57c2b"
+  integrity sha512-ma+IWJ7mGBFfJ0ROj2O+F4gcdWsE1h9PYPy75J/MLhvfAuEXxd6noMWCgqEBpV1tvUhToNHX9GVgl763fPLQAg==
   dependencies:
-    "@types/ws" "^8.5.10"
-    "@vechain/sdk-core" "1.0.0-beta.21"
-    "@vechain/sdk-errors" "1.0.0-beta.21"
-    "@vechain/sdk-logging" "1.0.0-beta.21"
+    "@types/ws" "^8.5.11"
+    "@vechain/sdk-core" "1.0.0-beta.24"
+    "@vechain/sdk-errors" "1.0.0-beta.24"
+    "@vechain/sdk-logging" "1.0.0-beta.24"
     abitype "^1.0.5"
-    axios "^1.7.2"
     isomorphic-ws "^5.0.0"
     ws "^8.18.0"
 
@@ -2750,7 +2749,7 @@ available-typed-arrays@^1.0.7:
   dependencies:
     possible-typed-array-names "^1.0.0"
 
-axios@^1.5.1, axios@^1.6.5, axios@^1.7.2:
+axios@^1.5.1, axios@^1.6.5:
   version "1.7.2"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.7.2.tgz#b625db8a7051fbea61c35a3cbb3a1daa7b9c7621"
   integrity sha512-2A8QhOMrbomlDuiLeK9XibIBzuHeRcqqNOHp0Cyp5EoJ1IFDh+XZH3A6BkXtv0K4gFGCI0Y4BM7B1wOEi0Rmgw==
@@ -3515,7 +3514,7 @@ elliptic@6.5.4:
     minimalistic-assert "^1.0.1"
     minimalistic-crypto-utils "^1.0.1"
 
-elliptic@^6.5.2, elliptic@^6.5.4, elliptic@^6.5.5:
+elliptic@^6.5.2, elliptic@^6.5.4, elliptic@^6.5.6:
   version "6.5.6"
   resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.5.6.tgz#ee5f7c3a00b98a2144ac84d67d01f04d438fa53e"
   integrity sha512-mpzdtpeCLuS3BmE3pO3Cpp5bbjlOPY2Q0PgoF+Od1XZrHLYI28Xe3ossCmYCQt11FQKEYd9+PF8jymTvtWJSHQ==

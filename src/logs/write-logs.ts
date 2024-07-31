@@ -32,8 +32,6 @@ const checkAlreadyWritten = async () => {
 const writeTransfers = async () => {
     const txs: TransactionReceipt[] = []
 
-    await Client.raw.waitForBlock()
-
     for (let i = 0; i < staticEventsTransactions.length; i++) {
         const blockTxs: { raw: string; txId: string }[] =
             staticEventsTransactions[i]
