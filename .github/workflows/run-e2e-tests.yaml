@@ -29,7 +29,8 @@ jobs:
     # https://docs.aws.amazon.com/codebuild/latest/userguide/action-runner.html#sample-github-action-runners-create-project
     # xlarge = 70 GB memory, 36 vCPUs
     # 7.0 = Ubuntu 22.04
-    runs-on: codebuild-ThorE2E-GHA-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-xlarge
+#    runs-on: codebuild-ThorE2E-GHA-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-xlarge
+    runs-on: ubuntu-latest
     environment: ${{ inputs.environment || 'default-private' }}
     steps:
       - name: Checkout code
