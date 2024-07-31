@@ -54,8 +54,6 @@ const writeTransfers = async () => {
         txs.push(...transactions)
     }
 
-    console.log(txs.map((tx) => tx.meta.blockID))
-
     return txs
 }
 
@@ -79,16 +77,6 @@ const readTransfers = async () => {
 }
 
 export const writeTransferTransactions = async (): Promise<TransferDetails> => {
-    console.log('\n')
-
-    // run a function every 100ms until cancel
-    const blockInterval = setInterval(async () => {
-        const bestBlock = await Client.sdk.blocks.getBestBlockExpanded()
-        console.log(
-            `Current block: ${bestBlock?.number} @ ${bestBlock?.id} (Parent=${bestBlock?.parentID})`,
-        )
-    }, 50)
-
     const written = await checkAlreadyWritten()
 
     if (!written) {
@@ -101,8 +89,6 @@ export const writeTransferTransactions = async (): Promise<TransferDetails> => {
 
     const txs = await readTransfers()
 
-    console.log(txs.map((tx) => tx.meta))
-
     // get the min block in all receipts
     const firstBlock = txs.reduce((min, tx) => {
         return tx.meta.blockNumber < min ? tx.meta.blockNumber : min
@@ -112,15 +98,9 @@ export const writeTransferTransactions = async (): Promise<TransferDetails> => {
         return tx.meta.blockNumber > max ? tx.meta.blockNumber : max
     }, txs[0].meta.blockNumber)
 
-    const details: TransferDetails = {
+    return {
         firstBlock,
         lastBlock,
         transferCount: txs.length,
     }
-
-    console.log('Transfer details:', details)
-
-    clearInterval(blockInterval)
-
-    return details
 }
