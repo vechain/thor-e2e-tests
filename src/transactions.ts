@@ -1,6 +1,7 @@
 import { TransactionClause } from '@vechain/sdk-core'
 import { Client, Response, Schema } from './thor-client'
 import { components } from './open-api-types'
+import HexUtils from './utils/hex-utils'
 
 export const generateNonce = (): number => {
     return Math.floor(Math.random() * 1_000_000_000)
@@ -68,8 +69,11 @@ export const pollReceipt = async (
                     ),
                 )
 
+                const blocks = blockIds.values()
+
                 if (
                     receipts.length == Client.clients.length &&
+                    HexUtils.isValid(blocks.next().value) &&
                     blockIds.size == 1
                 ) {
                     clearInterval(intervalId) // Clear the interval when the receipt is found
