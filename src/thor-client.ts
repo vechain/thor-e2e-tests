@@ -370,10 +370,16 @@ class ThorClient {
     // POST /debug/tracers/call
     public async traceContractCall(
         request: Schema['PostDebugTracerCallRequest'],
+        revision?: string,
         options?: AxiosRequestConfig,
     ): Promise<Response<any>> {
+        let path = `/debug/tracers/call`
+        if (revision) {
+            path = `${path}?revision=${revision}`
+        }
+
         return this.performRequest(() =>
-            this.axios.post(`/debug/tracers/call`, request, options),
+            this.axios.post(path, request, options),
         )
     }
 
