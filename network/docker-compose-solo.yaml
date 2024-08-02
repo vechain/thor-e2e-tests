@@ -20,8 +20,3 @@ services:
       - type: bind
         source: ./config
         target: /node/config
-    deploy:
-      resources:
-        limits:
-          cpus: '8'
-          memory: 8192M
