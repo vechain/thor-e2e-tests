@@ -186,12 +186,19 @@ describe('WS /subscriptions/transfer', () => {
             txpoolTxs.push(txId)
         })
 
+        const receipt = await fundAccount(account, fundingAmounts.tinyVetNoVtho)
+        const txId = receipt.receipt.meta?.txID
+
         // Sleep for 1 sec to ensure the beat is received
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
+        const isInTransferTxs = transferTxs.some((tx) => tx.id === txId)
+        const isInTxpoolTxs = txpoolTxs.some((tx) => tx.id === txId)
+
         expect(transferTxs).not.toBeUndefined()
         expect(txpoolTxs).not.toBeUndefined()
-        expect(transferTxs).toEqual(txpoolTxs)
+        expect(isInTransferTxs).toBeTrue()
+        expect(isInTxpoolTxs).toBeTrue()
     })
 
     it.e2eTest('should error for invalid position', 'all', async () => {
