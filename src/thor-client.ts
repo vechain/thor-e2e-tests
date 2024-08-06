@@ -485,13 +485,6 @@ class ThorClient {
             if (errorCallback) {
                 errorCallback(event)
             }
-            const error = new Error(`WebSocket error: ${event.message}`)
-            console.error(error)
-        }
-
-        ws.onclose = (event: any) => {
-            const error = new Error(`WebSocket onclone: ${event.message}`)
-            console.error(error)
         }
 
         this.subscriptions.push(() => ws.close())

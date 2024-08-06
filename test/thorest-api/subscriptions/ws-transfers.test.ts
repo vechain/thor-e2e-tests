@@ -1,10 +1,6 @@
 import { Client } from '../../../src/thor-client'
 import { components } from '../../../src/open-api-types'
-import {
-    fundingAmounts,
-    fundAccount,
-    randomFunder,
-} from '../../../src/account-faucet'
+import { fundingAmounts, fundAccount } from '../../../src/account-faucet'
 import { SimpleTransfer__factory as SimpleTransfer } from '../../../typechain-types'
 import { generateAddress, ThorWallet } from '../../../src/wallet'
 
@@ -92,8 +88,7 @@ describe('WS /subscriptions/transfer', () => {
 
     it.e2eTest('should work for valid sender', 'all', async () => {
         const account = generateAddress()
-        const randomSender = randomFunder()
-        const wallet = new ThorWallet(Buffer.from(randomSender, 'hex'))
+        const wallet = ThorWallet.withFunds()
 
         const { relevantEvent, sender } = await subscribeAndFundAccount(
             { sender: wallet.address },
@@ -108,8 +103,7 @@ describe('WS /subscriptions/transfer', () => {
 
     it.e2eTest('should work for valid txOrigin', 'all', async () => {
         const account = generateAddress()
-        const randomSender = randomFunder()
-        const wallet = new ThorWallet(Buffer.from(randomSender, 'hex'))
+        const wallet = ThorWallet.withFunds()
 
         const { relevantEvent, sender } = await subscribeAndFundAccount(
             { txOrigin: wallet.address },
@@ -138,7 +132,7 @@ describe('WS /subscriptions/transfer', () => {
             const functionData =
                 SimpleTransfer.createInterface().encodeFunctionData(
                     'transfer',
-                    [account, 1],
+                    [account],
                 )
 
             const events: components['schemas']['SubscriptionTransferResponse'][] =
