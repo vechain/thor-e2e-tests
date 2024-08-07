@@ -1,6 +1,8 @@
 import { Client } from '../../../src/thor-client'
 import assert from 'node:assert'
 import { components } from '../../../src/open-api-types'
+import { testLegacyBloomForAddress } from '../../../src/utils/legacy-bloom'
+import { ThorWallet } from '../../../src/wallet'
 
 /**
  * @group api
@@ -8,6 +10,33 @@ import { components } from '../../../src/open-api-types'
  * @group beats
  */
 describe('WS /subscriptions/beat', () => {
+    it.e2eTest('should be able to subscribe', 'all', async () => {
+        const beats: components['schemas']['SubscriptionBeatResponse'][] = []
+
+        Client.raw.subscribeToBeats((newBlock) => {
+            beats.push(newBlock)
+        })
+
+        const wallet = ThorWallet.txBetweenFunding()
+
+        const fundReceipt = await wallet.waitForFunding()
+
+        //sleep for 1 sec to ensure the beat is received
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
+        const relevantBeat = beats.find((beat) => {
+            return beat.id === fundReceipt?.meta?.blockID
+        })
+
+        assert(relevantBeat?.bloom, 'Beat not found')
+        assert(relevantBeat?.k, 'Beat not found')
+        assert(wallet.address, 'Sender not found')
+
+        const result = testLegacyBloomForAddress(relevantBeat.bloom, relevantBeat.k, wallet.address)
+
+        expect(result).toEqual(true)
+    })
+
     it.e2eTest('should be able to retrieve blocks after the current best block when providing no position parameter', 'all', async () => {
         const beats: components['schemas']['SubscriptionBeatResponse'][] = []
 
