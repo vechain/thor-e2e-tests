@@ -26,6 +26,28 @@ const subscribeAndTestError = async (
     await new Promise((resolve) => setTimeout(resolve, 2000))
 }
 
+const subscribeAndTestEvent = async (
+    params: SubscriptionParams,
+    wallet: ThorWallet,
+) => {
+    const events: components['schemas']['SubscriptionEventResponse'][] = []
+
+    Client.raw.subscribeToEvents((event) => {
+        events.push(event)
+    }, params)
+
+    const receipt = await wallet.waitForFunding()
+
+    // Sleep for 1 sec to ensure the event is received
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    const relevantEvent = events.find(
+        (event) => event.meta?.txID === receipt?.meta?.txID,
+    )
+
+    expect(relevantEvent).not.toBeUndefined()
+}
+
 /**
  * @group api
  * @group websockets
@@ -33,136 +55,65 @@ const subscribeAndTestError = async (
  */
 describe('WS /subscriptions/event', () => {
     it.e2eTest('should work for valid t0', 'all', async () => {
-        const events: components['schemas']['SubscriptionEventResponse'][] = []
         const wallet = ThorWallet.txBetweenFunding()
 
-        Client.raw.subscribeToEvents(
-            (event) => {
-                events.push(event)
-            },
+        subscribeAndTestEvent(
             {
                 t0: interfaces.energy.getEvent('Transfer').topicHash,
             },
+            wallet,
         )
-
-        const receipt = await wallet.waitForFunding()
-
-        //sleep for 1 sec to ensure the beat is received
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        const relevantEvent = events.find((event) => {
-            return event.meta?.txID === receipt?.meta?.txID
-        })
-
-        expect(relevantEvent).not.toBeUndefined()
     })
 
     it.e2eTest('should work for valid t1', 'all', async () => {
-        const events: components['schemas']['SubscriptionEventResponse'][] = []
         const wallet = ThorWallet.txBetweenFunding(true)
 
-        Client.raw.subscribeToEvents(
-            (event) => {
-                events.push(event)
-            },
+        subscribeAndTestEvent(
             {
                 t1: addAddressPadding(wallet.address),
             },
+            wallet,
         )
-
-        const receipt = await wallet.waitForFunding()
-
-        //sleep for 1 sec to ensure the beat is received
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        const relevantEvent = events.find((event) => {
-            return event.meta?.txID === receipt?.meta?.txID
-        })
-
-        expect(relevantEvent).not.toBeUndefined()
     })
 
     it.e2eTest('should work for valid t2', 'all', async () => {
-        const events: components['schemas']['SubscriptionEventResponse'][] = []
         const wallet = ThorWallet.txBetweenFunding()
 
-        Client.raw.subscribeToEvents(
-            (event) => {
-                events.push(event)
-            },
+        subscribeAndTestEvent(
             {
                 addr: contractAddresses.energy,
                 t0: interfaces.energy.getEvent('Transfer').topicHash,
                 t2: addAddressPadding(wallet.address),
             },
+            wallet,
         )
-
-        const receipt = await wallet.waitForFunding()
-
-        //sleep for 1 sec to ensure the beat is received
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        const relevantEvent = events.find((event) => {
-            return event.meta?.txID === receipt?.meta?.txID
-        })
-
-        expect(relevantEvent).not.toBeUndefined()
     })
 
     it.e2eTest('should work for valid addr', 'all', async () => {
-        const events: components['schemas']['SubscriptionEventResponse'][] = []
         const wallet = ThorWallet.txBetweenFunding()
 
-        Client.raw.subscribeToEvents(
-            (event) => {
-                events.push(event)
-            },
+        subscribeAndTestEvent(
             {
                 addr: contractAddresses.energy,
             },
+            wallet,
         )
-
-        const receipt = await wallet.waitForFunding()
-
-        //sleep for 1 sec to ensure the beat is received
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        const relevantEvent = events.find((event) => {
-            return event.meta?.txID === receipt?.meta?.txID
-        })
-
-        expect(relevantEvent).not.toBeUndefined()
     })
 
     it.e2eTest('should work for valid position', 'all', async () => {
-        const events: components['schemas']['SubscriptionEventResponse'][] = []
         const wallet = ThorWallet.txBetweenFunding()
-
         const bestBlock = await Client.sdk.blocks.getBlockCompressed('best')
         const bestBlockId = bestBlock?.id
 
-        Client.raw.subscribeToEvents(
-            (event) => {
-                events.push(event)
-            },
+        subscribeAndTestEvent(
             {
                 addr: contractAddresses.energy,
                 pos: bestBlockId,
                 t0: interfaces.energy.getEvent('Transfer').topicHash,
                 t2: addAddressPadding(wallet.address),
             },
+            wallet,
         )
-
-        const receipt = await wallet.waitForFunding()
-
-        //sleep for 1 sec to ensure the beat is received
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        const relevantEvent = events.find((event) => {
-            return event.meta?.txID === receipt?.meta?.txID
-        })
-
-        expect(relevantEvent).not.toBeUndefined()
     })
 
     it.e2eTest('should get 2 notifications', 'all', async () => {
