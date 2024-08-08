@@ -300,6 +300,7 @@ class ThorClient {
             txOrigin?: string
         },
         callback: (data: Schema['SubscriptionTransferResponse']) => void,
+        errorCallback?: (data: any) => void,
     ) {
         const url = new URL(`${this.baseWsUrl}/subscriptions/transfer`)
 
@@ -319,7 +320,7 @@ class ThorClient {
             url.searchParams.append('txOrigin', queryParameters.txOrigin)
         }
 
-        return this.openWebsocket(url.toString(), callback)
+        return this.openWebsocket(url.toString(), callback, errorCallback)
     }
 
     // WS /subscriptions/beats
@@ -469,11 +470,21 @@ class ThorClient {
         }
     }
 
-    private openWebsocket<T>(url: string, callback: (data: T) => void) {
+    private openWebsocket<T>(
+        url: string,
+        callback: (data: T) => void,
+        errorCallback?: (data: T) => void,
+    ) {
         const ws = new WebSocket(url)
         ws.onmessage = (event: any) => {
             const data = JSON.parse(event.data)
             callback(data)
+        }
+
+        ws.onerror = (event: any) => {
+            if (errorCallback) {
+                errorCallback(event)
+            }
         }
 
         this.subscriptions.push(() => ws.close())
