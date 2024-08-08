@@ -98,7 +98,7 @@ class ThorWallet {
         return new ThorWallet(privateKey, () => receipt)
     }
 
-    public static txBetweenFunding() {
+    public static txBetweenFunding(returnSender = false) {
         const sender = randomFunder()
         let receiver = randomFunder()
         while (sender == receiver) {
@@ -125,7 +125,11 @@ class ThorWallet {
 
         const receipt = senderWallet.sendClauses(clauses, true)
 
-        return new ThorWallet(Buffer.from(receiver, 'hex'), () => receipt)
+        if (returnSender) {
+            return new ThorWallet(Buffer.from(sender, 'hex'), () => receipt)
+        } else {
+            return new ThorWallet(Buffer.from(receiver, 'hex'), () => receipt)
+        }
     }
 
     public startingEnergy = async () => {

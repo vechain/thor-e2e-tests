@@ -261,6 +261,7 @@ class ThorClient {
             t3?: string
             pos?: string
         },
+        errorCallback?: (data: any) => void,
     ) {
         const url = new URL(`${this.baseWsUrl}/subscriptions/event`)
 
@@ -288,7 +289,7 @@ class ThorClient {
             url.searchParams.append('pos', queryParameters.pos)
         }
 
-        return this.openWebsocket(url.toString(), callback)
+        return this.openWebsocket(url.toString(), callback, errorCallback)
     }
 
     // WS /subscriptions/transfers
