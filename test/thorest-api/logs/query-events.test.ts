@@ -390,7 +390,7 @@ describe('POST /logs/event', () => {
         })
 
         it.e2eTest('should be able paginate requests', 'all', async () => {
-            const { firstBlock, lastBlock } = await transferDetails
+            const { firstBlock, lastBlock } = transferDetails
 
             const pages = 5
             const amountPerPage = 10

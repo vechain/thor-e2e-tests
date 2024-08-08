@@ -4,13 +4,13 @@ export const HEX_REGEX = /^(0x)?[a-fA-F0-9]*$/
 
 export const HEX_AT_LEAST_1 = /^(0x)?[a-fA-F0-9]+$/
 
-// Can be used to match a 16 character hex string with or without the hex prefix, eg. Block Ref
+// Can be used to match a 16 character hex string with or without the hex prefix, e.g. Block Ref
 export const HEX_REGEX_16 = /^(0x)?[a-fA-F0-9]{16}$/
 
-// Can be used to match a 40 character hex string with or without the hex prefix, eg. Account Address
+// Can be used to match a 40 character hex string with or without the hex prefix, e.g. Account Address
 export const HEX_REGEX_40 = /^(0x)?[a-fA-F0-9]{40}$/
 
-// Can be used to match a 64 character hex string with or without the hex prefix, eg. Block ID
+// Can be used to match a 64 character hex string with or without the hex prefix, e.g. Block ID
 export const HEX_REGEX_64 = /^(0x)?[a-fA-F0-9]{64}$/
 
 /**
