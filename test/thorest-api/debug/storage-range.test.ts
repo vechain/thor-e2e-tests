@@ -54,4 +54,9 @@ describe('GET /debug/storage-range', () => {
         expect(storage.nextKey).toBeNull()
     })
 
+    it.e2eTest('get storage must fail, too large maxResult', 'all', async () => {
+        let response = await Client.raw.retrieveStorageRange({ target: `${transaction?.meta?.blockID!}/${transaction?.meta?.txID!}/0`, maxResult: 10000000000 })
+        expect(response.success).toBeFalse()
+        expect(response.httpCode).toBe(400)
+    })
 })
