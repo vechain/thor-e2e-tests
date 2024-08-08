@@ -22,9 +22,7 @@ describe('VET transfer, positive outcome', function () {
     const wallet = ThorWallet.withFunds()
 
     let counter: Contract<typeof SimpleCounter.abi>
-    let failingClauses = undefined
     const receivingAddr = generateAddress()
-    const invalidSelector = '0xdeadbeef'
 
     beforeAll(async () => {
         await wallet.waitForFunding()
@@ -32,33 +30,6 @@ describe('VET transfer, positive outcome', function () {
             SimpleCounter.bytecode,
             SimpleCounter.abi,
         )
-
-        failingClauses = [
-            [
-                {
-                    value: 0,
-                    data: invalidSelector,
-                    to: counter.address,
-                },
-                {
-                    value: 1,
-                    data: '0x',
-                    to: receivingAddr,
-                },
-            ],
-            [
-                {
-                    value: 1,
-                    data: '0x',
-                    to: receivingAddr,
-                },
-                {
-                    value: 0,
-                    data: invalidSelector,
-                    to: counter.address,
-                },
-            ],
-        ]
     })
 
     it.e2eTest(

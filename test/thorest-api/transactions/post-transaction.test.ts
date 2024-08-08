@@ -1,5 +1,4 @@
 import { Transaction } from '@vechain/sdk-core'
-import { Client } from '../../../src/thor-client'
 import { ThorWallet, generateAddress } from '../../../src/wallet'
 import { revertedPostTx } from './setup/asserts'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
