@@ -159,11 +159,11 @@ describe('WS /subscriptions/event', () => {
     })
 
     it.e2eTest('should error for out of range position', 'all', async () => {
-        const genesisBlock = await Client.sdk.blocks.getGenesisBlock()
-        const genesisBlockId = genesisBlock?.id
+        const nonExistentBlockId =
+            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
 
         await subscribeAndTestError(
-            { pos: genesisBlockId },
+            { pos: nonExistentBlockId },
             'Unexpected server response: 403',
         )
     })
