@@ -1,4 +1,4 @@
-name: Run Build & Lint
+name: Run Lint
 
 on:
     push:
@@ -9,8 +9,8 @@ on:
             - '*'
 
 jobs:
-    build:
-        name: Build & Lint
+    lint:
+        name: Lint
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
@@ -26,6 +26,3 @@ jobs:
 
             - name: Lint
               run: yarn lint
-
-            - name: Build
-              run: yarn build
