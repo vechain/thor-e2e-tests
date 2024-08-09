@@ -25,6 +25,5 @@ describe('WS /subscriptions/txpool', () => {
         expect(txs.length).toBeGreaterThanOrEqual(2)
         expect(txs.some((tx) => tx.id === receipt1?.meta?.txID)).toBeTruthy()
         expect(txs.some((tx) => tx.id === receipt2?.meta?.txID)).toBeTruthy()
-
     })
 })

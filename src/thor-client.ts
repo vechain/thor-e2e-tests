@@ -496,12 +496,6 @@ class ThorClient {
         }
     }
 
-    private initBlockSubscription() {
-        this.subscribeToBlocks(
-            (data: Schema['SubscriptionBlockResponse']) => {},
-        )
-    }
-
     private async performRequest<T>(
         request: () => Promise<AxiosResponse<T>>,
     ): Promise<Response<T>> {
