@@ -35,11 +35,15 @@ export class LegacyBloom {
         })
     }
 
-    private distribute(item: Buffer, cb: (index: number, bit: number) => boolean): boolean {
+    private distribute(
+        item: Buffer,
+        cb: (index: number, bit: number) => boolean,
+    ): boolean {
         const hash = blake2b256(item)
         for (let i = 0; i < this.k; i++) {
-            const d = (hash[i * 2 + 1] + (hash[i * 2] << 8)) % LegacyBloom.BITS_LENGTH
-            const bit = 1 << (d % 8)
+            const d =
+                (hash[i * 2 + 1] + (hash[i * 2] << 8)) % LegacyBloom.BITS_LENGTH
+            const bit = 1 << d % 8
             if (!cb(Math.floor(d / 8), bit)) {
                 return false
             }
