@@ -61,8 +61,9 @@ const parseAmount = (amount?: number | string | bigint | undefined) => {
 
 /**
  * Fund an account using the faucet. VET and VTHO will be sent to the account
- * @param account
- * @param amounts
+ * @param account to sent to
+ * @param amounts to send
+ * @param wallet to use for funding
  */
 export const fundAccount = async (
     account: string,
