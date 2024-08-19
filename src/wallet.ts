@@ -100,13 +100,13 @@ class ThorWallet {
 
     public static txBetweenFunding() {
         const sender = randomFunder()
-        let reciever = randomFunder()
-        while (sender == reciever) {
-            reciever = randomFunder()
+        let receiver = randomFunder()
+        while (sender == receiver) {
+            receiver = randomFunder()
         }
         const clauses = [
             {
-                to: addressUtils.fromPrivateKey(Buffer.from(reciever, 'hex')),
+                to: addressUtils.fromPrivateKey(Buffer.from(receiver, 'hex')),
                 value: '0x1',
                 data: '0x',
             },
@@ -116,7 +116,7 @@ class ThorWallet {
             to: contractAddresses.energy,
             value: '0x0',
             data: interfaces.energy.encodeFunctionData('transfer', [
-                addressUtils.fromPrivateKey(Buffer.from(reciever, 'hex')),
+                addressUtils.fromPrivateKey(Buffer.from(receiver, 'hex')),
                 BigInt(1),
             ]),
         })
@@ -125,7 +125,7 @@ class ThorWallet {
 
         const receipt = senderWallet.sendClauses(clauses, true)
 
-        return new ThorWallet(Buffer.from(reciever, 'hex'), () => receipt)
+        return new ThorWallet(Buffer.from(receiver, 'hex'), () => receipt)
     }
 
     public startingEnergy = async () => {
@@ -165,11 +165,17 @@ class ThorWallet {
 
         await factory.startDeployment()
 
-        return await factory.waitForDeployment()
+        const contract = await factory.waitForDeployment()
+
+        // Make sure the contract is deployed before returning
+        await pollReceipt(contract.deployTransactionReceipt!.meta.txID!)
+
+        return contract
     }
 
     public buildTransaction = async (
         clauses: TransactionClause[],
+        options?: { dependsOn: string },
     ): Promise<TransactionBody> => {
         const bestBlockRef = await getBlockRef('best')
         const genesisBlock = await Client.raw.getBlock('0')
@@ -184,7 +190,7 @@ class ThorWallet {
             clauses: clauses,
             gasPriceCoef: 0,
             gas: 1_000_000,
-            dependsOn: null,
+            dependsOn: options?.dependsOn ?? null,
             nonce: generateNonce(),
             chainTag: parseInt(genesisBlock.body.id.slice(-2), 16),
         }

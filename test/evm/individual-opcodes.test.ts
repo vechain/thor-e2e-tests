@@ -10,7 +10,7 @@ import {
     addUintPadding,
 } from '../../src/utils/padding-utils'
 import { pollReceipt } from '../../src/transactions'
-import { randomFunder } from '../../src/account-faucet'
+import { funder, randomFunder } from '../../src/account-faucet'
 import { addressUtils } from '@vechain/sdk-core'
 
 const opcodesInterface = Opcodes.createInterface()
@@ -388,8 +388,14 @@ describe('Individual OpCodes', () => {
         'should give the correct output for opcode: BALANCE',
         'all',
         async () => {
+            const constantFunder = addressUtils.fromPrivateKey(
+                Buffer.from(funder(1), 'hex'),
+            )
+
             const debugged = await traceContractCall(
-                opcodesInterface.encodeFunctionData('BALANCE', [caller]),
+                opcodesInterface.encodeFunctionData('BALANCE', [
+                    constantFunder,
+                ]),
                 'BALANCE',
             )
 
@@ -489,6 +495,22 @@ describe('Individual OpCodes', () => {
     )
 
     it.e2eTest(
+        'should give the correct output for opcode: BASEFEE',
+        'all',
+        async () => {
+            const debugged = await traceContractCall(
+                opcodesInterface.encodeFunctionData('BASEFEE'),
+                'BASEFEE',
+                true,
+            )
+
+            expect(
+                debugged.structLogs[debugged.structLogs.length - 1].error,
+            ).toBe('invalid opcode 0x48')
+        },
+    )
+
+    it.e2eTest(
         'should give the correct output for opcode: INVALID',
         'all',
         async () => {
@@ -559,6 +581,28 @@ describe('Individual OpCodes', () => {
             })
 
             expect(simulation.body?.[0]?.vmError).toEqual('invalid opcode 0x5f')
+        },
+    )
+
+    it.e2eTest(
+        'should be possible to deploy contract starting with 0xEF',
+        'all',
+        async () => {
+            const contractBytecode = '0x60ef60005360016000f3'
+            const clauses = [
+                {
+                    to: null,
+                    value: '0x0',
+                    data: contractBytecode,
+                },
+            ]
+
+            const simulation = await Client.raw.executeAccountBatch({
+                clauses,
+                caller,
+            })
+
+            expect(simulation.body?.[0]?.vmError).toBeEmpty()
         },
     )
 })

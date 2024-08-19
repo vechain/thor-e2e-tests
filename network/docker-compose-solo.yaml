@@ -1,27 +1,22 @@
 version: '3.8'
 
 services:
-    thor-solo:
-        container_name: thor-solo
-        image: ${THOR_IMAGE:-ghcr.io/vechain/thor:master-latest}
-        ports:
-            - '8669:8669'
-        command:
-            - solo
-            - --genesis=/node/config/genesis.json
-            - --on-demand # create new block when there is pending transaction
-            - --api-addr=0.0.0.0:8669 # Enable remote connections
-            - --api-cors=* # comma separated list of domains to accept cross origin requests to API
-            - --txpool-limit-per-account=256 # limit txpool size per account
-            - --cache=1024 # megabytes of ram allocated to trie nodes cache
-            - --verbosity=4
-            - --persist
-        volumes:
-            - type: bind
-              source: ./config
-              target: /node/config
-        deploy:
-            resources:
-                limits:
-                    cpus: '1'
-                    memory: 2048M
+  thor-solo:
+    container_name: thor-solo
+    image: ${THOR_IMAGE:-ghcr.io/vechain/thor:master-latest}
+    ports:
+      - '8669:8669'
+    command:
+      - solo
+      - --genesis=/node/config/genesis.json
+      - --on-demand # create new block when there is pending transaction
+      - --api-addr=0.0.0.0:8669 # Enable remote connections
+      - --api-cors=* # comma separated list of domains to accept cross origin requests to API
+      - --txpool-limit-per-account=256 # limit txpool size per account
+      - --cache=1024 # megabytes of ram allocated to trie nodes cache
+      - --verbosity=4
+      - --persist
+    volumes:
+      - type: bind
+        source: ./config
+        target: /node/config

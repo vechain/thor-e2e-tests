@@ -7,6 +7,7 @@ import {
 import { Client } from '../../../src/thor-client'
 import { Contract } from '@vechain/sdk-network'
 import { interfaces } from '../../../src/contracts/hardhat'
+import { pollReceipt } from '../../../src/transactions'
 
 // This is the event topic for the master event
 const masterEvent =
@@ -24,7 +25,7 @@ describe('Contracts', () => {
     })
 
     it.e2eTest(
-        'Should be able to deploy a contract a verify it',
+        'Should be able to deploy a contract and verify it',
         'all',
         async () => {
             const byteCode = await Client.sdk.accounts.getBytecode(
@@ -62,11 +63,38 @@ describe('Contracts', () => {
             const startValue = await counter.read.getCounter()
 
             const incrementTx = await counter.transact.incrementCounter()
-            await incrementTx.wait()
+            await pollReceipt(incrementTx.id)
 
             const newValue = await counter.read.getCounter()
 
             expect(newValue[0]).toBe(startValue[0] + 1n)
+        },
+    )
+
+    it.e2eTest(
+        'Should be able to execute multiple clauses in a single transaction',
+        'all',
+        async () => {
+            const startValue = await counter.read.getCounter()
+            const incrementCounterClause = counter.clause.incrementCounter()
+
+            const tx =
+                await Client.sdk.contracts.executeMultipleClausesTransaction(
+                    [
+                        incrementCounterClause,
+                        incrementCounterClause,
+                        incrementCounterClause,
+                    ],
+                    wallet.signer,
+                )
+
+            await pollReceipt(tx.id)
+            const receipt = await tx.wait()
+            expect(receipt).toBeDefined()
+            expect(receipt!.reverted).toBe(false)
+
+            const newValue = await counter.read.getCounter()
+            expect(newValue[0]).toBe(startValue[0] + 3n)
         },
     )
 
@@ -98,6 +126,7 @@ describe('Contracts', () => {
                     wallet.signer,
                 )
 
+            await pollReceipt(tx.id)
             const receipt = await tx.wait()
             expect(receipt).toBeDefined()
             expect(receipt!.reverted).toBe(false)

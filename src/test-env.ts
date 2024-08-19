@@ -1,4 +1,4 @@
-import { addressUtils, HDNode, unitsUtils } from '@vechain/sdk-core'
+import { HDNode } from '@vechain/sdk-core'
 import { ThorClient } from '@vechain/sdk-network'
 import { genesis } from './constants'
 
@@ -25,9 +25,7 @@ export const testEnv = {
         if (!mnemonic) {
             throw new Error('No mnemonic provided')
         }
-        const _mnemonic = mnemonic
-
-        const hdNode = HDNode.fromMnemonic(_mnemonic.split(' '))
+        const hdNode = HDNode.fromMnemonic(mnemonic.split(' '))
         const keys: any[] = []
         for (let i = 0; i < 10; i++) {
             const child = hdNode.deriveChild(i)
@@ -91,24 +89,24 @@ export const validateEnv = async (): Promise<boolean> => {
     }
 
     // TODO: Validate the account balances
-    const client = ThorClient.fromUrl(testEnv.urls[0])
+    // const client = ThorClient.fromUrl(testEnv.urls[0])
 
     // ensure each account has a balance greater than 0
-    for (const account of testEnv.keys) {
-        const address = addressUtils.fromPrivateKey(
-            new Buffer(account.replace('0x', ''), 'hex'),
-        )
-        const balance = await client.accounts.getAccount(address)
-        //0x2710
-        const requiredBalance = unitsUtils.parseVET(BigInt('0x3e8').toString())
+    // for (const account of testEnv.keys) {
+    //     const address = addressUtils.fromPrivateKey(
+    //         new Buffer(account.replace('0x', ''), 'hex'),
+    //     )
+    //     const balance = await client.accounts.getAccount(address)
+    //0x2710
+    // const requiredBalance = unitsUtils.parseVET(BigInt('0x3e8').toString())
 
-        //if (BigInt(balance.balance) < requiredBalance) {
-        //    throw new Error('Account balance is less than 10,000 VET')
-        //}
-        //if (BigInt(balance.energy) < requiredBalance) {
-        //    throw new Error('Account energy is less than 10,000 VTHO')
-        //}
-    }
+    //if (BigInt(balance.balance) < requiredBalance) {
+    //    throw new Error('Account balance is less than 10,000 VET')
+    //}
+    //if (BigInt(balance.energy) < requiredBalance) {
+    //    throw new Error('Account energy is less than 10,000 VTHO')
+    //}
+    // }
 
     return true
 }

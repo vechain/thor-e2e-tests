@@ -1,9 +1,49 @@
 import { TransactionClause } from '@vechain/sdk-core'
-import { Client } from './thor-client'
+import { Client, Response, Schema } from './thor-client'
 import { components } from './open-api-types'
+import HexUtils from './utils/hex-utils'
 
 export const generateNonce = (): number => {
     return Math.floor(Math.random() * 1_000_000_000)
+}
+
+/**
+ * Polls network for a transaction
+ * @param txId The transaction ID to poll for
+ * @param queryParams params to pass to query
+ * @param timeout The maximum time to wait for the transaction
+ */
+export const pollTransaction = async (
+    txId: string,
+    queryParams?: {
+        raw?: boolean
+        head?: string
+        pending?: boolean
+    },
+    timeout = 60_000,
+): Promise<Response<Schema['GetTxResponse'] | null>> => {
+    return new Promise<Response<Schema['GetTxResponse'] | null>>(
+        (resolve, reject) => {
+            const intervalId = setInterval(async () => {
+                const tx = await Client.raw.getTransaction(txId, queryParams)
+
+                if (tx.success && tx.body) {
+                    clearInterval(intervalId) // Clear the interval when the receipt is found
+                    resolve(tx)
+                }
+            }, 1000)
+
+            const timeoutId = setTimeout(() => {
+                clearInterval(intervalId) // Clear the interval when the timeout occurs
+                reject('Timed out getting transaction: ' + txId)
+            }, timeout)
+
+            // Clear the timeout when the promise is settled
+            Promise.race([intervalId, timeoutId]).finally(() => {
+                clearTimeout(timeoutId)
+            })
+        },
+    )
 }
 
 /**
@@ -18,11 +58,26 @@ export const pollReceipt = async (
     return new Promise<components['schemas']['GetTxReceiptResponse']>(
         (resolve, reject) => {
             const intervalId = setInterval(async () => {
-                const receipt = await Client.raw.getTransactionReceipt(txId)
+                const requests = Client.clients.map(async (client) =>
+                    client.getTransactionReceipt(txId),
+                )
+                const receipts = await Promise.all(requests)
+                const blockIds = new Set(
+                    receipts.map(
+                        (receipt) =>
+                            receipt.body?.meta?.blockID ?? crypto.randomUUID(),
+                    ),
+                )
 
-                if (receipt.success && receipt.body) {
+                const blocks = blockIds.values()
+
+                if (
+                    receipts.length == Client.clients.length &&
+                    HexUtils.isValid(blocks.next().value) &&
+                    blockIds.size == 1
+                ) {
                     clearInterval(intervalId) // Clear the interval when the receipt is found
-                    resolve(receipt.body)
+                    resolve(receipts[0].body!)
                 }
             }, 1000)
 

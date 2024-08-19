@@ -6,15 +6,15 @@ import { ThorWallet } from '../../../src/wallet'
  * @group websockets
  */
 describe('WS /subscriptions/txpool', () => {
-    it.e2eTest('should be able to subscribe', 'all', async () => {
-        const txs: { id: string }[] = []
-
-        const wallet1 = ThorWallet.txBetweenFunding()
-        const wallet2 = ThorWallet.txBetweenFunding()
-
+    const txs: { id: string }[] = []
+    beforeAll(async () => {
         Client.raw.subscribeToTxPool((txId) => {
             txs.push(txId)
         })
+    })
+    it.e2eTest('should be able to subscribe', 'all', async () => {
+        const wallet1 = ThorWallet.txBetweenFunding()
+        const wallet2 = ThorWallet.txBetweenFunding()
 
         const receipt1 = await wallet1.waitForFunding()
         const receipt2 = await wallet2.waitForFunding()

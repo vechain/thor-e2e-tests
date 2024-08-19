@@ -85,6 +85,16 @@ const successfulReceipt = (
     expect(receipt.meta?.txOrigin).toEqualCaseInsensitive(createdTx.origin)
 }
 
+const unsuccessfulReceipt = (
+    receipt: components['schemas']['GetTxReceiptResponse'],
+    createdTx: Transaction,
+) => {
+    expect(receipt.reverted).toBeTrue()
+    expect(receipt.gasPayer).toBeDefined()
+    expect(receipt.meta?.txID).toEqual(createdTx.id)
+    expect(receipt.meta?.txOrigin).toEqualCaseInsensitive(createdTx.origin)
+}
+
 const checkDelegatedTransactionReceipt = (
     receipt: components['schemas']['GetTxReceiptResponse'],
     createdTx: Transaction,
@@ -144,4 +154,5 @@ export {
     checkDelegatedTransactionReceipt,
     checkTxInclusionInBlock,
     checkTransactionLogSuccess,
+    unsuccessfulReceipt,
 }

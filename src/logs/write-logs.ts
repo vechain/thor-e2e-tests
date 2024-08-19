@@ -7,51 +7,100 @@
 import { Client } from '../thor-client'
 import { TransferDetails } from '../types'
 import { staticEventsTransactions } from './transactions'
+import { pollReceipt } from '../transactions'
+import { TransactionReceipt } from '@vechain/sdk-network'
 
-export const writeTransferTransactions = async (): Promise<TransferDetails> => {
-    console.log('\n')
+const checkAlreadyWritten = async () => {
+    for (let i = 0; i < staticEventsTransactions.length; i++) {
+        const blockTxs: { raw: string; txId: string }[] =
+            staticEventsTransactions[i]
 
-    let firstBlock = 0
-    let lastBlock = 0
-    let transferCount = 0
+        for (let j = 0; j < blockTxs.length; j++) {
+            const tx = blockTxs[j]
+            const receipt = await Client.sdk.transactions.getTransactionReceipt(
+                tx.txId,
+            )
+            if (receipt != null && !receipt.reverted) {
+                return true
+            }
+        }
+    }
+
+    return false
+}
+
+const writeTransfers = async () => {
+    const txs: TransactionReceipt[] = []
 
     for (let i = 0; i < staticEventsTransactions.length; i++) {
         const blockTxs: { raw: string; txId: string }[] =
             staticEventsTransactions[i]
 
-        console.log(`Checking for batch ${i} of the event TXs...`)
+        console.log(`Sending transactions @ batch ${i}`)
 
-        await Promise.all(
-            blockTxs.map(async (tx) => {
-                let receipt =
-                    await Client.sdk.transactions.getTransactionReceipt(tx.txId)
+        const transactions = (await Promise.all(
+            blockTxs.map(async ({ raw, txId }) => {
+                await Client.raw.sendTransaction({ raw })
 
-                // deploy the tx and wait for it if it is not already deployed
-                if (receipt == null) {
-                    const newTx =
-                        await Client.sdk.transactions.sendRawTransaction(tx.raw)
+                await pollReceipt(txId)
 
-                    receipt = await newTx.wait()
-                }
+                const receipt =
+                    await Client.sdk.transactions.waitForTransaction(txId)
 
-                if (!receipt || receipt.reverted) {
-                    throw new Error('Transaction failed')
-                }
-
-                if (firstBlock == 0) {
-                    firstBlock = receipt.meta.blockNumber
-                }
-
-                lastBlock = receipt.meta.blockNumber
-
-                transferCount++
+                return receipt!
             }),
-        )
+        )) as TransactionReceipt[]
+
+        txs.push(...transactions)
     }
 
+    return txs
+}
+
+const readTransfers = async () => {
+    const txs: TransactionReceipt[] = []
+
+    for (let i = 0; i < staticEventsTransactions.length; i++) {
+        const blockTxs: { raw: string; txId: string }[] =
+            staticEventsTransactions[i]
+
+        for (let j = 0; j < blockTxs.length; j++) {
+            const tx = blockTxs[j]
+            const receipt = await Client.sdk.transactions.getTransactionReceipt(
+                tx.txId,
+            )
+            txs.push(receipt!)
+        }
+    }
+
+    return txs
+}
+
+export const writeTransferTransactions = async (): Promise<TransferDetails> => {
+    const written = await checkAlreadyWritten()
+
+    if (!written) {
+        console.log('Writing transfers...')
+        await writeTransfers()
+        await Client.raw.waitForBlock()
+    } else {
+        console.log('Transfers already written to chain')
+    }
+
+    const txs = await readTransfers()
+
+    // get the min block in all receipts
+    const firstBlock = txs.reduce((min, tx) => {
+        return tx.meta.blockNumber < min ? tx.meta.blockNumber : min
+    }, txs[0].meta.blockNumber)
+
+    const lastBlock = txs.reduce((max, tx) => {
+        return tx.meta.blockNumber > max ? tx.meta.blockNumber : max
+    }, txs[0].meta.blockNumber)
+
     return {
-        lastBlock,
         firstBlock,
-        transferCount,
+        lastBlock,
+        transferCount: txs.length,
     }
 }
