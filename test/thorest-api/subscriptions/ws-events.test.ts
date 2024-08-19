@@ -9,21 +9,28 @@ type SubscriptionParams = Record<string, string | undefined>
 
 const subscribeAndTestError = async (
     params: SubscriptionParams,
-    expectedErrorMessage: string,
-) => {
-    Client.raw.subscribeToEvents(
-        () => {
-            throw new Error(
-                `Callback should not be executed for an invalid parameter: ${JSON.stringify(params)}`,
-            )
-        },
-        params,
-        (error: { message: string }) => {
-            expect(error.message).toBe(expectedErrorMessage)
-        },
-    )
+    message: string,
+): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        Client.raw.subscribeToEvents(
+            () => {
+                reject(
+                    `Callback should not be executed for an invalid parameter: ${JSON.stringify(
+                        params,
+                    )}`,
+                )
+            },
+            params,
+            (error: { message: string }) => {
+                expect(error.message).toBe(message)
+                resolve()
+            },
+        )
 
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+        new Promise((resolve) => setTimeout(resolve, 2000)).then(() => {
+            reject('Timed out waiting for subscription to fail')
+        })
+    })
 }
 
 const subscribeAndTestEvent = async (
@@ -54,10 +61,16 @@ const subscribeAndTestEvent = async (
  * @group events
  */
 describe('WS /subscriptions/event', () => {
+    it.e2eTest('should work for empty parameters', 'all', async () => {
+        const wallet = ThorWallet.txBetweenFunding()
+
+        await subscribeAndTestEvent({}, wallet)
+    })
+
     it.e2eTest('should work for valid t0', 'all', async () => {
         const wallet = ThorWallet.txBetweenFunding()
 
-        subscribeAndTestEvent(
+        await subscribeAndTestEvent(
             {
                 t0: interfaces.energy.getEvent('Transfer').topicHash,
             },
@@ -68,7 +81,7 @@ describe('WS /subscriptions/event', () => {
     it.e2eTest('should work for valid t1', 'all', async () => {
         const wallet = ThorWallet.txBetweenFunding(true)
 
-        subscribeAndTestEvent(
+        await subscribeAndTestEvent(
             {
                 t1: addAddressPadding(wallet.address),
             },
@@ -79,7 +92,7 @@ describe('WS /subscriptions/event', () => {
     it.e2eTest('should work for valid t2', 'all', async () => {
         const wallet = ThorWallet.txBetweenFunding()
 
-        subscribeAndTestEvent(
+        await subscribeAndTestEvent(
             {
                 addr: contractAddresses.energy,
                 t0: interfaces.energy.getEvent('Transfer').topicHash,
@@ -92,7 +105,7 @@ describe('WS /subscriptions/event', () => {
     it.e2eTest('should work for valid addr', 'all', async () => {
         const wallet = ThorWallet.txBetweenFunding()
 
-        subscribeAndTestEvent(
+        await subscribeAndTestEvent(
             {
                 addr: contractAddresses.energy,
             },
@@ -105,7 +118,7 @@ describe('WS /subscriptions/event', () => {
         const bestBlock = await Client.sdk.blocks.getBlockCompressed('best')
         const bestBlockId = bestBlock?.id
 
-        subscribeAndTestEvent(
+        await subscribeAndTestEvent(
             {
                 addr: contractAddresses.energy,
                 pos: bestBlockId,
@@ -137,7 +150,7 @@ describe('WS /subscriptions/event', () => {
         })
 
         const receipt = await wallet.waitForFunding()
-        const txId = receipt.meta?.txID
+        const txId = receipt!.meta?.txID
 
         // Sleep for 1 sec to ensure the beat is received
         await new Promise((resolve) => setTimeout(resolve, 1000))

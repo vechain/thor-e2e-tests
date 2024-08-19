@@ -8,21 +8,28 @@ type SubscriptionParams = Record<string, string | undefined>
 
 const subscribeAndTestError = async (
     params: SubscriptionParams,
-    expectedErrorMessage: string,
-) => {
-    Client.raw.subscribeToTransfers(
-        params,
-        () => {
-            fail(
-                `Callback should not be executed for an invalid parameter: ${JSON.stringify(params)}`,
-            )
-        },
-        (error: { message: string }) => {
-            expect(error.message).toBe(expectedErrorMessage)
-        },
-    )
+    message: string,
+): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        Client.raw.subscribeToTransfers(
+            params,
+            () => {
+                reject(
+                    `Callback should not be executed for an invalid parameter: ${JSON.stringify(
+                        params,
+                    )}`,
+                )
+            },
+            (error: { message: string }) => {
+                expect(error.message).toBe(message)
+                resolve()
+            },
+        )
 
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+        new Promise((resolve) => setTimeout(resolve, 2000)).then(() => {
+            reject('Timed out waiting for subscription to fail')
+        })
+    })
 }
 
 const subscribeAndFundAccount = async (
