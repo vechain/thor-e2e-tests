@@ -11,6 +11,10 @@ module.exports = {
     rules: {
         '@typescript-eslint/no-explicit-any': 'off',
     },
+    env: {
+        node: true,
+        jest: true,
+    },
     ignorePatterns: [
         '*config.js',
         'node_modules/',
