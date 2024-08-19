@@ -37,7 +37,7 @@ describe('EVM Opcodes', () => {
     })
 
     it.e2eTest(
-        'Should run without errors the majority of opcodes',
+        'should run without errors the majority of opcodes',
         'all',
         async () => {
             await opcodes.transact.test()
@@ -45,11 +45,11 @@ describe('EVM Opcodes', () => {
         },
     )
 
-    it.e2eTest('Should throw invalid op code', 'all', async () => {
+    it.e2eTest('should throw invalid op code', 'all', async () => {
         await expect(() => opcodes.transact.test_invalid()).rejects.toThrow()
     })
 
-    it.e2eTest('Should revert', 'all', async () => {
+    it.e2eTest('should revert', 'all', async () => {
         const { wait, id } = await opcodes.transact.test_revert()
 
         await pollReceipt(id)

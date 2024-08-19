@@ -80,7 +80,7 @@ describe('VET transfer, positive outcome', function () {
         },
     )
 
-    it.e2eTest('Multiple clauses success', 'all', async function () {
+    it.e2eTest('send multiple clauses', 'all', async function () {
         const incrementCounter = '0x5b34b966'
 
         const receivingAddr = generateAddress()
@@ -158,7 +158,7 @@ describe('VET transfer, negative outcome', function () {
         )
     })
 
-    it.e2eTest('Multiple clauses not enough funds', 'all', async function () {
+    it.e2eTest('multiple clauses, not enough funds', 'all', async function () {
         const newWallet = ThorWallet.newFunded({
             vet: `0x${BigInt(10).toString(16)}`,
             vtho: 1000e18,
@@ -217,7 +217,7 @@ describe('VET transfer, negative outcome', function () {
         expect('10').toBe(newBallance.toString(10))
     })
 
-    it.e2eTest('Multiple clauses first failure', 'all', async function () {
+    it.e2eTest('multiple clauses, first fails', 'all', async function () {
         const receivingAddr = generateAddress()
         const clauses = [
             {
@@ -270,7 +270,7 @@ describe('VET transfer, negative outcome', function () {
         await ddt.runTestFlow()
     })
 
-    it.e2eTest('Multiple clauses second failure', 'all', async function () {
+    it.e2eTest('multiple clauses, second fails', 'all', async function () {
         const receivingAddr = generateAddress()
         const clauses = [
             {
@@ -323,7 +323,7 @@ describe('VET transfer, negative outcome', function () {
         await ddt.runTestFlow()
     })
 
-    it.e2eTest('Multiple clauses second lacks gas', 'all', async function () {
+    it.e2eTest('multiple clauses, second lacks gas', 'all', async function () {
         const receivingAddr = generateAddress()
         const clausesFirst = [
             {
