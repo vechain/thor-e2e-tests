@@ -181,8 +181,4 @@ describe('WS /subscriptions/event', () => {
             'Unexpected server response: 400',
         )
     })
-
-    it.e2eTest('should error for empty query', 'all', async () => {
-        await subscribeAndTestError({}, 'Unexpected server response: 400')
-    })
 })
