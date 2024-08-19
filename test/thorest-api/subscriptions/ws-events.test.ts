@@ -13,7 +13,7 @@ const subscribeAndTestError = async (
 ) => {
     Client.raw.subscribeToEvents(
         () => {
-            fail(
+            throw new Error(
                 `Callback should not be executed for an invalid parameter: ${JSON.stringify(params)}`,
             )
         },
