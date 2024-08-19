@@ -77,11 +77,13 @@ describe('WS /subscriptions/beat', () => {
             const beats: components['schemas']['SubscriptionBeatResponse'][] =
                 []
 
-            const genesis = await Client.raw.getBlock(0, false)
-
+            const bestBlock = await Client.raw.getBlock('best', false)
+            const previousBlock = await Client.raw.getBlock(
+                `${bestBlock.body!.number! - 3}`,
+            )
             const ws = Client.raw.subscribeToBeats((newBlock) => {
                 beats.push(newBlock)
-            }, genesis.body?.id)
+            }, previousBlock.body?.id)
 
             while (beats.length < 5)
                 await new Promise((resolve) => setTimeout(resolve, 100))
@@ -93,7 +95,9 @@ describe('WS /subscriptions/beat', () => {
                 index < 5;
                 index++, expectedNumber++
             ) {
-                expect(beats[index].number).toEqual(expectedNumber)
+                expect(beats[index].number).toEqual(
+                    expectedNumber + previousBlock.body!.number!,
+                )
             }
             ws.unsubscribe()
         },
@@ -106,26 +110,29 @@ describe('WS /subscriptions/beat', () => {
             const beats: components['schemas']['SubscriptionBeatResponse'][] =
                 []
 
-            const genesis = await Client.raw.getBlock(0, false)
-            const firstBlock = await Client.raw.getBlock(1, false)
+            const bestBlock = await Client.raw.getBlock('best', false)
+            const previousBlock = await Client.raw.getBlock(
+                `${bestBlock.body!.number! - 1}`,
+                false,
+            )
 
             const ws = Client.raw.subscribeToBeats((newBlock) => {
                 beats.push(newBlock)
-            }, genesis.body?.id)
+            }, previousBlock.body?.id)
 
             //sleep for 100 millis to ensure the beat is received
             await new Promise((resolve) => setTimeout(resolve, 100))
 
             const firstBeat = beats.find(
-                (beat) => beat.number === firstBlock.body?.number,
+                (beat) => beat.number === bestBlock.body?.number,
             )
 
             assert(firstBeat, 'Block not found')
-            expect(firstBeat?.id).toEqual(firstBlock.body?.id)
-            expect(firstBeat?.number).toEqual(firstBlock.body?.number)
-            expect(firstBeat?.timestamp).toEqual(firstBlock.body?.timestamp)
-            expect(firstBeat?.txsFeatures).toEqual(firstBlock.body?.txsFeatures)
-            expect(firstBeat?.parentID).toEqual(firstBlock.body?.parentID)
+            expect(firstBeat?.id).toEqual(bestBlock.body?.id)
+            expect(firstBeat?.number).toEqual(bestBlock.body?.number)
+            expect(firstBeat?.timestamp).toEqual(bestBlock.body?.timestamp)
+            expect(firstBeat?.txsFeatures).toEqual(bestBlock.body?.txsFeatures)
+            expect(firstBeat?.parentID).toEqual(bestBlock.body?.parentID)
             ws.unsubscribe()
         },
     )
