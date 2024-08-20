@@ -105,11 +105,9 @@ describe('GET /blocks/{revision}', function () {
 
         const block = res.body
 
-        const relevantTx = // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            block.transactions.find(
-                // @ts-expect-error
-                (txID) => txID === transfer.meta.txID,
-            )
+        const relevantTx = block.transactions.find(
+            (txID) => txID === transfer.meta.txID,
+        )
 
         expect(relevantTx).toBeTruthy()
         expect(relevantTx).toEqual(transfer.meta?.txID)
@@ -124,11 +122,9 @@ describe('GET /blocks/{revision}', function () {
 
         const block = res.body
 
-        const relevantTx = // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            block.transactions.find(
-                // @ts-expect-error
-                (tx) => tx.id === transfer.meta.txID,
-            )
+        const relevantTx = block.transactions.find(
+            (tx) => tx.id === transfer.meta.txID,
+        )
 
         expect(relevantTx).toBeTruthy()
         expect(relevantTx).toEqual({

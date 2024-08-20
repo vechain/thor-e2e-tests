@@ -1,20 +1,20 @@
 version: '3.8'
 
 services:
-  base-node:
-    image: ${THOR_IMAGE:-ghcr.io/vechain/thor:master-latest}
-    entrypoint: '/node/config/start.sh'
-    volumes:
-      - type: bind
-        source: ./config
-        target: /node/config
-    healthcheck:
-      test: [ 'CMD', '/node/config/health_check.sh' ]
-      interval: 1s
-      timeout: 5s
-      retries: 120
-    deploy:
-      resources:
-        limits:
-          cpus: '4'
-          memory: 8192M
+    base-node:
+        image: ${THOR_IMAGE:-ghcr.io/vechain/thor:master-latest}
+        entrypoint: '/node/config/start.sh'
+        volumes:
+            - type: bind
+              source: ./config
+              target: /node/config
+        healthcheck:
+            test: ['CMD', '/node/config/health_check.sh']
+            interval: 1s
+            timeout: 5s
+            retries: 120
+        deploy:
+            resources:
+                limits:
+                    cpus: '4'
+                    memory: 8192M

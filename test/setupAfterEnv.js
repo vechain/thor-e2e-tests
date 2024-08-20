@@ -22,7 +22,8 @@ it.e2eTest = (title, tags, testFunc) => {
     }
 }
 
-jest.retryTimes(3, { logErrorsBeforeRetry: true })
+const retries = process.env.GITHUB_ACTIONS ? 3 : 0
+jest.retryTimes(retries, { logErrorsBeforeRetry: true })
 
 afterAll(async () => {
     Client.raw.closeAllSubscriptions()

@@ -314,8 +314,6 @@ class ThorClient {
             return undefined
         }
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
         const txIndex = block.body.transactions.indexOf(txId)
 
         return `${block.body.id}/${txIndex}`
@@ -396,6 +394,9 @@ class LoadBalancedClient {
         )
     }
 
+    /**
+     * @return {ThorClient}
+     */
     get raw() {
         const handler = {
             get: (target, prop) => {
@@ -408,6 +409,9 @@ class LoadBalancedClient {
         return new Proxy(this.getRandomClient(), handler)
     }
 
+    /**
+     * @return {_ThorClient}
+     */
     get sdk() {
         const handler = {
             get: (target, prop) => {

@@ -7,9 +7,7 @@ const subscribeAndTestError = async (params, expectedErrorMessage) => {
     Client.raw.subscribeToTransfers(
         params,
         () => {
-            fail(
-                `Callback should not be executed for an invalid parameter: ${JSON.stringify(params)}`,
-            )
+            expect(false, 'Callback is not expected').toBeTruthy()
         },
         (error) => {
             expect(error.message).toBe(expectedErrorMessage)
