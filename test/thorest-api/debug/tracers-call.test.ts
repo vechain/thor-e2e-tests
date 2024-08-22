@@ -61,12 +61,9 @@ describe('POST /debug/tracers/call', () => {
             revision,
         )
 
-    it.e2eTest('should return 200 for no tracer', 'all', async () => {
+    it.e2eTest('should return 403 for no tracer', 'all', async () => {
         const response = await newRequest('')
-        expect(response.httpCode).toBe(200)
-        expect(response.body.structLogs.length).toBe(338)
-
-        verifyStructLogs(response.body.structLogs)
+        expect(response.httpCode).toBe(403)
     })
 
     it.e2eTest('should return 200 for tracer: opcount', 'all', async () => {
@@ -202,15 +199,9 @@ describe('POST /debug/tracers/call', () => {
         expect(response.body).toEqual({})
     })
 
-    it.e2eTest('should return 200 for empty body', 'all', async () => {
+    it.e2eTest('should return 403 for empty body', 'all', async () => {
         const response = await Client.raw.traceContractCall({})
-        expect(response.httpCode).toBe(200)
-        expect(response.body).toEqual({
-            gas: 0,
-            failed: false,
-            returnValue: '',
-            structLogs: [],
-        })
+        expect(response.httpCode).toBe(403)
     })
 
     it.e2eTest('should return 200 for contract deployment', 'all', async () => {
@@ -218,6 +209,7 @@ describe('POST /debug/tracers/call', () => {
             data: ParisCounter.bytecode,
             value: '0x0',
             caller: transferFrom,
+            name: 'logger',
         })
 
         const body = response.body as Record<string, any>
