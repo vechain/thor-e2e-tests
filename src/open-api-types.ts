@@ -1950,6 +1950,7 @@ export interface components {
                 | 'trigram'
                 | 'evmdis'
                 | 'opcount'
+                | 'logger'
                 | null
             /**
              * @description The configuration of the tracer. It is specific to the `name`
