@@ -50,6 +50,15 @@ describe('POST /debug/tracers', () => {
             config,
         })
 
+    it.e2eTest('should return 200 for logger tracer', 'all', async () => {
+        const res = await newRequest('logger')
+
+        expect(res.httpCode).toBe(200)
+        verifyStructLogs(res.body.structLogs)
+        expect(res.body.failed).toBe(false)
+        expect(res.body.gas).toBeGreaterThan(0)
+    })
+
     it.e2eTest('should return 403 for no tracer', 'all', async () => {
         const res = await newRequest('')
 
