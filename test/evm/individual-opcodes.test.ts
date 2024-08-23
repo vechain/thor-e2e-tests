@@ -54,7 +54,7 @@ describe('Individual OpCodes', () => {
             data,
         }
 
-        const debugged = await Client.raw.traceContractCall({
+        const debugged = await Client.raw.traceCall({
             ...clause,
             caller,
             gas: 1_000_000,

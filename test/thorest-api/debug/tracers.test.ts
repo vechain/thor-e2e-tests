@@ -198,7 +198,7 @@ describe('POST /debug/tracers', () => {
     })
 
     it.e2eTest('should return 403 for empty body', 'all', async () => {
-        const response = await Client.raw.traceContractCall({})
+        const response = await Client.raw.traceCall({})
         expect(response.httpCode).toBe(403)
     })
 
@@ -208,7 +208,7 @@ describe('POST /debug/tracers', () => {
     })
 
     it.e2eTest('should return 403 for empty body', 'all', async () => {
-        const response = await Client.raw.traceContractCall('' as any)
+        const response = await Client.raw.traceCall('' as any)
         expect(response.httpCode).toBe(400)
     })
 

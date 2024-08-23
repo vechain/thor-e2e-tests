@@ -369,7 +369,7 @@ class ThorClient {
     }
 
     // POST /debug/tracers/call
-    public async traceContractCall(
+    public async traceCall(
         request: Schema['PostDebugTracerCallRequest'],
         revision?: string,
         options?: AxiosRequestConfig,
