@@ -165,7 +165,12 @@ class ThorWallet {
 
         await factory.startDeployment()
 
-        return await factory.waitForDeployment()
+        const contract = await factory.waitForDeployment()
+
+        // Make sure the contract is deployed before returning
+        await pollReceipt(contract.deployTransactionReceipt!.meta.txID!)
+
+        return contract
     }
 
     public buildTransaction = async (
@@ -227,8 +232,8 @@ class ThorWallet {
         delegate?: boolean,
     ): Promise<
         T extends true
-        ? components['schemas']['GetTxReceiptResponse']
-        : components['schemas']['TXID']
+            ? components['schemas']['GetTxReceiptResponse']
+            : components['schemas']['TXID']
     > => {
         await this.waitForFunding()
 

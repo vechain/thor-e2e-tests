@@ -300,6 +300,7 @@ class ThorClient {
             txOrigin?: string
         },
         callback: (data: Schema['SubscriptionTransferResponse']) => void,
+        errorCallback?: (data: any) => void,
     ) {
         const url = new URL(`${this.baseWsUrl}/subscriptions/transfer`)
 
@@ -319,7 +320,7 @@ class ThorClient {
             url.searchParams.append('txOrigin', queryParameters.txOrigin)
         }
 
-        return this.openWebsocket(url.toString(), callback)
+        return this.openWebsocket(url.toString(), callback, errorCallback)
     }
 
     // WS /subscriptions/beats
@@ -368,12 +369,18 @@ class ThorClient {
     }
 
     // POST /debug/tracers/call
-    public async traceContractCall(
+    public async traceCall(
         request: Schema['PostDebugTracerCallRequest'],
+        revision?: string,
         options?: AxiosRequestConfig,
     ): Promise<Response<any>> {
+        let path = `/debug/tracers/call`
+        if (revision) {
+            path = `${path}?revision=${revision}`
+        }
+
         return this.performRequest(() =>
-            this.axios.post(`/debug/tracers/call`, request, options),
+            this.axios.post(path, request, options),
         )
     }
 
@@ -463,11 +470,21 @@ class ThorClient {
         }
     }
 
-    private openWebsocket<T>(url: string, callback: (data: T) => void) {
+    private openWebsocket<T>(
+        url: string,
+        callback: (data: T) => void,
+        errorCallback?: (data: T) => void,
+    ) {
         const ws = new WebSocket(url)
         ws.onmessage = (event: any) => {
             const data = JSON.parse(event.data)
             callback(data)
+        }
+
+        ws.onerror = (event: any) => {
+            if (errorCallback) {
+                errorCallback(event)
+            }
         }
 
         this.subscriptions.push(() => ws.close())
@@ -477,12 +494,6 @@ class ThorClient {
                 ws.close()
             },
         }
-    }
-
-    private initBlockSubscription() {
-        this.subscribeToBlocks(
-            (data: Schema['SubscriptionBlockResponse']) => {},
-        )
     }
 
     private async performRequest<T>(
@@ -507,7 +518,7 @@ class ThorClient {
 }
 
 class LoadBalancedClient {
-    private readonly clients: ThorClient[]
+    public readonly clients: ThorClient[]
     private readonly sdkClients: _ThorClient[]
 
     constructor(urls: string[]) {
@@ -539,6 +550,13 @@ class LoadBalancedClient {
         }
 
         return new Proxy(this.getRandomSDKClient(), handler)
+    }
+
+    public index(index: number) {
+        return {
+            sdk: this.sdkClients[index],
+            raw: this.clients[index],
+        }
     }
 
     private getRandomClient(): ThorClient {

@@ -7,6 +7,7 @@ import {
 import { Client } from '../../../src/thor-client'
 import { Contract } from '@vechain/sdk-network'
 import { interfaces } from '../../../src/contracts/hardhat'
+import { pollReceipt } from '../../../src/transactions'
 
 // This is the event topic for the master event
 const masterEvent =
@@ -62,7 +63,7 @@ describe('Contracts', () => {
             const startValue = await counter.read.getCounter()
 
             const incrementTx = await counter.transact.incrementCounter()
-            await incrementTx.wait()
+            await pollReceipt(incrementTx.id)
 
             const newValue = await counter.read.getCounter()
 
@@ -87,6 +88,7 @@ describe('Contracts', () => {
                     wallet.signer,
                 )
 
+            await pollReceipt(tx.id)
             const receipt = await tx.wait()
             expect(receipt).toBeDefined()
             expect(receipt!.reverted).toBe(false)
@@ -124,6 +126,7 @@ describe('Contracts', () => {
                     wallet.signer,
                 )
 
+            await pollReceipt(tx.id)
             const receipt = await tx.wait()
             expect(receipt).toBeDefined()
             expect(receipt!.reverted).toBe(false)

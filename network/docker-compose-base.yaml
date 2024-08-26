@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  base-authority-node:
+  base-node:
     image: ${THOR_IMAGE:-ghcr.io/vechain/thor:master-latest}
     entrypoint: '/node/config/start.sh'
     volumes:
@@ -16,5 +16,5 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '8'
-          memory: 16384M
+          cpus: '4'
+          memory: 8192M

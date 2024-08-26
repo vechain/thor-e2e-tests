@@ -17,6 +17,7 @@
 import { ThorWallet } from '../../src/wallet'
 import { OpCodes__factory as Opcodes } from '../../typechain-types'
 import { Contract } from '@vechain/sdk-network'
+import { pollReceipt } from '../../src/transactions'
 
 /**
  * @notice - Copied from: https://github.com/ethereum/go-ethereum/blob/master/tests/solidity/test/opCodes.js
@@ -49,8 +50,9 @@ describe('EVM Opcodes', () => {
     })
 
     it.e2eTest('Should revert', 'all', async () => {
-        const { wait } = await opcodes.transact.test_revert()
+        const { wait, id } = await opcodes.transact.test_revert()
 
+        await pollReceipt(id)
         const tx = await wait()
 
         expect(tx?.reverted).toBe(true)

@@ -1,19 +1,19 @@
 import { Client } from '../../../src/thor-client'
-import { testBloomForAddress } from '../../../src/utils/bloom'
 import assert from 'node:assert'
-import { ThorWallet } from '../../../src/wallet'
 import { components } from '../../../src/open-api-types'
+import { testLegacyBloomForAddress } from '../../../src/utils/legacy-bloom'
+import { ThorWallet } from '../../../src/wallet'
 
 /**
  * @group api
  * @group websockets
- * @group beats2
+ * @group beats
  */
-describe('WS /subscriptions/beat2', () => {
+describe('WS /subscriptions/beat', () => {
     it.e2eTest('should be able to subscribe', 'all', async () => {
-        const beats: components['schemas']['SubscriptionBeat2Response'][] = []
+        const beats: components['schemas']['SubscriptionBeatResponse'][] = []
 
-        Client.raw.subscribeToBeats2((newBlock) => {
+        Client.raw.subscribeToBeats((newBlock) => {
             beats.push(newBlock)
         })
 
@@ -32,7 +32,7 @@ describe('WS /subscriptions/beat2', () => {
         assert(relevantBeat?.k, 'Beat not found')
         assert(wallet.address, 'Sender not found')
 
-        const result = testBloomForAddress(
+        const result = testLegacyBloomForAddress(
             relevantBeat.bloom,
             relevantBeat.k,
             wallet.address,
@@ -45,11 +45,11 @@ describe('WS /subscriptions/beat2', () => {
         'should be able to retrieve blocks after the current best block when providing no position parameter',
         'all',
         async () => {
-            const beats: components['schemas']['SubscriptionBeat2Response'][] =
+            const beats: components['schemas']['SubscriptionBeatResponse'][] =
                 []
 
             const bestBlock = await Client.raw.getBlock('best')
-            const ws = Client.raw.subscribeToBeats2((newBlock) => {
+            const ws = Client.raw.subscribeToBeats((newBlock) => {
                 beats.push(newBlock)
             })
 
@@ -74,12 +74,12 @@ describe('WS /subscriptions/beat2', () => {
         'should be able to retrieve 5 blocks in order',
         'all',
         async () => {
-            const beats: components['schemas']['SubscriptionBeat2Response'][] =
+            const beats: components['schemas']['SubscriptionBeatResponse'][] =
                 []
 
             const genesis = await Client.raw.getBlock(0, false)
 
-            const ws = Client.raw.subscribeToBeats2((newBlock) => {
+            const ws = Client.raw.subscribeToBeats((newBlock) => {
                 beats.push(newBlock)
             }, genesis.body?.id)
 
@@ -103,13 +103,13 @@ describe('WS /subscriptions/beat2', () => {
         'should be able to get block A via api call and compare it with subscription result to check they are the same',
         'all',
         async () => {
-            const beats: components['schemas']['SubscriptionBeat2Response'][] =
+            const beats: components['schemas']['SubscriptionBeatResponse'][] =
                 []
 
             const genesis = await Client.raw.getBlock(0, false)
             const firstBlock = await Client.raw.getBlock(1, false)
 
-            const ws = Client.raw.subscribeToBeats2((newBlock) => {
+            const ws = Client.raw.subscribeToBeats((newBlock) => {
                 beats.push(newBlock)
             }, genesis.body?.id)
 
@@ -126,7 +126,6 @@ describe('WS /subscriptions/beat2', () => {
             expect(firstBeat?.timestamp).toEqual(firstBlock.body?.timestamp)
             expect(firstBeat?.txsFeatures).toEqual(firstBlock.body?.txsFeatures)
             expect(firstBeat?.parentID).toEqual(firstBlock.body?.parentID)
-            expect(firstBeat?.gasLimit).toEqual(firstBlock.body?.gasLimit)
             ws.unsubscribe()
         },
     )

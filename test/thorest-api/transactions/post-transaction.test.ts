@@ -1,5 +1,4 @@
 import { Transaction } from '@vechain/sdk-core'
-import { Client } from '../../../src/thor-client'
 import { ThorWallet, generateAddress } from '../../../src/wallet'
 import { revertedPostTx } from './setup/asserts'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
@@ -8,7 +7,7 @@ import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
  * @group api
  * @group transactions
  */
-describe('POST /transactions', function() {
+describe('POST /transactions', function () {
     const wallet = ThorWallet.txBetweenFunding()
 
     it.e2eTest('should send a transaction', 'all', async () => {
@@ -23,7 +22,7 @@ describe('POST /transactions', function() {
     it.e2eTest(
         'transaction should fail, wrong chain id',
         'all',
-        async function() {
+        async function () {
             const receivingAddr = generateAddress()
             const clauses = [
                 {
@@ -42,12 +41,8 @@ describe('POST /transactions', function() {
                 postTxStep: {
                     rawTx: signedTx.encoded.toString('hex'),
                     expectedResult: (data: any) =>
-                        revertedPostTx(
-                            data,
-                            'bad tx: chain tag mismatch',
-                        ),
+                        revertedPostTx(data, 'bad tx: chain tag mismatch'),
                 },
-
             }
 
             const ddt = new TransactionDataDrivenFlow(testPlan)
