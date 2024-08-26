@@ -246,7 +246,6 @@ describe('POST /logs/event', () => {
                 order: order,
             })
 
-            console.log(response.body)
             expect(
                 response.success,
                 'API response should be a success',
