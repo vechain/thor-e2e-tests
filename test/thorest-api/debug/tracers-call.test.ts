@@ -53,7 +53,7 @@ describe('POST /debug/tracers/call', () => {
     }
 
     const newRequest = (tracer: TracerName, revision?: string) =>
-        Client.raw.traceContractCall(
+        Client.raw.traceCall(
             {
                 ...baseRequest,
                 name: tracer,
@@ -61,12 +61,9 @@ describe('POST /debug/tracers/call', () => {
             revision,
         )
 
-    it.e2eTest('should return 200 for no tracer', 'all', async () => {
+    it.e2eTest('should return 403 for no tracer', 'all', async () => {
         const response = await newRequest('')
-        expect(response.httpCode).toBe(200)
-        expect(response.body.structLogs.length).toBe(338)
-
-        verifyStructLogs(response.body.structLogs)
+        expect(response.httpCode).toBe(403)
     })
 
     it.e2eTest('should return 200 for tracer: opcount', 'all', async () => {
@@ -171,28 +168,27 @@ describe('POST /debug/tracers/call', () => {
     }
 
     it.e2eTest('should return 200 for tracer: prestate', 'all', async () => {
-        const response = await newRequest('prestate')
+        const response = await Client.raw.traceCall({
+            to: transferTo,
+            value: '0xde0b6b3a7640000', // value is not evaluated - doesn't matter
+            name: 'prestate',
+            caller: transferFrom,
+        })
         expect(response.httpCode).toBe(200)
 
         const body = response.body as Record<string, PrestateObject>
 
-        const energyPrestate = body[contractAddresses.energy]
-        expect(energyPrestate).toMatchObject({
+        const callerState = body[transferFrom.toLowerCase()]
+        expect(callerState).toMatchObject({
+            balance: expect.stringMatching(HEX_AT_LEAST_1),
+            energy: expect.stringMatching(HEX_AT_LEAST_1),
+        })
+
+        const receiverState = body[transferTo.toLowerCase()]
+        expect(receiverState).toMatchObject({
             balance: expect.stringMatching(HEX_AT_LEAST_1),
             energy: expect.stringMatching(HEX_AT_LEAST_1),
             code: expect.stringMatching(HEX_AT_LEAST_1),
-        })
-
-        const toPrestate = body[transferTo.toLowerCase()]
-        expect(toPrestate).toMatchObject({
-            balance: expect.stringMatching(HEX_AT_LEAST_1),
-            energy: expect.stringMatching(HEX_AT_LEAST_1),
-        })
-
-        const fromPrestate = body[transferFrom.toLowerCase()]
-        expect(fromPrestate).toMatchObject({
-            balance: expect.stringMatching(HEX_AT_LEAST_1),
-            energy: expect.stringMatching(HEX_AT_LEAST_1),
         })
     })
 
@@ -202,22 +198,17 @@ describe('POST /debug/tracers/call', () => {
         expect(response.body).toEqual({})
     })
 
-    it.e2eTest('should return 200 for empty body', 'all', async () => {
-        const response = await Client.raw.traceContractCall({})
-        expect(response.httpCode).toBe(200)
-        expect(response.body).toEqual({
-            gas: 0,
-            failed: false,
-            returnValue: '',
-            structLogs: [],
-        })
+    it.e2eTest('should return 403 for empty body', 'all', async () => {
+        const response = await Client.raw.traceCall({})
+        expect(response.httpCode).toBe(403)
     })
 
     it.e2eTest('should return 200 for contract deployment', 'all', async () => {
-        const response = await Client.raw.traceContractCall({
+        const response = await Client.raw.traceCall({
             data: ParisCounter.bytecode,
             value: '0x0',
             caller: transferFrom,
+            name: 'logger',
         })
 
         const body = response.body as Record<string, any>
@@ -235,7 +226,7 @@ describe('POST /debug/tracers/call', () => {
     })
 
     it.e2eTest('should return 403 for empty body', 'all', async () => {
-        const response = await Client.raw.traceContractCall('' as any)
+        const response = await Client.raw.traceCall('' as any)
         expect(response.httpCode).toBe(400)
     })
 
@@ -264,7 +255,7 @@ describe('POST /debug/tracers/call', () => {
     it.e2eTest('should return the correct provedWork', 'all', async () => {
         const provedWork = '0x12341234'
 
-        const response = await Client.raw.traceContractCall({
+        const response = await Client.raw.traceCall({
             to: contractAddresses.extension,
             data: interfaces.extension.encodeFunctionData('txProvedWork'),
             provedWork,
@@ -281,7 +272,7 @@ describe('POST /debug/tracers/call', () => {
     it.e2eTest('should return the correct blockRef', 'all', async () => {
         const blockRef = await Client.sdk.blocks.getBestBlockRef()
 
-        const response = await Client.raw.traceContractCall({
+        const response = await Client.raw.traceCall({
             to: contractAddresses.extension,
             data: interfaces.extension.encodeFunctionData('txBlockRef'),
             blockRef,
@@ -298,7 +289,7 @@ describe('POST /debug/tracers/call', () => {
     it.e2eTest('should return the correct gasPayer', 'all', async () => {
         const gasPayer = transferTo
 
-        const response = await Client.raw.traceContractCall({
+        const response = await Client.raw.traceCall({
             to: contractAddresses.extension,
             data: interfaces.extension.encodeFunctionData('txGasPayer'),
             gasPayer,
@@ -315,7 +306,7 @@ describe('POST /debug/tracers/call', () => {
     it.e2eTest('should return the correct expiration', 'all', async () => {
         const expiration = 1000
 
-        const response = await Client.raw.traceContractCall({
+        const response = await Client.raw.traceCall({
             to: contractAddresses.extension,
             data: interfaces.extension.encodeFunctionData('txExpiration'),
             expiration,
@@ -340,7 +331,7 @@ describe('POST /debug/tracers/call', () => {
 
         const price = BigInt(11_222_3333)
 
-        const response = await Client.raw.traceContractCall({
+        const response = await Client.raw.traceCall({
             to: evmMethods.address,
             data: methodsInterface.encodeFunctionData('getTxGasPrice'),
             gasPrice: '0x' + price.toString(16),
@@ -355,7 +346,7 @@ describe('POST /debug/tracers/call', () => {
     })
 
     it.e2eTest('should revert for extremely low gas', 'all', async () => {
-        const response = await Client.raw.traceContractCall({
+        const response = await Client.raw.traceCall({
             to: null,
             value: '0x0',
             data: EvmMethods__factory.bytecode,

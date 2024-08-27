@@ -12,6 +12,11 @@ on:
         description: 'Optional: Override the environment node URLs. (Comma separated)'
         type: string
         required: false
+      branch_name:
+        description: 'Branch name to build and test'
+        type: string
+        required: false
+        default: 'master-latest'
   push:
     branches:
       - 'main'
@@ -41,8 +46,22 @@ jobs:
         run: yarn install
 
       - name: Start Docker Network
-        if: ${{ inputs.environment != 'mainnet' && inputs.environment != 'testnet' }}
+        if: ${{ (inputs.branch_name == 'master-latest' || inputs.branch_name == '')  && inputs.environment != 'mainnet' && inputs.environment != 'testnet' }}
         run: yarn docker:up
+
+      - name: Using Custom Thor Branch
+        if: ${{ inputs.branch_name != 'master-latest' && inputs.branch_name != '' }}
+        run: |
+          # Clone only the specified branch from the vechain/thor repository
+          git clone --branch ${{ inputs.branch_name }} --single-branch --depth 1 https://github.com/vechain/thor.git thor-tmp
+          
+          # Navigate to the directory and build the Docker image, replacing / with _ in the branch name
+          cd thor-tmp
+          TAG_NAME=$(echo ${{ inputs.branch_name }} | tr / _)
+          docker build -t thor:$TAG_NAME .
+          
+          # Start the Docker network using the built image
+          THOR_IMAGE=thor:$TAG_NAME yarn docker:up
 
       - name: Run Tests
         run: yarn test
