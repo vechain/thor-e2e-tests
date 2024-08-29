@@ -47,36 +47,28 @@ assembly { pop(jumpi(eq(7, 8), abc)) jump(abc) }*/
                 let i := 1
             } lt(i, 5) {
                 i := add(i, 1)
-            } {
-
-            }
+            } {}
         }
         assembly {
             for {
                 let i := 6
             } gt(i, 5) {
                 i := add(i, 1)
-            } {
-
-            }
+            } {}
         }
         assembly {
             for {
                 let i := 1
             } slt(i, 5) {
                 i := add(i, 1)
-            } {
-
-            }
+            } {}
         }
         assembly {
             for {
                 let i := 6
             } sgt(i, 5) {
                 i := add(i, 1)
-            } {
-
-            }
+            } {}
         }
 
         //no_opcodes_in_strict
@@ -104,9 +96,7 @@ assembly { pop(jumpi(eq(7, 8), abc)) jump(abc) }*/
             function f(a, d) {
                 mstore(a, d)
             }
-            function g(a, d) -> x, y {
-
-            }
+            function g(a, d) -> x, y {}
         }
 
         //sstore
@@ -114,9 +104,7 @@ assembly { pop(jumpi(eq(7, 8), abc)) jump(abc) }*/
             function f(a, d) {
                 sstore(a, d)
             }
-            function g(a, d) -> x, y {
-
-            }
+            function g(a, d) -> x, y {}
         }
 
         //mstore8
@@ -124,9 +112,7 @@ assembly { pop(jumpi(eq(7, 8), abc)) jump(abc) }*/
             function f(a, d) {
                 mstore8(a, d)
             }
-            function g(a, d) -> x, y {
-
-            }
+            function g(a, d) -> x, y {}
         }
 
         //calldatacopy

@@ -314,8 +314,6 @@ class ThorClient {
             return undefined
         }
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
         const txIndex = block.body.transactions.indexOf(txId)
 
         return `${block.body.id}/${txIndex}`

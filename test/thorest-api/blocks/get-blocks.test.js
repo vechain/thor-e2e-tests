@@ -106,8 +106,6 @@ describe('GET /blocks/{revision}', function () {
         const block = res.body
 
         const relevantTx = block.transactions.find(
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
             (txID) => txID === transfer.meta.txID,
         )
 
@@ -125,8 +123,6 @@ describe('GET /blocks/{revision}', function () {
         const block = res.body
 
         const relevantTx = block.transactions.find(
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
             (tx) => tx.id === transfer.meta.txID,
         )
 
