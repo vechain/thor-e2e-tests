@@ -9,12 +9,13 @@ echo "$MASTER_KEY" > /tmp/master.key
 
 BOOTNODE_IP=$(ping -c 1 thor-disco | awk -F'[()]' '/PING/{print $2}')
 
-echo $BOOTNODE_IP
+echo "$BOOTNODE_IP"
 
 thor \
   --config-dir=/tmp \
   --network /node/config/genesis.json \
   --api-addr="0.0.0.0:8669" \
+  --api-backtrace-limit=5 \
   --api-cors="*" \
   --api-allowed-tracers="all" \
   --verbosity=9 \

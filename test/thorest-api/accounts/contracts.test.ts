@@ -25,7 +25,7 @@ describe('Contracts', () => {
     })
 
     it.e2eTest(
-        'Should be able to deploy a contract and verify it',
+        'should be able to deploy a contract and verify it',
         'all',
         async () => {
             const byteCode = await Client.sdk.accounts.getBytecode(
@@ -57,7 +57,7 @@ describe('Contracts', () => {
     )
 
     it.e2eTest(
-        'Should be able to interact with a deployed smart contract',
+        'should be able to interact with a deployed smart contract',
         'all',
         async () => {
             const startValue = await counter.read.getCounter()
@@ -72,7 +72,7 @@ describe('Contracts', () => {
     )
 
     it.e2eTest(
-        'Should be able to execute multiple clauses in a single transaction',
+        'should be able to execute multiple clauses in a single transaction',
         'all',
         async () => {
             const startValue = await counter.read.getCounter()
@@ -99,7 +99,7 @@ describe('Contracts', () => {
     )
 
     it.e2eTest(
-        'Clause updates should impact subsequent clauses',
+        'clause updates should impact subsequent clauses',
         'all',
         async () => {
             const authorizeTransaction = await wallet.deployContract(
@@ -134,7 +134,7 @@ describe('Contracts', () => {
     )
 
     it.e2eTest(
-        'Should be able send a clause to an account with no bytecode',
+        'should be able send a clause to an account with no bytecode',
         'all',
         async () => {
             const clause = {
@@ -153,7 +153,7 @@ describe('Contracts', () => {
     )
 
     it.e2eTest(
-        'Should be able to send a clause to a contract that does not have the method',
+        'should be able to send a clause to a contract that does not have the method',
         'all',
         async () => {
             const clause = {
@@ -172,7 +172,7 @@ describe('Contracts', () => {
     )
 
     it.e2eTest(
-        'Should not be able to send invalid parameters to a contract',
+        'should not be able to send invalid parameters to a contract',
         'all',
         async () => {
             const stringer = await wallet.deployContract(
