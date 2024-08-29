@@ -561,27 +561,18 @@ describe('Individual OpCodes', () => {
         'should give the correct output for opcode: PUSH0',
         'all',
         async () => {
-            const clauses = [
-                {
-                    data: ShanghaiCounter.bytecode,
-                    value: '0x0',
-                    to: null,
-                },
-            ]
-
-            const tx = await wallet.sendClauses(clauses, false)
-
-            const receipt = await pollReceipt(tx.id ?? '')
-
-            expect(receipt.reverted).toBe(true)
-
-            // 0x5f is the PUSH0 opcode
-            const simulation = await Client.raw.executeAccountBatch({
-                clauses,
+            const debugged = await Client.raw.traceContractCall({
+                to: null,
+                data: ShanghaiCounter.bytecode,
+                value: '0x0',
                 caller,
+                gas: 1_000_000,
             })
-
-            expect(simulation.body?.[0]?.vmError).toEqual('invalid opcode 0x5f')
+            expect(debugged.httpCode).toBe(200)
+            expect(debugged.body.failed).toBe(false)
+            expect(
+                debugged.body.structLogs.some((log: any) => log.op === 'PUSH0'),
+            ).toBe(true)
         },
     )
 
