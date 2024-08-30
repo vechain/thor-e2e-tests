@@ -1,10 +1,10 @@
-import { HardhatUserConfig } from 'hardhat/config'
+import { HardhatUserConfig } from 'hardhat/types'
 import '@typechain/hardhat'
 import '@nomicfoundation/hardhat-ethers'
 import '@nomicfoundation/hardhat-chai-matchers'
 import '@nomicfoundation/hardhat-toolbox'
 
-const config: HardhatUserConfig = {
+const config: HardhatUserConfig =  {
     solidity: {
         compilers: [
             {
