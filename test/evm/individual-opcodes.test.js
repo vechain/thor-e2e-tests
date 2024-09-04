@@ -53,7 +53,7 @@ describe('Individual OpCodes', () => {
             ...clause,
             caller,
             gas: 1_000_000,
-            name: 'logger',
+            name: 'structLogger',
         })
 
         expect(debugged.httpCode).toBe(200)
