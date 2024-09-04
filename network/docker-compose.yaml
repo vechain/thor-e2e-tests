@@ -1,43 +1,40 @@
-version: '3.8'
-
 services:
-  thor-disco:
-    image: ${THOR_IMAGE:-ghcr.io/vechain/thor:master-latest}
-    container_name: thor-disco
-    entrypoint: 'disco --keyhex=99f0500549792796c14fed62011a51081dc5b5e68fe8bd8a13b86be829c4fd36'
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 2048M
+    thor-disco:
+        image: ${THOR_IMAGE:-ghcr.io/vechain/thor:master-latest}
+        container_name: thor-disco
+        entrypoint: 'disco --keyhex=99f0500549792796c14fed62011a51081dc5b5e68fe8bd8a13b86be829c4fd36'
+        deploy:
+            resources:
+                limits:
+                    cpus: '2'
+                    memory: 2048M
 
-  authority-node-1:
-    extends:
-      file: docker-compose-base.yaml
-      service: base-node
-    container_name: authority-node-1
-    environment:
-      MASTER_KEY: 'f4a1a17039216f535d42ec23732c79943ffb45a089fbb78a14daad0dae93e991'
-    ports:
-      - '8689:8669'
+    authority-node-1:
+        extends:
+            file: docker-compose-base.yaml
+            service: base-node
+        container_name: authority-node-1
+        environment:
+            MASTER_KEY: 'f4a1a17039216f535d42ec23732c79943ffb45a089fbb78a14daad0dae93e991'
+        ports:
+            - '8689:8669'
 
-  public-node-1:
-    extends:
-      file: docker-compose-base.yaml
-      service: base-node
-    container_name: public-node-1
-    environment:
-      MASTER_KEY: 'cd79462d49ade00fa5ecb617761ae137df5d5b4edd0a1fe0960ef0abc5d52c7d'
-    ports:
-      - '8669:8669'
+    public-node-1:
+        extends:
+            file: docker-compose-base.yaml
+            service: base-node
+        container_name: public-node-1
+        environment:
+            MASTER_KEY: 'cd79462d49ade00fa5ecb617761ae137df5d5b4edd0a1fe0960ef0abc5d52c7d'
+        ports:
+            - '8669:8669'
 
-  public-node-2:
-    extends:
-      file: docker-compose-base.yaml
-      service: base-node
-    container_name: public-node-2
-    environment:
-      MASTER_KEY: 'e6e7229ce46cd60cb0bd4c1e0aa0c85b6ae9eb97885cf63ce51a2cd71d1cbefa'
-    ports:
-      - '8679:8669'
-
+    public-node-2:
+        extends:
+            file: docker-compose-base.yaml
+            service: base-node
+        container_name: public-node-2
+        environment:
+            MASTER_KEY: 'e6e7229ce46cd60cb0bd4c1e0aa0c85b6ae9eb97885cf63ce51a2cd71d1cbefa'
+        ports:
+            - '8679:8669'

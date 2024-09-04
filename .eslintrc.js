@@ -1,15 +1,15 @@
 /* eslint-env node */
 module.exports = {
-    extends: [
-        'eslint:recommended',
-        'plugin:@typescript-eslint/recommended',
-        'plugin:prettier/recommended',
-    ],
-    parser: '@typescript-eslint/parser',
-    plugins: ['@typescript-eslint'],
+    parserOptions: {
+        sourceType: 'module',
+        ecmaVersion: 2024,
+    },
+    extends: ['eslint:recommended', 'plugin:prettier/recommended'],
     root: true,
-    rules: {
-        '@typescript-eslint/no-explicit-any': 'off',
+    env: {
+        es2024: true,
+        node: true,
+        jest: true,
     },
     ignorePatterns: [
         '*config.js',
@@ -17,5 +17,7 @@ module.exports = {
         'artifacts/',
         'cache/',
         'typechain-types/',
+        'jest-html-reporters-attach',
+        'coverage',
     ],
 }
