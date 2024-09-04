@@ -3,6 +3,7 @@ import { populatedData } from './populated-data'
 const validRevisions = [
     'best',
     '1',
+    'justified',
     populatedData.exists() ? populatedData.read().genesisId : '',
 ]
 
