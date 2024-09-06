@@ -39,8 +39,14 @@ describe('POST /debug/tracers', () => {
             config,
         })
 
-    it.e2eTest('should return 200 for logger tracer', 'all', async () => {
-        const res = await newRequest('logger')
+    it.e2eTest('should return 403 for none existed tracer', 'all', async () => {
+        const res = await newRequest('bad-tracer-name')
+
+        expect(res.httpCode).toBe(403)
+    })
+
+    it.e2eTest('should return 200 for structLogger tracer', 'all', async () => {
+        const res = await newRequest('structLogger')
 
         expect(res.httpCode).toBe(200)
         verifyStructLogs(res.body.structLogs)
@@ -48,10 +54,13 @@ describe('POST /debug/tracers', () => {
         expect(res.body.gas).toBeGreaterThan(0)
     })
 
-    it.e2eTest('should return 403 for no tracer', 'all', async () => {
+    it.e2eTest('should return 200 for default tracer', 'all', async () => {
         const res = await newRequest('')
 
-        expect(res.httpCode).toBe(403)
+        expect(res.httpCode).toBe(200)
+        verifyStructLogs(res.body.structLogs)
+        expect(res.body.failed).toBe(false)
+        expect(res.body.gas).toBeGreaterThan(0)
     })
 
     it.e2eTest('should return 200 for tracer: opcount', 'all', async () => {
@@ -172,25 +181,15 @@ describe('POST /debug/tracers', () => {
         expect(response.body).toEqual({})
     })
 
-    it.e2eTest('should return 403 for empty body', 'all', async () => {
-        const response = await Client.raw.traceCall({})
-        expect(response.httpCode).toBe(403)
-    })
-
     it.e2eTest('should return 403 for bad tracer name', 'all', async () => {
         const response = await newRequest('bad-tracer-name')
         expect(response.httpCode).toBe(403)
     })
 
-    it.e2eTest('should return 403 for empty body', 'all', async () => {
-        const response = await Client.raw.traceCall('')
-        expect(response.httpCode).toBe(400)
-    })
-
     it.e2eTest('should return bad target', 'all', async () => {
         const res = await Client.raw.traceClause({
             target: 'bad-target',
-            name: 'logger',
+            name: 'structLogger',
         })
         expect(res.httpCode).toBe(400)
     })

@@ -13,6 +13,7 @@ services:
             - --api-cors=* # comma separated list of domains to accept cross-origin requests to API
             - --txpool-limit-per-account=256 # limit txpool size per account
             - --cache=1024 # megabytes of ram allocated to trie nodes cache
+            - --api-allowed-tracers=all
             - --verbosity=4
             - --persist
         volumes:

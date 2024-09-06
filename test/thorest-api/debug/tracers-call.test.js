@@ -50,11 +50,6 @@ describe('POST /debug/tracers/call', () => {
             revision,
         )
 
-    it.e2eTest('should return 403 for no tracer', 'all', async () => {
-        const response = await newRequest('')
-        expect(response.httpCode).toBe(403)
-    })
-
     it.e2eTest('should return 200 for tracer: opcount', 'all', async () => {
         const response = await newRequest('opcount')
         expect(response.httpCode).toBe(200)
@@ -174,17 +169,12 @@ describe('POST /debug/tracers/call', () => {
         expect(response.body).toEqual({})
     })
 
-    it.e2eTest('should return 403 for empty body', 'all', async () => {
-        const response = await Client.raw.traceCall({})
-        expect(response.httpCode).toBe(403)
-    })
-
     it.e2eTest('should return 200 for contract deployment', 'all', async () => {
         const response = await Client.raw.traceCall({
             data: ParisCounter.bytecode,
             value: '0x0',
             caller: transferFrom,
-            name: 'logger',
+            name: 'structLogger',
         })
 
         const body = response.body
@@ -199,11 +189,6 @@ describe('POST /debug/tracers/call', () => {
     it.e2eTest('should return 403 for bad tracer name', 'all', async () => {
         const response = await newRequest('bad-tracer-name')
         expect(response.httpCode).toBe(403)
-    })
-
-    it.e2eTest('should return 403 for empty body', 'all', async () => {
-        const response = await Client.raw.traceCall('')
-        expect(response.httpCode).toBe(400)
     })
 
     revisions.valid(true).forEach((revision) => {
