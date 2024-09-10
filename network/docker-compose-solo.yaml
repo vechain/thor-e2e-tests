@@ -9,7 +9,6 @@ services:
             - --genesis=/node/config/genesis.json
             - --on-demand # create new block when there is pending transaction
             - --api-addr=0.0.0.0:8669 # Enable remote connections
-            - --api-backtrace-limit=5 # limit the number of blocks to trace back
             - --api-cors=* # comma separated list of domains to accept cross-origin requests to API
             - --txpool-limit-per-account=256 # limit txpool size per account
             - --cache=1024 # megabytes of ram allocated to trie nodes cache
