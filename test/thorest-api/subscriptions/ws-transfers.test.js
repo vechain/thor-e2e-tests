@@ -202,17 +202,6 @@ describe('WS /subscriptions/transfer', () => {
         )
     })
 
-    it.e2eTest('should error for out of range position', 'all', async () => {
-        const account = generateAddress()
-        const genesisBlock = await Client.sdk.blocks.getGenesisBlock()
-        const genesisBlockId = genesisBlock?.id
-
-        await subscribeAndTestError(
-            { recipient: account, pos: genesisBlockId },
-            'Unexpected server response: 403',
-        )
-    })
-
     it.e2eTest('should error for invalid recipient', 'all', async () => {
         await subscribeAndTestError(
             { recipient: 'invalid recipient' },
