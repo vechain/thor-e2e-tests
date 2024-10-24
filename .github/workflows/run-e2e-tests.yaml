@@ -1,74 +1,93 @@
 name: E2E Tests
 
 on:
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to run tests against'
-        type: environment
-        required: true
-        default: 'default-private'
-      node_urls:
-        description: 'Optional: Override the environment node URLs. (Comma separated)'
-        type: string
-        required: false
-  push:
-    branches:
-      - 'main'
-  pull_request:
-    branches:
-      - '*'
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Environment to run tests against'
+                type: environment
+                required: true
+                default: 'default-private'
+            node_urls:
+                description: 'Optional: Override the environment node URLs. (Comma separated)'
+                type: string
+                required: false
+            branch_name:
+                description: 'Branch name to build and test'
+                type: string
+                required: false
+                default: 'master-latest'
+    push:
+        branches:
+            - 'main'
+    pull_request:
+        branches:
+            - '*'
 
 permissions:
-  checks: write
-  pull-requests: write
+    checks: write
+    pull-requests: write
 
 jobs:
-  e2e_tests:
-    name: Run E2E Tests
-    runs-on: ubuntu-latest
-    environment: ${{ inputs.environment || 'default-private' }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    e2e_tests:
+        name: Run E2E Tests
+        runs-on: ubuntu-latest
+        environment: ${{ inputs.environment || 'default-private' }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
 
-      - name: Install Node Modules
-        run: yarn install
+            - name: Install Node Modules
+              run: yarn install
 
-      - name: Start Docker Network
-        if: ${{ inputs.environment != 'mainnet' && inputs.environment != 'testnet' }}
-        run: yarn docker:up
+            - name: Start Docker Network
+              if: ${{ (inputs.branch_name == 'master-latest' || inputs.branch_name == '')  && inputs.environment != 'mainnet' && inputs.environment != 'testnet' }}
+              run: yarn docker:up
 
-      - name: Run Tests
-        run: yarn test
-        continue-on-error: true
-        env:
-          # use the provided node_urls or the default NODE_URLS
-          NODE_URLS: ${{ inputs.node_urls || vars.NODE_URLS }}
-          PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
-          MNEMONIC: ${{ secrets.MNEMONIC }}
-          NETWORK_TYPE: ${{ inputs.environment || 'default-private' }}
-          MAX_WORKERS: ${{ vars.MAX_WORKERS }}
+            - name: Using Custom Thor Branch
+              if: ${{ inputs.branch_name != 'master-latest' && inputs.branch_name != '' }}
+              run: |
+                  # Clone only the specified branch from the vechain/thor repository
+                  git clone --branch ${{ inputs.branch_name }} --single-branch --depth 1 https://github.com/vechain/thor.git thor-tmp
 
-      - name: Print Docker logs
-        if: ${{ (success() || failure()) && (inputs.environment != 'mainnet' && inputs.environment != 'testnet') }}
-        run: yarn docker:logs
+                  # Navigate to the directory and build the Docker image, replacing / with _ in the branch name
+                  cd thor-tmp
+                  TAG_NAME=$(echo ${{ inputs.branch_name }} | tr / _)
+                  docker build -t thor:$TAG_NAME .
 
-      - name: Publish Results
-        uses: dorny/test-reporter@v1
-        id: test-reporter
-        if: ${{ github.repository == 'vechain/thor-e2e-tests' && (success() || failure()) }}
-        with:
-          name: E2E Test Report
-          only-summary: 'false'
-          list-suites: 'all'
-          list-tests: 'all'
-          fail-on-error: 'true'
-          reporter: 'jest-junit'
-          path: |
-            junit.xml
+                  # Start the Docker network using the built image
+                  THOR_IMAGE=thor:$TAG_NAME yarn docker:up
+
+            - name: Run Tests
+              run: yarn test
+              continue-on-error: true
+              env:
+                  # use the provided node_urls or the default NODE_URLS
+                  NODE_URLS: ${{ inputs.node_urls || vars.NODE_URLS }}
+                  PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
+                  MNEMONIC: ${{ secrets.MNEMONIC }}
+                  NETWORK_TYPE: ${{ inputs.environment || 'default-private' }}
+                  MAX_WORKERS: ${{ vars.MAX_WORKERS }}
+
+            - name: Print Docker logs
+              if: ${{ (success() || failure()) && (inputs.environment != 'mainnet' && inputs.environment != 'testnet') }}
+              run: yarn docker:logs
+
+            - name: Publish Results
+              uses: dorny/test-reporter@v1
+              id: test-reporter
+              if: ${{ github.repository == 'vechain/thor-e2e-tests' && (success() || failure()) }}
+              with:
+                  name: E2E Test Report
+                  only-summary: 'false'
+                  list-suites: 'all'
+                  list-tests: 'all'
+                  fail-on-error: 'true'
+                  reporter: 'jest-junit'
+                  path: |
+                      junit.xml
