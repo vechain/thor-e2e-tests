@@ -28,6 +28,7 @@ const SEND_VTHO_CLAUSE = {
 
 describe('GET /debug/storage-range', () => {
     const sender = ThorWallet.withFunds()
+    let transaction_first: components['schemas']['GetTxReceiptResponse']
     let transaction: components['schemas']['GetTxReceiptResponse']
     let counter: Contract<typeof SimpleCounter.abi>
     beforeAll(async () => {
@@ -35,17 +36,22 @@ describe('GET /debug/storage-range', () => {
             SimpleCounter.bytecode,
             SimpleCounter.abi,
         )
+
         let incrementTx = await counter.transact.incrementCounter()
-        transaction = await pollReceipt(incrementTx.id)
+        transaction_first = await pollReceipt(incrementTx.id)
+
         incrementTx = await counter.transact.incrementCounter()
         transaction = await pollReceipt(incrementTx.id)
+
+        incrementTx = await counter.transact.incrementCounter()
+        await pollReceipt(incrementTx.id)
     })
 
 
     it.e2eTest('should get non empty storage, empty maxResult', 'all', async () => {
-        let storage = await Client.sdk.debug.retrieveStorageRange({ target: { blockID: transaction?.meta?.blockID!, transaction: transaction?.meta?.txID!, clauseIndex: 0 }, options: { address: counter.address } })
+        let storage = await Client.sdk.debug.retrieveStorageRange({ target: { blockID: transaction?.meta?.blockID!, transaction: 0, clauseIndex: 0 }, options: { address: counter.address, maxResult: 10 } })
         expect(Object.keys(storage.storage).length).toBeGreaterThan(0)
-        expect(storage.nextKey).toBeString()
+        expect(storage.nextKey).toBeNull()
     })
 
     it.e2eTest('should get non empty storage, provided maxResult', 'all', async () => {
