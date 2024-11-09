@@ -1,4 +1,5 @@
 import { Client } from '../../../src/thor-client'
+import { populatedData } from '../../../src/populated-data'
 
 /**
  * @group api
@@ -10,6 +11,8 @@ describe('GET /node/network/peers', () => {
 
         expect(peers.success).toEqual(true)
         expect(peers.headers['x-thorest-ver']).toBeDefined()
-        expect(peers.headers['x-genesis-id']).toBeDefined()
+        expect(peers.headers['x-genesis-id']).toEqual(
+            populatedData.read().genesisId,
+        )
     })
 })
