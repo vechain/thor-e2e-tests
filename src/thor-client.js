@@ -370,7 +370,12 @@ class ThorClient {
     async performRequest(request) {
         try {
             const res = await request()
-            return { body: res.data, success: true, httpCode: res.status }
+            return {
+                body: res.data,
+                headers: res.headers,
+                success: true,
+                httpCode: res.status,
+            }
         } catch (e) {
             const a = e
             return {

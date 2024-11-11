@@ -160,15 +160,19 @@ describe('WS /subscriptions/event', () => {
         )
     })
 
-    it.e2eTest('should error for out of range position', 'all', async () => {
-        const nonExistentBlockId =
-            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+    it.e2eTest(
+        'should error for out of range position',
+        ['solo', 'default-private'],
+        async () => {
+            const nonExistentBlockId =
+                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
 
-        await subscribeAndTestError(
-            { pos: nonExistentBlockId },
-            'Unexpected server response: 403',
-        )
-    })
+            await subscribeAndTestError(
+                { pos: nonExistentBlockId },
+                'Unexpected server response: 403',
+            )
+        },
+    )
 
     it.e2eTest('should error for invalid topic', 'all', async () => {
         await subscribeAndTestError(
