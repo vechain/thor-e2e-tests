@@ -15,7 +15,7 @@ services:
             - --api-allowed-tracers=all
             - --verbosity=4
             - --persist
-            - --api-enabled-deprecated
+            - --api-enable-deprecated
         volumes:
             - type: bind
               source: ./config
