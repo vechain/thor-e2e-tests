@@ -127,11 +127,15 @@ class ThorClient {
     }
 
     // GET /blocks
-    async getBlock(revision, expanded, options) {
+    async getBlock(revision, expanded, raw, options) {
         let url = `/blocks/${revision}`
 
         if (expanded) {
             url = `${url}?expanded=${expanded}`
+        }
+
+        if (raw) {
+            url = expanded ? `${url}&raw=${raw}` : `${url}?raw=${raw}`
         }
 
         return this.performRequest(() => this.axios.get(url, options))
