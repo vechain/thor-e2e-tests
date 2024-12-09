@@ -108,6 +108,7 @@ const checkTransactionLogSuccess = (input, block, tx, transferClauses) => {
     })
 }
 
+
 export {
     successfulPostTx,
     revertedPostTx,

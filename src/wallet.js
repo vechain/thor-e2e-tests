@@ -175,6 +175,31 @@ class ThorWallet {
         }
     }
 
+    buildCallTransaction = async (clauses, options) => {
+        const bestBlockRef = await getBlockRef('best')
+        const genesisBlock = await Client.raw.getBlock('0')
+    
+        if (!genesisBlock.success || !genesisBlock.body?.id) {
+            throw new Error('Could not get best block')
+        }
+    
+        return {
+            id: "0x0000000000000000000000000000000000000000000000000000000000000000",
+            chainTag: parseInt(genesisBlock.body.id.slice(-2), 16),
+            blockRef: "0x0000000000000000",
+            expiration: 10,  // 10 in hex
+            clauses: clauses,
+            gasPriceCoef: 0,
+            gas: 21000,  // using the same gas as the example
+            origin: options?.origin ?? null,
+            delegator: null,
+            nonce: "0x0",
+            dependsOn: options?.dependsOn ?? null,
+            size: 40,  // you might want to calculate this dynamically
+            meta: null
+        }
+    }
+
     signTransaction = async (transaction, delegationSignature) => {
         const signingHash = transaction.getSignatureHash()
         const signature = secp256k1.sign(signingHash, this.privateKey)
