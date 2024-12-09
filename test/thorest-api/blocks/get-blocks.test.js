@@ -96,8 +96,60 @@ describe('GET /blocks/{revision}', function () {
         })
     })
 
+    it.e2eTest('should be able get raw blocks', 'all', async () => {
+        const res = await Client.raw.getBlock(
+            transfer.meta?.blockID,
+            null,
+            true,
+        )
+
+        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(res.body, 'Block should not be null').not.toEqual(null)
+        expect(res.body.raw, 'Raw should be not empty').not.toBeEmpty()
+    })
+
+    it.e2eTest(
+        'should be able get raw and compressed blocks',
+        'all',
+        async () => {
+            const res = await Client.raw.getBlock(
+                transfer.meta?.blockID,
+                false,
+                true,
+            )
+
+            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            expect(res.body, 'Block should not be null').not.toEqual(null)
+            expect(res.body.raw, 'Raw should be not empty').not.toBeEmpty()
+        },
+    )
+
+    it.e2eTest(
+        'should not be able to get raw and expanded blocks',
+        'all',
+        async () => {
+            const res = await Client.raw.getBlock(
+                transfer.meta?.blockID,
+                true,
+                true,
+            )
+
+            expect(res.success, 'API response should be a success').toBeFalse()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
+            expect(res.httpMessage, 'Should be present').toBe(
+                'raw&expanded: Raw and Expanded are mutually exclusive\n',
+            )
+        },
+    )
+
     it.e2eTest('should be able get compressed blocks', 'all', async () => {
-        const res = await Client.raw.getBlock(transfer.meta?.blockID, false)
+        const res = await Client.raw.getBlock(
+            transfer.meta?.blockID,
+            false,
+            null,
+        )
 
         expect(res.success, 'API response should be a success').toBeTrue()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -114,7 +166,7 @@ describe('GET /blocks/{revision}', function () {
     })
 
     it.e2eTest('should be able get expanded blocks', 'all', async () => {
-        const res = await Client.raw.getBlock(transfer.meta.blockID, true)
+        const res = await Client.raw.getBlock(transfer.meta.blockID, true, null)
 
         expect(res.success, 'API response should be a success').toBeTrue()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
