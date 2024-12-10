@@ -94,4 +94,27 @@ describe('Call transaction with clauses', function () {
         const ddt = new TransactionDataDrivenFlow(testPlan)
         await ddt.callTransaction()
     })
+
+    it.e2eTest('should simulate contract deployment', 'all', async function () {
+
+        const txBody = await wallet.buildCallTransaction([
+            {
+                value: "0x0",
+                data: SimpleCounter.bytecode,
+                to: null,
+            },
+        ], {
+            origin: wallet.address
+        })
+
+        const testPlan = {
+            postTxStep: {
+                tx: txBody,
+                expectedResult: successfulCallTxNoRevert,
+            },
+        }
+
+        const ddt = new TransactionDataDrivenFlow(testPlan)
+        await ddt.callTransaction()
+    })
 })
