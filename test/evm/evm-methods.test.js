@@ -1,7 +1,8 @@
 import { EvmMethods__factory } from '../../typechain-types'
 import { ThorWallet } from '../../src/wallet'
 import { HEX_REGEX_40 } from '../../src/utils/hex-utils'
-import { ABIFunction, Keccak256, Txt } from "@vechain/sdk-core";
+import { Hex, Keccak256, Txt } from '@vechain/sdk-core'
+import { Client } from '../../src/thor-client'
 
 describe('EVM methods', () => {
     let evmMethods
@@ -20,9 +21,10 @@ describe('EVM methods', () => {
     })
 
     it.e2eTest('should be able to get the "block.basefee"', 'all', async () => {
-        const res = await evmMethods.read.getBaseFee()
+        const { clause } = await evmMethods.clause.getBaseFee()
         // TODO: this is a negative test, vechain EVM does not have 'block.basefee'
-        expect(res).toEqual('')
+        const res = await Client.sdk.gas.estimateGas([clause])
+        expect(res.vmErrors[0]).toEqual('invalid opcode 0x48')
     })
 
     it.e2eTest('should be able to get the "block.chainid"', 'all', async () => {
@@ -98,9 +100,9 @@ describe('EVM methods', () => {
     })
 
     it.e2eTest('should be able to get "msg.value"', 'all', async () => {
-        const msgValue = await evmMethods.transact.getMsgValue()
-        const receipt = await msgValue.wait()
-        expect(receipt?.reverted).toBeFalsy()
+        const msgValue = await evmMethods.transact.getMsgValue({ value: 100 })
+        const receipt = await msgValue.wait(3, 15)
+        expect(receipt.reverted).toEqual(false)
     })
 
     it.e2eTest('should be able to get "tx.gasprice"', 'all', async () => {
@@ -131,7 +133,7 @@ describe('EVM methods', () => {
         'all',
         async () => {
             const contractBalance = await evmMethods.read.getContractBalance()
-            expect(contractBalance[0]).toEqual(0n)
+            expect(contractBalance[0]).toEqual(100n)
         },
     )
 
@@ -145,8 +147,13 @@ describe('EVM methods', () => {
     )
 
     it.e2eTest('should revert with message', 'all', async () => {
-        const res = await evmMethods.read.revertWithMessage('Error')
-        expect(res).toEqual('Error')
+        const { clause } = await evmMethods.clause.revertWithMessage('Error')
+        const res = await Client.sdk.transactions.simulateTransaction(
+            [clause],
+            wallet.address,
+        )
+        expect(res[0].reverted).toBeTruthy()
+        expect(res[0].vmError).toEqual('execution reverted')
     })
 
     it.e2eTest('should require condition to be true', 'all', async () => {
@@ -155,8 +162,16 @@ describe('EVM methods', () => {
     })
 
     it.e2eTest('should require condition to be true', 'all', async () => {
-        const res = await evmMethods.read.requireCondition(false, 'Error')
-        expect(res).toEqual('Error')
+        const { clause } = await evmMethods.clause.requireCondition(
+            false,
+            'Error',
+        )
+        // TODO: Simulate the clause
+        const res = await Client.sdk.transactions.simulateTransaction(
+            [clause],
+            wallet.address,
+        )
+        expect(res[0].reverted).toBeTruthy()
     })
 
     it.e2eTest('should assert condition to be true', 'all', async () => {
@@ -186,9 +201,9 @@ describe('EVM methods', () => {
     })
 
     it.e2eTest('should calculate keccak256', 'all', async () => {
-        const data = Txt.of('test data').bytes
-        const hash = await evmMethods.read.calculateKeccak256(data)
+        const data = Hex.of(Txt.of('Hello, World!').bytes)
         const expectedHash = Keccak256.of(data).bytes
+        const hash = await evmMethods.read.calculateKeccak256(data.toString())
         expect(hash[0]).toEqual(
             '0x' + Buffer.from(expectedHash).toString('hex'),
         )

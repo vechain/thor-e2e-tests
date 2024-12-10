@@ -374,6 +374,9 @@ class LoadBalancedClient {
         this.sdkClients = urls.map((url) => _ThorClient.at(url))
     }
 
+    /**
+     * @return {ThorClient}
+     */
     get raw() {
         const handler = {
             get: (target, prop) => {
@@ -386,6 +389,9 @@ class LoadBalancedClient {
         return new Proxy(this.getRandomClient(), handler)
     }
 
+    /**
+     * @return {_ThorClient}
+     */
     get sdk() {
         const handler = {
             get: (target, prop) => {
