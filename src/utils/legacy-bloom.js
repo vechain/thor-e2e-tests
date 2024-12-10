@@ -33,7 +33,7 @@ export class LegacyBloom {
     }
 
     distribute(item, cb) {
-        const hash = Blake2b256.of(item)
+        const hash = Blake2b256.of(item).bytes
         for (let i = 0; i < this.k; i++) {
             const d =
                 (hash[i * 2 + 1] + (hash[i * 2] << 8)) % LegacyBloom.BITS_LENGTH
