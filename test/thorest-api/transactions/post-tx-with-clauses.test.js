@@ -1,4 +1,4 @@
-import { Transaction } from '@vechain/sdk-core'
+import { Hex, Transaction } from '@vechain/sdk-core'
 import { ThorWallet } from '../../../src/wallet'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
 import {
@@ -23,7 +23,7 @@ describe('Send transaction with clauses', function () {
 
         const testPlan = {
             postTxStep: {
-                rawTx: signedTx.encoded.toString('hex'),
+                rawTx: Hex.of(signedTx.encoded).toString(),
                 expectedResult: successfulPostTx,
             },
             getTxStep: {

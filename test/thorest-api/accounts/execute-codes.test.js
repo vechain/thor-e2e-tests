@@ -48,10 +48,11 @@ const READ_ONLY_REQUEST = (address) => {
  */
 describe('POST /accounts/*', function () {
     const wallet = ThorWallet.withFunds()
-    const fundedWallet = ThorWallet.newFunded({ vet: '0x0', vtho: 1e18 })
+    let fundedWallet
 
     beforeAll(async () => {
         await wallet.waitForFunding()
+        fundedWallet = await ThorWallet.newFunded({ vet: '0x0', vtho: 1e18 })
         await fundedWallet.waitForFunding()
     })
 
@@ -94,8 +95,8 @@ describe('POST /accounts/*', function () {
                 events: [],
                 transfers: [
                     {
-                        sender: wallet.address,
-                        recipient: to.address,
+                        sender: wallet.address.toLowerCase(),
+                        recipient: to.address.toLowerCase(),
                         amount: tokenAmount,
                     },
                 ],
@@ -110,8 +111,8 @@ describe('POST /accounts/*', function () {
                         address: '0x0000000000000000000000000000456e65726779',
                         topics: [
                             '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-                            `0x000000000000000000000000${wallet.address.slice(2)}`,
-                            `0x000000000000000000000000${to.address.slice(2)}`,
+                            `0x000000000000000000000000${wallet.address.toLowerCase().slice(2)}`,
+                            `0x000000000000000000000000${to.address.toLowerCase().slice(2)}`,
                         ],
                         data: `0x000000000000000000000000000000000000000000000000000000000000000${tokenAmount.slice(2)}`,
                     },

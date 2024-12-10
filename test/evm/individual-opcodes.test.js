@@ -425,9 +425,9 @@ describe('Individual OpCodes', () => {
         'should give the correct output for opcode: BALANCE',
         'all',
         async () => {
-            const constantFunder = addressUtils.fromPrivateKey(
+            const constantFunder = Address.ofPrivateKey(
                 Buffer.from(funder(1), 'hex'),
-            )
+            ).toString()
 
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('BALANCE', [

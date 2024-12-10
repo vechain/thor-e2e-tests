@@ -15,11 +15,11 @@ import { addAddressPadding } from '../../../src/utils/padding-utils'
 import { ThorWallet } from '../../../src/wallet'
 import { fundingAmounts } from '../../../src/account-faucet'
 
-const buildRequestFromTransfer = (transfer) => {
+const buildRequestFromTransfer = async (transfer) => {
     return {
         range: {
-            to: transfer.meta.blockNumber,
-            from: transfer.meta.blockNumber,
+            to: await transfer.meta.blockNumber,
+            from: await transfer.meta.blockNumber,
             unit: 'block',
         },
         options: {
@@ -47,7 +47,7 @@ describe('POST /logs/event', () => {
         async () => {
             const transfer = await readRandomTransfer()
 
-            const request = buildRequestFromTransfer(transfer)
+            const request = await buildRequestFromTransfer(transfer)
 
             const eventLogs = await Client.raw.queryEventLogs(request)
 
@@ -101,7 +101,7 @@ describe('POST /logs/event', () => {
     const runEventLogsTest = async (modifyRequest) => {
         const transfer = await readRandomTransfer()
         const request = modifyRequest(
-            buildRequestFromTransfer(transfer),
+            await buildRequestFromTransfer(transfer),
             transfer,
         )
 
@@ -187,12 +187,12 @@ describe('POST /logs/event', () => {
         })
 
         it.e2eTest('should be able query by block', 'all', async () => {
-            await runEventLogsTest((request, transfer) => {
+            await runEventLogsTest(async (request, transfer) => {
                 return {
                     ...request,
                     range: {
-                        to: transfer.meta.blockNumber,
-                        from: transfer.meta.blockNumber,
+                        to: await transfer.meta.blockNumber,
+                        from: await transfer.meta.blockNumber,
                         unit: 'block',
                     },
                 }
@@ -504,7 +504,9 @@ describe('POST /logs/event', () => {
         let range
 
         beforeAll(async () => {
-            const wallet = ThorWallet.newFunded(fundingAmounts.noVetBigVtho)
+            const wallet = await ThorWallet.newFunded(
+                fundingAmounts.noVetBigVtho,
+            )
             await wallet.waitForFunding()
             contract = await wallet.deployContract(
                 EventsContract__factory.bytecode,

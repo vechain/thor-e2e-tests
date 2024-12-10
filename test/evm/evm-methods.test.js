@@ -1,7 +1,7 @@
 import { EvmMethods__factory } from '../../typechain-types'
 import { ThorWallet } from '../../src/wallet'
 import { HEX_REGEX_40 } from '../../src/utils/hex-utils'
-import { keccak256 } from '@vechain/sdk-core'
+import { ABIFunction, Keccak256, Txt } from "@vechain/sdk-core";
 
 describe('EVM methods', () => {
     let evmMethods
@@ -186,9 +186,9 @@ describe('EVM methods', () => {
     })
 
     it.e2eTest('should calculate keccak256', 'all', async () => {
-        const data = Buffer.from('test data')
+        const data = Txt.of('test data').bytes
         const hash = await evmMethods.read.calculateKeccak256(data)
-        const expectedHash = keccak256(data)
+        const expectedHash = Keccak256.of(data).bytes
         expect(hash[0]).toEqual(
             '0x' + Buffer.from(expectedHash).toString('hex'),
         )

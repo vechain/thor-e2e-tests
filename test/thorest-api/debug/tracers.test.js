@@ -16,6 +16,10 @@ const verifyStructLogs = (structLogs) => {
     })
 }
 
+/**
+ * @group api
+ * @group debug
+ */
 describe('POST /debug/tracers', () => {
     let target = ''
     let txIndex = 0
