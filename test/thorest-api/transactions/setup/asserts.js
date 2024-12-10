@@ -9,10 +9,18 @@ const successfulPostTx = ({ success, body, httpCode }) => {
     expect(body?.id).toBeDefined()
 }
 
-const successfulCallTx = ({ success, body, httpCode }) => {
+const successfulCallTxNoRevert = ({ success, body, httpCode }) => {
     expect(success).toBeTrue()
     expect(httpCode).toBe(200)
     expect(body?.txID).toBeDefined()
+    expect(body?.vmError).toBe("")
+}
+
+const successfulCallTxRevert = ({ success, body, httpCode }) => {
+    expect(success).toBeTrue()
+    expect(httpCode).toBe(200)
+    expect(body?.txID).toBeDefined()
+    expect(body?.vmError).not.toBe("")
 }
 
 
@@ -118,7 +126,8 @@ const checkTransactionLogSuccess = (input, block, tx, transferClauses) => {
 
 export {
     successfulPostTx,
-    successfulCallTx,
+    successfulCallTxRevert,
+    successfulCallTxNoRevert,
     revertedPostTx,
     compareSentTxWithCreatedTx,
     checkDelegatedTransaction,

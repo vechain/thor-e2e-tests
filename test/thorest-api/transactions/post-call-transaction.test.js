@@ -1,6 +1,7 @@
 import { ThorWallet, generateAddress } from '../../../src/wallet'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
-import { successfulCallTx} from './setup/asserts'
+import { successfulCallTxNoRevert, successfulCallTxRevert } from './setup/asserts'
+import { SimpleCounter__factory as SimpleCounter } from '../../../typechain-types'
 
 /**
  * @group api
@@ -9,7 +10,17 @@ import { successfulCallTx} from './setup/asserts'
 describe('Call transaction with clauses', function () {
     const wallet = ThorWallet.withFunds()
 
-    it.e2eTest('should call a transaction', 'all', async function () {
+    let counter
+
+    beforeAll(async () => {
+        await wallet.waitForFunding()
+        counter = await wallet.deployContract(
+            SimpleCounter.bytecode,
+            SimpleCounter.abi,
+        )
+    })
+
+    it.e2eTest('should simulate vet transfer', 'all', async function () {
         const txBody = await wallet.buildCallTransaction([
             {
                 to: generateAddress(),
@@ -22,13 +33,61 @@ describe('Call transaction with clauses', function () {
                 data: '0x',
             },
         ], {
-            origin: "0xf077b491b355e64048ce21e3a6fc4751eeea77fa"
+            origin: wallet.address
         })
 
         const testPlan = {
             postTxStep: {
                 tx: txBody,
-                expectedResult: successfulCallTx,
+                expectedResult: successfulCallTxNoRevert,
+            },
+        }
+
+        const ddt = new TransactionDataDrivenFlow(testPlan)
+        await ddt.callTransaction()
+    })
+
+    it.e2eTest('should simulate function call', 'all', async function () {
+        const incrementCounter = '0x5b34b966'
+
+        const txBody = await wallet.buildCallTransaction([
+            {
+                value: "0x0",
+                data: incrementCounter,
+                to: counter.address,
+            },
+        ], {
+            origin: wallet.address
+        })
+
+        const testPlan = {
+            postTxStep: {
+                tx: txBody,
+                expectedResult: successfulCallTxNoRevert,
+            },
+        }
+
+        const ddt = new TransactionDataDrivenFlow(testPlan)
+        await ddt.callTransaction()
+    })
+
+    it.e2eTest('should simulate reverted function call', 'all', async function () {
+        const incrementCounter = '0x5b34b966'
+
+        const txBody = await wallet.buildCallTransaction([
+            {
+                value: "0x0",
+                data: incrementCounter,
+                to: counter.address,
+            },
+        ], {
+            origin: "0x000000000000000000000000000000000000dEaD"
+        })
+
+        const testPlan = {
+            postTxStep: {
+                tx: txBody,
+                expectedResult: successfulCallTxRevert,
             },
         }
 
