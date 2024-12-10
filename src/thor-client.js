@@ -3,7 +3,7 @@ import { testEnv } from './test-env'
 import axios from 'axios'
 
 import WebSocket from 'ws'
-import { HttpClient, ThorClient as _ThorClient } from '@vechain/sdk-network'
+import { ThorClient as _ThorClient } from '@vechain/sdk-network'
 import { decodeRevertReason } from './utils/revert-utils'
 
 class ThorClient {
@@ -398,9 +398,7 @@ class ThorClient {
 class LoadBalancedClient {
     constructor(urls) {
         this.clients = urls.map((url) => new ThorClient(url))
-        this.sdkClients = urls.map(
-            (url) => new _ThorClient(new HttpClient(url)),
-        )
+        this.sdkClients = urls.map((url) => _ThorClient.at(url))
     }
 
     get raw() {

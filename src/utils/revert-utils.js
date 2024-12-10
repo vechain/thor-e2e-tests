@@ -1,9 +1,9 @@
-import { abi, keccak256 } from '@vechain/sdk-core'
+import { Txt } from '@vechain/sdk-core'
 
 const errorSelector =
-    '0x' + Buffer.from(keccak256('Error(string)')).toString('hex').slice(0, 8)
+    '0x' + Buffer.from(Txt.of('Error(string)')).toString('hex').slice(0, 8)
 const panicSelector =
-    '0x' + Buffer.from(keccak256('Panic(uint256)')).toString('hex').slice(0, 8)
+    '0x' + Buffer.from(Txt.of('Panic(uint256)')).toString('hex').slice(0, 8)
 
 export function decodeRevertReason(data) {
     try {

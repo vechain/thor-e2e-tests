@@ -1,4 +1,4 @@
-import { HDNode } from '@vechain/sdk-core'
+import { HDKey } from '@vechain/sdk-core'
 import { ThorClient } from '@vechain/sdk-network'
 import { genesis } from './constants'
 
@@ -18,7 +18,7 @@ export const testEnv = {
         if (!mnemonic) {
             throw new Error('No mnemonic provided')
         }
-        const hdNode = HDNode.fromMnemonic(mnemonic.split(' '))
+        const hdNode = HDKey.fromMnemonic(mnemonic.split(' '))
         const keys = []
         for (let i = 0; i < 10; i++) {
             const child = hdNode.deriveChild(i)
