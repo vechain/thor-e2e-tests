@@ -35,7 +35,7 @@ describe('dependant transaction', function () {
                 {
                     value: transferAmount,
                     data: '0x',
-                    to: walletB.address,
+                    to: walletB.address.toLowerCase(),
                 },
             ]
             const txBodyA = await walletA.buildTransaction(clausesA)
@@ -51,7 +51,7 @@ describe('dependant transaction', function () {
                 },
             ]
             const txBodyB = await walletB.buildTransaction(clausesB, {
-                dependsOn: signedTxA.id.toString(),
+                dependsOn: Hex.of(signedTxA.id.bytes).toString(),
             })
             const txB = new Transaction(txBodyB)
             const signedTxB = await walletB.signTransaction(txB)

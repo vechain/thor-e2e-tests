@@ -1,4 +1,5 @@
 import hexUtils from '../../../../src/utils/hex-utils'
+import { Hex } from '@vechain/sdk-core'
 
 /**
  * Functions to be used in the test plan
@@ -94,11 +95,15 @@ const checkTransactionLogSuccess = (input, block, tx, transferClauses) => {
     expect(httpCode).toBe(200)
     expect(body).toBeDefined()
 
-    const transferLogs = body?.filter((log) => log?.meta?.txID === tx.id)
+    const transferLogs = body?.filter(
+        (log) => log?.meta?.txID === Hex.of(tx.id.bytes).toString(),
+    )
     expect(transferLogs).toHaveLength(transferClauses.length)
 
     transferLogs?.forEach((log, index) => {
-        expect(log?.sender).toEqualCaseInsensitive(tx.origin)
+        expect(log?.sender).toEqualCaseInsensitive(
+            Hex.of(tx.origin.bytes).toString(),
+        )
         expect(log?.recipient).toEqualCaseInsensitive(transferClauses[index].to)
         const hexAmount = transferClauses[index].value.toString(16)
         expect(log?.amount).toEqual(hexUtils.addPrefix(hexAmount))
@@ -107,8 +112,10 @@ const checkTransactionLogSuccess = (input, block, tx, transferClauses) => {
         expect(meta?.blockID).toEqual(block.blockID)
         expect(meta?.blockNumber).toEqual(block.blockNumber)
         expect(meta?.blockTimestamp).toEqual(block.blockTimestamp)
-        expect(meta?.txID).toEqual(tx.id)
-        expect(meta?.txOrigin).toEqualCaseInsensitive(tx.origin)
+        expect(meta?.txID).toEqual(Hex.of(tx.id.bytes).toString())
+        expect(meta?.txOrigin).toEqualCaseInsensitive(
+            Hex.of(tx.origin.bytes).toString(),
+        )
     })
 }
 
