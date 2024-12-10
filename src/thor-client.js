@@ -126,6 +126,7 @@ class ThorClient {
         )
     }
 
+    // POST /transactions/call
     async callTransaction(request, options) {
         return this.performRequest(() =>
             this.axios.post(`/transactions/call`, request, options),

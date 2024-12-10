@@ -186,16 +186,15 @@ class ThorWallet {
         return {
             id: "0x0000000000000000000000000000000000000000000000000000000000000000",
             chainTag: parseInt(genesisBlock.body.id.slice(-2), 16),
-            blockRef: "0x0000000000000000",
+            blockRef: options?.blockRef ?? "0x0000000000000000",
             expiration: 10,  // 10 in hex
             clauses: clauses,
             gasPriceCoef: 0,
-            gas: 21000,  // using the same gas as the example
+            gas: 1_000_000, 
             origin: options?.origin ?? null,
             delegator: null,
-            nonce: "0x0",
+            nonce: options?.nonce ?? "0x0",
             dependsOn: options?.dependsOn ?? null,
-            size: 40,  // you might want to calculate this dynamically
             meta: null
         }
     }

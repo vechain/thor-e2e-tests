@@ -5,7 +5,7 @@ import {
     checkTransactionLogSuccess,
     checkTxInclusionInBlock,
     compareSentTxWithCreatedTx,
-    successfulPostTx,
+    successfulCallTx,
     successfulReceipt,
 } from './setup/asserts'
 
@@ -36,28 +36,8 @@ describe('Call transaction with clauses', function () {
         const testPlan = {
             postTxStep: {
                 tx: txBody,
-                expectedResult: successfulPostTx,
+                expectedResult: successfulCallTx,
             },
-            // getTxStep: {
-            //     expectedResult: (tx) =>
-            //         compareSentTxWithCreatedTx(tx, signedTx),
-            // },
-            // getTxReceiptStep: {
-            //     expectedResult: (receipt) =>
-            //         successfulReceipt(receipt, signedTx),
-            // },
-            // getLogTransferStep: {
-            //     expectedResult: (input, block) =>
-            //         checkTransactionLogSuccess(
-            //             input,
-            //             block,
-            //             signedTx,
-            //             signedTx.body.clauses,
-            //         ),
-            // },
-            // getTxBlockStep: {
-            //     expectedResult: checkTxInclusionInBlock,
-            // },
         }
 
         const ddt = new TransactionDataDrivenFlow(testPlan)
