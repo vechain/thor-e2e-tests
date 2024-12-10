@@ -1,13 +1,6 @@
-import { Transaction } from '@vechain/sdk-core'
 import { ThorWallet, generateAddress } from '../../../src/wallet'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
-import {
-    checkTransactionLogSuccess,
-    checkTxInclusionInBlock,
-    compareSentTxWithCreatedTx,
-    successfulCallTx,
-    successfulReceipt,
-} from './setup/asserts'
+import { successfulCallTx} from './setup/asserts'
 
 /**
  * @group api
@@ -31,7 +24,6 @@ describe('Call transaction with clauses', function () {
         ], {
             origin: "0xf077b491b355e64048ce21e3a6fc4751eeea77fa"
         })
-
 
         const testPlan = {
             postTxStep: {
