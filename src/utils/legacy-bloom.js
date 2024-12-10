@@ -4,7 +4,7 @@ import HexUtils from './hex-utils'
 
 /**
  * 2048 bits Bloom filter
- * impementation from https://github.com/vechain/thor-devkit.js/blob/master/src/bloom.ts
+ * Implementation from https://github.com/vechain/thor-devkit.js/blob/master/src/bloom.ts
  */
 export class LegacyBloom {
     /** number of hash functions */

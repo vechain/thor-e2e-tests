@@ -34,7 +34,7 @@ describe('GET /debug/storage-range', () => {
         async () => {
             let storage = await Client.sdk.debug.retrieveStorageRange({
                 target: {
-                    blockID: transaction?.meta?.blockID,
+                    blockId: transaction?.meta?.blockID,
                     transaction: 0,
                     clauseIndex: 0,
                 },
@@ -51,7 +51,7 @@ describe('GET /debug/storage-range', () => {
         async () => {
             let storage = await Client.sdk.debug.retrieveStorageRange({
                 target: {
-                    blockID: transaction?.meta?.blockID,
+                    blockId: transaction?.meta?.blockID,
                     transaction: transaction?.meta?.txID,
                     clauseIndex: 0,
                 },
