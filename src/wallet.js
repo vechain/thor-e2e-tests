@@ -1,9 +1,4 @@
-import {
-    addressUtils,
-    secp256k1,
-    Transaction,
-    unitsUtils,
-} from '@vechain/sdk-core'
+import { Address, Secp256k1, Transaction, unitsUtils } from '@vechain/sdk-core'
 import { delegateTx, fundAccount, randomFunder } from './account-faucet'
 import {
     generateNonce,
@@ -21,16 +16,16 @@ import {
 } from '@vechain/sdk-network'
 
 export const generateAddress = () => {
-    return generateEmptyWallet().address.toLowerCase()
+    return generateEmptyWallet().address
 }
 
 export const generateAddresses = (count) => {
     return Array.from({ length: count }, generateAddress)
 }
 
-const generateEmptyWallet = () => {
-    const privateKey = secp256k1.generatePrivateKey()
-    const addr = addressUtils.fromPrivateKey(privateKey).toLowerCase()
+const generateEmptyWallet = async () => {
+    const privateKey = await Secp256k1.generatePrivateKey()
+    const addr = Address.ofPrivateKey(privateKey).toString()
 
     return {
         privateKey,
@@ -41,7 +36,7 @@ const generateEmptyWallet = () => {
 class ThorWallet {
     constructor(privateKey, waitForFunding) {
         this.privateKey = privateKey
-        this.address = addressUtils.fromPrivateKey(privateKey).toLowerCase()
+        this.address = Address.ofPrivateKey(privateKey).toString()
         if (waitForFunding) {
             this.waitForFunding = waitForFunding
         } else {
@@ -62,8 +57,8 @@ class ThorWallet {
         )
     }
 
-    static empty() {
-        const privateKey = secp256k1.generatePrivateKey()
+    static async empty() {
+        const privateKey = await Secp256k1.generatePrivateKey()
         return new ThorWallet(privateKey)
     }
 
@@ -71,9 +66,9 @@ class ThorWallet {
         return new ThorWallet(Buffer.from(randomFunder(), 'hex'))
     }
 
-    static newFunded(amounts) {
-        const privateKey = secp256k1.generatePrivateKey()
-        const addr = addressUtils.fromPrivateKey(privateKey)
+    static async newFunded(amounts) {
+        const privateKey = await Secp256k1.generatePrivateKey()
+        const addr = Address.ofPrivateKey(privateKey).toString()
         const receipt = fundAccount(addr, amounts).then((res) => res.receipt)
 
         return new ThorWallet(privateKey, () => receipt)
@@ -82,12 +77,14 @@ class ThorWallet {
     static txBetweenFunding(returnSender = false) {
         const sender = randomFunder()
         let receiver = randomFunder()
-        while (sender == receiver) {
+        while (sender === receiver) {
             receiver = randomFunder()
         }
         const clauses = [
             {
-                to: addressUtils.fromPrivateKey(Buffer.from(receiver, 'hex')),
+                to: Address.ofPrivateKey(
+                    Buffer.from(receiver, 'hex'),
+                ).toString(),
                 value: '0x1',
                 data: '0x',
             },
@@ -97,7 +94,7 @@ class ThorWallet {
             to: contractAddresses.energy,
             value: '0x0',
             data: interfaces.energy.encodeFunctionData('transfer', [
-                addressUtils.fromPrivateKey(Buffer.from(receiver, 'hex')),
+                Address.ofPrivateKey(Buffer.from(receiver, 'hex')).toString(),
                 BigInt(1),
             ]),
         })
@@ -176,8 +173,8 @@ class ThorWallet {
     }
 
     signTransaction = async (transaction, delegationSignature) => {
-        const signingHash = transaction.getSignatureHash()
-        const signature = secp256k1.sign(signingHash, this.privateKey)
+        const signingHash = transaction.getSigningHash()
+        const signature = Secp256k1.sign(signingHash, this.privateKey)
 
         let tx
 

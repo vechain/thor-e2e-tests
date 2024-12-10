@@ -10,7 +10,7 @@ import {
 } from '../../src/utils/padding-utils'
 import { pollReceipt } from '../../src/transactions'
 import { funder, randomFunder } from '../../src/account-faucet'
-import { addressUtils } from '@vechain/sdk-core'
+import { Address } from '@vechain/sdk-core'
 
 const opcodesInterface = Opcodes.createInterface()
 
@@ -30,9 +30,9 @@ const opcodesInterface = Opcodes.createInterface()
 describe('Individual OpCodes', () => {
     let wallet
     let opcodes
-    const caller = addressUtils.fromPrivateKey(
+    const caller = Address.ofPrivateKey(
         Buffer.from(randomFunder(), 'hex'),
-    )
+    ).toString()
 
     const paddedCaller = addAddressPadding(caller) //remove 0x
         .slice(2)
