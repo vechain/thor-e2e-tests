@@ -26,6 +26,10 @@ const verifyStructLogs = (structLogs) => {
     })
 }
 
+/**
+ * @group api
+ * @group debug
+ */
 describe('POST /debug/tracers/call', () => {
     const transferFrom = '0xf077b491b355e64048ce21e3a6fc4751eeea77fa'
     const transferTo = '0x7567D83b7b8d80ADdCb281A71d54Fc7B3364ffed'

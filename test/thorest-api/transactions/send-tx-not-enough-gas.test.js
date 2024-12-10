@@ -1,4 +1,4 @@
-import { clauseBuilder, Transaction } from '@vechain/sdk-core'
+import { Clause, HexUInt, Transaction } from '@vechain/sdk-core'
 import { generateAddress, ThorWallet } from '../../../src/wallet'
 import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-types'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
@@ -12,15 +12,19 @@ import { interfaces } from '../../../src/contracts/hardhat'
  */
 describe('send tx with not enough gas', function () {
     const deployer = ThorWallet.withFunds()
-    const wallet = ThorWallet.empty()
+    let wallet
+
+    beforeAll(async () => {
+        wallet = await ThorWallet.empty()
+    })
 
     it.e2eTest(
         'should fail when making a contract deployment',
         'all',
         async function () {
             // Prepare the transaction
-            const deployContractClause = clauseBuilder.deployContract(
-                ParisCounter.bytecode,
+            const deployContractClause = Clause.deployContract(
+                HexUInt.of(ParisCounter.bytecode),
             )
             const txBody = await wallet.buildTransaction([deployContractClause])
             txBody.gas = 0
@@ -50,7 +54,7 @@ describe('send tx with not enough gas', function () {
         'all',
         async function () {
             // Prepare the transaction
-            const receivingAddr = generateAddress()
+            const receivingAddr = await generateAddress()
             const clauses = [
                 {
                     value: 1000,

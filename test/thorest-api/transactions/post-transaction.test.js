@@ -1,4 +1,4 @@
-import { Transaction } from '@vechain/sdk-core'
+import { Hex, Transaction } from '@vechain/sdk-core'
 import { ThorWallet, generateAddress } from '../../../src/wallet'
 import { revertedPostTx } from './setup/asserts'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
@@ -23,7 +23,7 @@ describe('POST /transactions', function () {
         'transaction should fail, wrong chain id',
         'all',
         async function () {
-            const receivingAddr = generateAddress()
+            const receivingAddr = await generateAddress()
             const clauses = [
                 {
                     value: 1,
@@ -39,7 +39,7 @@ describe('POST /transactions', function () {
 
             const testPlan = {
                 postTxStep: {
-                    rawTx: signedTx.encoded.toString('hex'),
+                    rawTx: Hex.of(signedTx.encoded).toString(),
                     expectedResult: (data) =>
                         revertedPostTx(data, 'bad tx: chain tag mismatch'),
                 },

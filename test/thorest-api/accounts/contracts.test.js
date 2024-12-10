@@ -12,6 +12,10 @@ import { pollReceipt } from '../../../src/transactions'
 const masterEvent =
     '0xb35bf4274d4295009f1ec66ed3f579db287889444366c03d3a695539372e8951'
 
+/**
+ * @group api
+ * @group accounts
+ */
 describe('Contracts', () => {
     const wallet = ThorWallet.withFunds()
     let counter
@@ -33,9 +37,9 @@ describe('Contracts', () => {
             const compiledRuntimeBytecode = SimpleCounter.bytecode.slice(
                 SimpleCounter.bytecode.indexOf('6080604052'),
             )
-            const deployedRuntimeBytecode = byteCode.slice(
-                byteCode.indexOf('6080604052'),
-            )
+            const deployedRuntimeBytecode = byteCode
+                .toString()
+                .slice(byteCode.toString().indexOf('6080604052'))
             expect(compiledRuntimeBytecode).toContain(deployedRuntimeBytecode)
 
             const block = await Client.sdk.blocks.getBlockExpanded(
@@ -137,7 +141,7 @@ describe('Contracts', () => {
         'all',
         async () => {
             const clause = {
-                to: generateAddress(),
+                to: await generateAddress(),
                 value: '0x0',
                 data: interfaces.energy.encodeFunctionData('transfer', [
                     wallet.address,

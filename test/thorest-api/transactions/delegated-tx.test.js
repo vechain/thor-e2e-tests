@@ -1,4 +1,4 @@
-import { secp256k1, Transaction } from '@vechain/sdk-core'
+import { Hex, Secp256k1, Transaction } from '@vechain/sdk-core'
 import { ThorWallet } from '../../../src/wallet'
 import {
     successfulPostTx,
@@ -17,7 +17,7 @@ import { SimpleCounterParis__factory as ParisCounter } from '../../../typechain-
  */
 it.e2eTest('should send a tx with delegated payer', 'all', async function () {
     const wallet = ThorWallet.withFunds()
-    const emptyWallet = ThorWallet.empty()
+    const emptyWallet = await ThorWallet.empty()
 
     await wallet.waitForFunding()
 
@@ -40,14 +40,14 @@ it.e2eTest('should send a tx with delegated payer', 'all', async function () {
     txBody.reserved = { features: 1 }
     const tx = new Transaction(txBody)
 
-    const sigHash = tx.getSignatureHash(emptyWallet.address)
-    const signature = secp256k1.sign(sigHash, wallet.privateKey)
+    const sigHash = tx.getTransactionHash(emptyWallet.addressField)
+    const signature = Secp256k1.sign(sigHash.bytes, wallet.privateKey)
 
     const finalTx = await emptyWallet.signTransaction(tx, signature)
 
     const testPlan = {
         postTxStep: {
-            rawTx: finalTx.encoded.toString('hex'),
+            rawTx: Hex.of(finalTx.encoded).toString(),
             expectedResult: successfulPostTx,
         },
         getTxStep: {

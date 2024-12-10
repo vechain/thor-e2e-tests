@@ -4,7 +4,6 @@ import axios from 'axios'
 
 import WebSocket from 'ws'
 import { ThorClient as _ThorClient } from '@vechain/sdk-network'
-import { decodeRevertReason } from './utils/revert-utils'
 
 class ThorClient {
     subscriptions = []
@@ -321,32 +320,6 @@ class ThorClient {
         const txIndex = block.body.transactions.indexOf(txId)
 
         return `${block.body.id}/${txIndex}`
-    }
-
-    /**
-     * A utility function to debug all clauses in a reverted transaction
-     * @param txId
-     */
-    async debugRevertedTransaction(txId) {
-        const tx = await this.getTransaction(txId)
-
-        if (!tx.success || !tx.body?.meta?.blockID || !tx.body.clauses) {
-            return undefined
-        }
-
-        for (let i = 0; i < tx.body.clauses.length; i++) {
-            const debugged = await this.debugRevertedClause(txId, i)
-
-            if (!debugged.success || !debugged.body) {
-                continue
-            }
-
-            const revertReason = decodeRevertReason(debugged.body.output)
-
-            if (revertReason) {
-                return revertReason
-            }
-        }
     }
 
     openWebsocket(url, callback, errorCallback) {

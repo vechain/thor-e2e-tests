@@ -1,4 +1,4 @@
-import { Address, Hex, Secp256k1, Transaction, unitsUtils } from "@vechain/sdk-core";
+import { Address, Hex, Secp256k1, Transaction } from '@vechain/sdk-core'
 import { delegateTx, fundAccount, randomFunder } from './account-faucet'
 import {
     generateNonce,
@@ -15,28 +15,34 @@ import {
     VeChainProvider,
 } from '@vechain/sdk-network'
 
-export const generateAddress = () => {
-    return generateEmptyWallet().address
+export const generateAddress = async () => {
+    return (await generateEmptyWallet()).address.toLowerCase()
 }
 
-export const generateAddresses = (count) => {
-    return Array.from({ length: count }, generateAddress)
+export const generateAddresses = async (count) => {
+    const addresses = []
+
+    for (let i = 0; i < count; i++) {
+        addresses.push(await generateAddress())
+    }
+    return addresses
 }
 
 const generateEmptyWallet = async () => {
     const privateKey = await Secp256k1.generatePrivateKey()
-    const addr = Address.ofPrivateKey(privateKey).toString()
+    const addr = Address.ofPrivateKey(privateKey)
 
     return {
         privateKey,
-        address: addr,
+        address: addr.toString(),
     }
 }
 
 class ThorWallet {
     constructor(privateKey, waitForFunding) {
         this.privateKey = privateKey
-        this.address = Address.ofPrivateKey(privateKey).toString()
+        this.addressField = Address.ofPrivateKey(privateKey)
+        this.address = this.addressField.toString()
         if (waitForFunding) {
             this.waitForFunding = waitForFunding
         } else {
@@ -109,30 +115,6 @@ class ThorWallet {
             return new ThorWallet(Buffer.from(receiver, 'hex'), () => receipt)
         }
     }
-
-    startingEnergy = async () => {
-        const receipt = await this.waitForFunding()
-        if (!receipt) {
-            throw new Error('Could not get funding')
-        }
-        const account = await Client.sdk.accounts.getAccount(this.address, {
-            revision: receipt.meta?.blockID,
-        })
-        return account.energy
-    }
-
-    currentEnergy = async () => {
-        const account = await Client.sdk.accounts.getAccount(this.address)
-        return account.energy
-    }
-
-    consumedEnergy = async () => {
-        const start = await this.startingEnergy()
-        const current = await this.currentEnergy()
-
-        return unitsUtils.formatVET(BigInt(start) - BigInt(current))
-    }
-
     deployContract = async (bytecode, abi) => {
         await this.waitForFunding()
 
@@ -193,7 +175,7 @@ class ThorWallet {
     signAndEncodeTx = async (transaction, delegationSignature) => {
         const tx = await this.signTransaction(transaction, delegationSignature)
 
-        return tx.encoded.toString('hex')
+        return Hex.of(tx.encoded).toString()
     }
 
     sendClauses = async (clauses, waitForReceipt, delegate) => {
@@ -205,7 +187,7 @@ class ThorWallet {
         await warnIfSimulationFails(clauses, this.address)
 
         if (delegate) {
-            const delegated = delegateTx(transaction, this.address)
+            const delegated = delegateTx(transaction, this.addressField)
             encoded = await this.signAndEncodeTx(
                 delegated.transaction,
                 Buffer.from(delegated.signature),
@@ -217,7 +199,7 @@ class ThorWallet {
         }
 
         const res = await Client.raw.sendTransaction({
-            raw: `0x${encoded}`,
+            raw: encoded,
         })
 
         if (!res.success) {

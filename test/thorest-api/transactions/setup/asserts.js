@@ -25,8 +25,8 @@ const compareSentTxWithCreatedTx = (sentTx, createdTx) => {
     expect(sentTx.httpCode).toBe(200)
 
     const { body } = sentTx
-    expect(body?.id).toEqual(createdTx.id)
-    expect(body?.origin).toEqualCaseInsensitive(createdTx.origin)
+    expect(body?.id).toEqual(createdTx.id.toString())
+    expect(body?.origin).toEqualCaseInsensitive(createdTx.origin.toString())
     expect(body?.gas).toEqual(createdTx.body.gas)
     compareClauses(body?.clauses, createdTx.body.clauses)
     expect(body?.chainTag).toEqual(createdTx.body.chainTag)
@@ -57,15 +57,19 @@ const checkDelegatedTransaction = (sentTx, createdTx) => {
 const successfulReceipt = (receipt, createdTx) => {
     expect(receipt.reverted).toBeFalse()
     expect(receipt.gasPayer).toBeDefined()
-    expect(receipt.meta?.txID).toEqual(createdTx.id)
-    expect(receipt.meta?.txOrigin).toEqualCaseInsensitive(createdTx.origin)
+    expect(receipt.meta?.txID).toEqual(createdTx.id.toString())
+    expect(receipt.meta?.txOrigin).toEqualCaseInsensitive(
+        createdTx.origin.toString(),
+    )
 }
 
 const unsuccessfulReceipt = (receipt, createdTx) => {
     expect(receipt.reverted).toBeTrue()
     expect(receipt.gasPayer).toBeDefined()
-    expect(receipt.meta?.txID).toEqual(createdTx.id)
-    expect(receipt.meta?.txOrigin).toEqualCaseInsensitive(createdTx.origin)
+    expect(receipt.meta?.txID).toEqual(createdTx.id.toString())
+    expect(receipt.meta?.txOrigin).toEqualCaseInsensitive(
+        createdTx.origin.toString(),
+    )
 }
 
 const checkDelegatedTransactionReceipt = (receipt, createdTx) => {
