@@ -1,4 +1,4 @@
-import { Address, Secp256k1, Transaction, unitsUtils } from '@vechain/sdk-core'
+import { Address, Hex, Secp256k1, Transaction, unitsUtils } from "@vechain/sdk-core";
 import { delegateTx, fundAccount, randomFunder } from './account-faucet'
 import {
     generateNonce,
@@ -173,8 +173,8 @@ class ThorWallet {
     }
 
     signTransaction = async (transaction, delegationSignature) => {
-        const signingHash = transaction.getSigningHash()
-        const signature = Secp256k1.sign(signingHash, this.privateKey)
+        const signingHash = transaction.getTransactionHash()
+        const signature = Secp256k1.sign(signingHash.bytes, this.privateKey)
 
         let tx
 
