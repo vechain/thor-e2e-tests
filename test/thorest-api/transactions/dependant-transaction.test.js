@@ -1,4 +1,4 @@
-import { Transaction } from '@vechain/sdk-core'
+import { Hex, Transaction } from '@vechain/sdk-core'
 import { generateAddress, ThorWallet } from '../../../src/wallet'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
 import {
@@ -13,7 +13,6 @@ import { MultipleTransactionDataDrivenFlow } from './setup/multiple-transactions
 /**
  * @group api
  * @group transactions
- * @group dependant
  */
 describe('dependant transaction', function () {
     it.e2eTest(
@@ -24,18 +23,18 @@ describe('dependant transaction', function () {
             const transferAmount = initialFunds ** 2
 
             const walletA = ThorWallet.withFunds()
-            const walletB = ThorWallet.newFunded({
+            const walletB = await ThorWallet.newFunded({
                 vet: `0x${BigInt(initialFunds).toString(16)}`,
                 vtho: 1000e18,
             })
-            const thirdAddress = generateAddress()
+            const thirdAddress = await generateAddress()
 
             // Prepare the first transaction
             const clausesA = [
                 {
                     value: transferAmount,
                     data: '0x',
-                    to: walletB.address,
+                    to: walletB.address.toLowerCase(),
                 },
             ]
             const txBodyA = await walletA.buildTransaction(clausesA)
@@ -51,7 +50,7 @@ describe('dependant transaction', function () {
                 },
             ]
             const txBodyB = await walletB.buildTransaction(clausesB, {
-                dependsOn: signedTxA.id,
+                dependsOn: Hex.of(signedTxA.id.bytes).toString(),
             })
             const txB = new Transaction(txBodyB)
             const signedTxB = await walletB.signTransaction(txB)
@@ -59,7 +58,7 @@ describe('dependant transaction', function () {
             // Create the test plan
             const testPlanA = {
                 postTxStep: {
-                    rawTx: signedTxA.encoded.toString('hex'),
+                    rawTx: Hex.of(signedTxA.encoded).toString(),
                     expectedResult: successfulPostTx,
                 },
 
@@ -90,7 +89,7 @@ describe('dependant transaction', function () {
 
             const testPlanB = {
                 postTxStep: {
-                    rawTx: signedTxB.encoded.toString('hex'),
+                    rawTx: Hex.of(signedTxB.encoded).toString(),
                     expectedResult: successfulPostTx,
                 },
 

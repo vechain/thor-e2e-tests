@@ -12,6 +12,10 @@ import { pollReceipt } from '../../../src/transactions'
 const masterEvent =
     '0xb35bf4274d4295009f1ec66ed3f579db287889444366c03d3a695539372e8951'
 
+/**
+ * @group api
+ * @group accounts
+ */
 describe('Contracts', () => {
     const wallet = ThorWallet.withFunds()
     let counter
@@ -33,9 +37,9 @@ describe('Contracts', () => {
             const compiledRuntimeBytecode = SimpleCounter.bytecode.slice(
                 SimpleCounter.bytecode.indexOf('6080604052'),
             )
-            const deployedRuntimeBytecode = byteCode.slice(
-                byteCode.indexOf('6080604052'),
-            )
+            const deployedRuntimeBytecode = byteCode
+                .toString()
+                .slice(byteCode.toString().indexOf('6080604052'))
             expect(compiledRuntimeBytecode).toContain(deployedRuntimeBytecode)
 
             const block = await Client.sdk.blocks.getBlockExpanded(
@@ -90,7 +94,7 @@ describe('Contracts', () => {
             await pollReceipt(tx.id)
             const receipt = await tx.wait()
             expect(receipt).toBeDefined()
-            expect(receipt.reverted).toBe(false)
+            expect(receipt.reverted).toBeFalse()
 
             const newValue = await counter.read.getCounter()
             expect(newValue[0]).toBe(startValue[0] + 3n)
@@ -110,12 +114,12 @@ describe('Contracts', () => {
             const estimate = await Client.sdk.gas.estimateGas([
                 payClause.clause,
             ])
-            expect(estimate.reverted).toBe(true)
+            expect(estimate.reverted).toBeTrue()
             expect(
                 estimate.revertReasons.some(
                     (reason) => reason === 'Not authorized',
                 ),
-            ).toBe(true)
+            ).toBeTrue()
 
             const authorizeClause = authorizeTransaction.clause.authorize()
 
@@ -128,7 +132,7 @@ describe('Contracts', () => {
             await pollReceipt(tx.id)
             const receipt = await tx.wait()
             expect(receipt).toBeDefined()
-            expect(receipt.reverted).toBe(false)
+            expect(receipt.reverted).toBeFalse()
         },
     )
 
@@ -137,7 +141,7 @@ describe('Contracts', () => {
         'all',
         async () => {
             const clause = {
-                to: generateAddress(),
+                to: await generateAddress(),
                 value: '0x0',
                 data: interfaces.energy.encodeFunctionData('transfer', [
                     wallet.address,
@@ -147,7 +151,7 @@ describe('Contracts', () => {
 
             const receipt = await wallet.sendClauses([clause], true)
             expect(receipt).toBeDefined()
-            expect(receipt.reverted).toBe(false)
+            expect(receipt.reverted).toBeFalse()
         },
     )
 
@@ -166,7 +170,7 @@ describe('Contracts', () => {
 
             const receipt = await wallet.sendClauses([clause], true)
             expect(receipt).toBeDefined()
-            expect(receipt.reverted).toBe(true)
+            expect(receipt.reverted).toBeTrue()
         },
     )
 
@@ -201,7 +205,7 @@ describe('Contracts', () => {
 
             const receipt = await wallet.sendClauses([clause], true)
             expect(receipt).toBeDefined()
-            expect(receipt.reverted).toBe(true)
+            expect(receipt.reverted).toBeTrue()
 
             const currentText = await stringer.read.text()
             expect(currentText[0]).toBe(priorText[0])

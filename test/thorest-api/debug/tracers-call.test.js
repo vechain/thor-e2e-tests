@@ -26,6 +26,10 @@ const verifyStructLogs = (structLogs) => {
     })
 }
 
+/**
+ * @group api
+ * @group debug
+ */
 describe('POST /debug/tracers/call', () => {
     const transferFrom = '0xf077b491b355e64048ce21e3a6fc4751eeea77fa'
     const transferTo = '0x7567D83b7b8d80ADdCb281A71d54Fc7B3364ffed'
@@ -180,8 +184,9 @@ describe('POST /debug/tracers/call', () => {
         const body = response.body
 
         expect(body.gas).toEqual(0)
-        expect(body.failed).toEqual(false)
+        expect(body.failed).toBeFalse()
         expect(body.returnValue).toMatch(HEX_AT_LEAST_1)
+        /* eslint-disable jest/prefer-to-have-length */
         expect(response.body.structLogs.length).toBe(23)
         verifyStructLogs(response.body.structLogs)
     })

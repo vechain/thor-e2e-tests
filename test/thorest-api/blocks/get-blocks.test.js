@@ -7,6 +7,13 @@ import {
 } from '../../../src/utils/hex-utils'
 import { revisions } from '../../../src/constants'
 import { readRandomTransfer } from '../../../src/populated-data'
+import {
+    FixedHexBlobKind,
+    Hex,
+    HexBlobKind,
+    NumericKind,
+    RLPProfiler,
+} from '@vechain/sdk-core'
 
 /**
  * @group api
@@ -97,16 +104,79 @@ describe('GET /blocks/{revision}', function () {
     })
 
     it.e2eTest('should be able get raw blocks', 'all', async () => {
-        const res = await Client.raw.getBlock(
-            transfer.meta?.blockID,
-            null,
-            true,
-        )
+        const [res, block_res] = await Promise.all([
+            Client.raw.getBlock(transfer.meta?.blockID, null, true),
+            Client.raw.getBlock(transfer.meta?.blockID, null, false),
+        ])
 
         expect(res.success, 'API response should be a success').toBeTrue()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(res.body, 'Block should not be null').not.toEqual(null)
         expect(res.body.raw, 'Raw should be not empty').not.toBeEmpty()
+
+        expect(block_res.success, 'API response should be a success').toBeTrue()
+        expect(block_res.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(block_res.body, 'Block should not be null').not.toEqual(null)
+
+        // header profile
+        const headerProfile = {
+            name: 'header',
+            kind: [
+                { name: 'ParentID', kind: new FixedHexBlobKind(32) },
+                { name: 'Timestamp', kind: new NumericKind(8) },
+                { name: 'GasLimit', kind: new NumericKind(8) },
+                { name: 'Beneficiary', kind: new FixedHexBlobKind(20) },
+                { name: 'GasUsed', kind: new NumericKind(8) },
+                { name: 'TotalScore', kind: new NumericKind(8) },
+                {
+                    name: 'TxsRootFeatures',
+                    kind: [
+                        { name: 'TxsRoot', kind: new FixedHexBlobKind(32) },
+                        { name: 'Features', kind: new NumericKind(1) },
+                    ],
+                },
+                { name: 'StateRoot', kind: new FixedHexBlobKind(32) },
+                { name: 'ReceiptsRoot', kind: new FixedHexBlobKind(32) },
+                { name: 'Signature', kind: new HexBlobKind() },
+                {
+                    name: 'Extension',
+                    kind: [{ name: 'Alpha', kind: new HexBlobKind() }],
+                    // TODO: COM is usually false, and if kept there it throws an error (expected 2 got 1)
+                    // TODO: not sure how to make it optional
+                },
+            ],
+        }
+
+        // decode
+        const decodedObject = RLPProfiler.ofObjectEncoded(
+            Hex.of(res.body.raw).bytes,
+            headerProfile,
+        ).object
+
+        // compare the decoded object with the original response
+        expect(block_res.body.parentID).toEqual(decodedObject.ParentID)
+        expect(block_res.body.timestamp).toEqual(decodedObject.Timestamp)
+        expect(block_res.body.gasLimit).toEqual(decodedObject.GasLimit)
+        expect(block_res.body.beneficiary).toEqual(decodedObject.Beneficiary)
+        expect(block_res.body.gasUsed).toEqual(decodedObject.GasUsed)
+        expect(block_res.body.totalScore).toEqual(decodedObject.TotalScore)
+        expect(block_res.body.txsRoot).toEqual(
+            decodedObject.TxsRootFeatures.TxsRoot,
+        )
+        expect(block_res.body.txsFeatures).toEqual(
+            decodedObject.TxsRootFeatures.Features,
+        )
+        expect(block_res.body.stateRoot).toEqual(decodedObject.StateRoot)
+        expect(block_res.body.receiptsRoot).toEqual(decodedObject.ReceiptsRoot)
+
+        // encode back
+        const encodedObject = RLPProfiler.ofObject(
+            decodedObject,
+            headerProfile,
+        ).encoded
+
+        // compare the encoded object with the original raw
+        expect(Hex.of(encodedObject).toString()).toBe(res.body.raw)
     })
 
     it.e2eTest(

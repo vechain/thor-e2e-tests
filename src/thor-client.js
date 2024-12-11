@@ -3,8 +3,7 @@ import { testEnv } from './test-env'
 import axios from 'axios'
 
 import WebSocket from 'ws'
-import { HttpClient, ThorClient as _ThorClient } from '@vechain/sdk-network'
-import { decodeRevertReason } from './utils/revert-utils'
+import { ThorClient as _ThorClient } from '@vechain/sdk-network'
 
 class ThorClient {
     subscriptions = []
@@ -282,73 +281,6 @@ class ThorClient {
         )
     }
 
-    /**
-     * A utility function to debug a particular clause in a reverted transaction
-     */
-    async debugRevertedClause(txId, clauseIndex) {
-        const targetPrefix = await this.getDebugTargetPrefix(txId)
-
-        if (!targetPrefix) {
-            return
-        }
-
-        return this.traceClause({
-            target: `${targetPrefix}/${clauseIndex}`,
-            name: 'call',
-            config: {
-                OnlyTopCall: true,
-            },
-        })
-    }
-
-    /**
-     * A utility function to get the index of a transaction in a block
-     * @param txId
-     */
-    async getDebugTargetPrefix(txId) {
-        const tx = await this.getTransaction(txId)
-
-        if (!tx.success || !tx.body?.meta?.blockID) {
-            return undefined
-        }
-
-        const block = await this.getBlock(tx.body.meta.blockID, false)
-
-        if (!block.success || !block.body) {
-            return undefined
-        }
-
-        const txIndex = block.body.transactions.indexOf(txId)
-
-        return `${block.body.id}/${txIndex}`
-    }
-
-    /**
-     * A utility function to debug all clauses in a reverted transaction
-     * @param txId
-     */
-    async debugRevertedTransaction(txId) {
-        const tx = await this.getTransaction(txId)
-
-        if (!tx.success || !tx.body?.meta?.blockID || !tx.body.clauses) {
-            return undefined
-        }
-
-        for (let i = 0; i < tx.body.clauses.length; i++) {
-            const debugged = await this.debugRevertedClause(txId, i)
-
-            if (!debugged.success || !debugged.body) {
-                continue
-            }
-
-            const revertReason = decodeRevertReason(debugged.body.output)
-
-            if (revertReason) {
-                return revertReason
-            }
-        }
-    }
-
     openWebsocket(url, callback, errorCallback) {
         const ws = new WebSocket(url)
         ws.onmessage = (event) => {
@@ -398,11 +330,12 @@ class ThorClient {
 class LoadBalancedClient {
     constructor(urls) {
         this.clients = urls.map((url) => new ThorClient(url))
-        this.sdkClients = urls.map(
-            (url) => new _ThorClient(new HttpClient(url)),
-        )
+        this.sdkClients = urls.map((url) => _ThorClient.at(url))
     }
 
+    /**
+     * @return {ThorClient}
+     */
     get raw() {
         const handler = {
             get: (target, prop) => {
@@ -415,6 +348,9 @@ class LoadBalancedClient {
         return new Proxy(this.getRandomClient(), handler)
     }
 
+    /**
+     * @return {_ThorClient}
+     */
     get sdk() {
         const handler = {
             get: (target, prop) => {
@@ -425,13 +361,6 @@ class LoadBalancedClient {
         }
 
         return new Proxy(this.getRandomSDKClient(), handler)
-    }
-
-    index(index) {
-        return {
-            sdk: this.sdkClients[index],
-            raw: this.clients[index],
-        }
     }
 
     getRandomClient() {

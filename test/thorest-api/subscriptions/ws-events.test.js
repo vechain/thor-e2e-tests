@@ -47,7 +47,6 @@ const subscribeAndTestEvent = async (params, wallet) => {
 /**
  * @group api
  * @group websockets
- * @group events
  */
 describe('WS /subscriptions/event', () => {
     it.e2eTest('should work for empty parameters', 'all', async () => {

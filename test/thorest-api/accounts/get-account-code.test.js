@@ -11,15 +11,19 @@ import { fundingAmounts } from '../../../src/account-faucet'
  * @group accounts
  */
 describe('GET /accounts/{address}/code', function () {
-    const accountAddress = generateAddresses(4)
+    let accountAddress
+    let wallet
 
-    const wallet = ThorWallet.newFunded(fundingAmounts.noVetBigVtho)
+    beforeAll(async () => {
+        accountAddress = await generateAddresses(4)
+        wallet = await ThorWallet.newFunded(fundingAmounts.noVetBigVtho)
+    })
 
-    accountAddress.forEach((address) => {
-        it.e2eTest(
-            `should return no code for newly created address: ${address}`,
-            'all',
-            async () => {
+    it.e2eTest(
+        `should return no code for newly created addresses`,
+        'all',
+        async () => {
+            for (const address of accountAddress) {
                 const res = await Client.raw.getAccountCode(address)
 
                 expect(
@@ -30,9 +34,9 @@ describe('GET /accounts/{address}/code', function () {
                 expect(res.body, 'Expected Response Body').toEqual({
                     code: '0x',
                 })
-            },
-        )
-    })
+            }
+        },
+    )
 
     const noPrefix = Object.values(contractAddresses).map((address) =>
         address.slice(2),

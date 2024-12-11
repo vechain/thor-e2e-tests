@@ -1,5 +1,4 @@
 import { Client } from '../../../src/thor-client'
-import assert from 'node:assert'
 import { readRandomTransfer } from '../../../src/populated-data'
 
 /**
@@ -14,10 +13,9 @@ describe('GET /transactions/{id}', function () {
             pending: true,
         })
 
-        assert(tx.success, 'Failed to get transaction')
-        assert(tx.body != null, 'Failed to get transaction body')
-
-        expect(tx.body.id).toEqual(transfer.meta?.txID)
         expect(tx.httpCode, 'Expected HTTP Code').toEqual(200)
+        expect(tx.success, 'Failed to get transaction').toBeTrue()
+        expect(tx.body, 'Failed to get transaction body').toBeDefined()
+        expect(tx.body.id).toEqual(transfer.meta?.txID)
     })
 })

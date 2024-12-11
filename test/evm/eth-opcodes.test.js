@@ -23,8 +23,8 @@ import { pollReceipt } from '../../src/transactions'
  */
 
 /**
- * @group opcodes
  * @group evm
+ * @group opcodes
  */
 describe('EVM Opcodes', () => {
     let wallet
@@ -54,6 +54,6 @@ describe('EVM Opcodes', () => {
         await pollReceipt(id)
         const tx = await wait()
 
-        expect(tx?.reverted).toBe(true)
+        expect(tx?.reverted).toBeTrue()
     })
 })

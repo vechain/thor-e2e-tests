@@ -24,7 +24,7 @@ describe('GET /accounts/{address}', function () {
     })
 
     it.e2eTest('correct balance', 'all', async function () {
-        const emptyWallet = ThorWallet.empty()
+        const emptyWallet = await ThorWallet.empty()
 
         const clauses = [
             {

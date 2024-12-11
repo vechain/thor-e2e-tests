@@ -1,4 +1,4 @@
-import { Transaction } from '@vechain/sdk-core'
+import { Hex, Transaction } from '@vechain/sdk-core'
 import { generateAddress, ThorWallet } from '../../../src/wallet'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
 import {
@@ -21,7 +21,7 @@ describe('VET transfer, positive outcome', function () {
     const wallet = ThorWallet.withFunds()
 
     let counter
-    const receivingAddr = generateAddress()
+    let receivingAddr
 
     beforeAll(async () => {
         await wallet.waitForFunding()
@@ -29,6 +29,8 @@ describe('VET transfer, positive outcome', function () {
             SimpleCounter.bytecode,
             SimpleCounter.abi,
         )
+
+        receivingAddr = await generateAddress()
     })
 
     it.e2eTest(
@@ -49,7 +51,7 @@ describe('VET transfer, positive outcome', function () {
 
             const testPlan = {
                 postTxStep: {
-                    rawTx: signedTx.encoded.toString('hex'),
+                    rawTx: Hex.of(signedTx.encoded).toString(),
                     expectedResult: successfulPostTx,
                 },
                 getTxStep: {
@@ -82,7 +84,7 @@ describe('VET transfer, positive outcome', function () {
     it.e2eTest('send multiple clauses', 'all', async function () {
         const incrementCounter = '0x5b34b966'
 
-        const receivingAddr = generateAddress()
+        const receivingAddr = await generateAddress()
         const clauses = [
             {
                 value: 1,
@@ -107,7 +109,7 @@ describe('VET transfer, positive outcome', function () {
 
         const testPlan = {
             postTxStep: {
-                rawTx: signedTx.encoded.toString('hex'),
+                rawTx: Hex.of(signedTx.encoded).toString(),
                 expectedResult: successfulPostTx,
             },
             getTxStep: {
@@ -158,7 +160,7 @@ describe('VET transfer, negative outcome', function () {
     })
 
     it.e2eTest('multiple clauses, not enough funds', 'all', async function () {
-        const newWallet = ThorWallet.newFunded({
+        const newWallet = await ThorWallet.newFunded({
             vet: `0x${BigInt(10).toString(16)}`,
             vtho: 1000e18,
         })
@@ -166,12 +168,12 @@ describe('VET transfer, negative outcome', function () {
 
         const txBody = await newWallet.buildTransaction([
             {
-                to: generateAddress(),
+                to: await generateAddress(),
                 value: `0x${BigInt(5).toString(16)}`,
                 data: '0x',
             },
             {
-                to: generateAddress(),
+                to: await generateAddress(),
                 value: `0x${BigInt(6).toString(16)}`,
                 data: '0x',
             },
@@ -181,7 +183,7 @@ describe('VET transfer, negative outcome', function () {
         const signedTx = await newWallet.signTransaction(tx)
         const testPlan = {
             postTxStep: {
-                rawTx: signedTx.encoded.toString('hex'),
+                rawTx: Hex.of(signedTx.encoded).toString(),
                 expectedResult: successfulPostTx,
             },
             getTxStep: {
@@ -192,7 +194,8 @@ describe('VET transfer, negative outcome', function () {
             getTxReceiptStep: {
                 expectedResult: (receipt) => {
                     unsuccessfulReceipt(receipt, signedTx)
-                    expect(receipt.outputs.length).toEqual(0)
+                    /* eslint-disable jest/prefer-to-have-length */
+                    expect(receipt.outputs.length).toBe(0)
                 },
             },
             getLogTransferStep: {
@@ -217,7 +220,7 @@ describe('VET transfer, negative outcome', function () {
     })
 
     it.e2eTest('multiple clauses, first fails', 'all', async function () {
-        const receivingAddr = generateAddress()
+        const receivingAddr = await generateAddress()
         const clauses = [
             {
                 value: 0,
@@ -237,7 +240,7 @@ describe('VET transfer, negative outcome', function () {
 
         const testPlan = {
             postTxStep: {
-                rawTx: signedTx.encoded.toString('hex'),
+                rawTx: Hex.of(signedTx.encoded).toString(),
                 expectedResult: successfulPostTx,
             },
             getTxStep: {
@@ -248,7 +251,8 @@ describe('VET transfer, negative outcome', function () {
             getTxReceiptStep: {
                 expectedResult: (receipt) => {
                     unsuccessfulReceipt(receipt, signedTx)
-                    expect(receipt.outputs.length).toEqual(0)
+                    /* eslint-disable jest/prefer-to-have-length */
+                    expect(receipt.outputs.length).toBe(0)
                 },
             },
             getLogTransferStep: {
@@ -270,7 +274,7 @@ describe('VET transfer, negative outcome', function () {
     })
 
     it.e2eTest('multiple clauses, second fails', 'all', async function () {
-        const receivingAddr = generateAddress()
+        const receivingAddr = await generateAddress()
         const clauses = [
             {
                 value: 1,
@@ -290,7 +294,7 @@ describe('VET transfer, negative outcome', function () {
 
         const testPlan = {
             postTxStep: {
-                rawTx: signedTx.encoded.toString('hex'),
+                rawTx: Hex.of(signedTx.encoded).toString(),
                 expectedResult: successfulPostTx,
             },
             getTxStep: {
@@ -301,7 +305,8 @@ describe('VET transfer, negative outcome', function () {
             getTxReceiptStep: {
                 expectedResult: (receipt) => {
                     unsuccessfulReceipt(receipt, signedTx)
-                    expect(receipt.outputs.length).toEqual(0)
+                    /* eslint-disable jest/prefer-to-have-length */
+                    expect(receipt.outputs.length).toBe(0)
                 },
             },
             getLogTransferStep: {
@@ -323,7 +328,7 @@ describe('VET transfer, negative outcome', function () {
     })
 
     it.e2eTest('multiple clauses, second lacks gas', 'all', async function () {
-        const receivingAddr = generateAddress()
+        const receivingAddr = await generateAddress()
         const clausesFirst = [
             {
                 value: 1,
@@ -353,7 +358,7 @@ describe('VET transfer, negative outcome', function () {
 
         const testPlan = {
             postTxStep: {
-                rawTx: signedTx.encoded.toString('hex'),
+                rawTx: Hex.of(signedTx.encoded).toString(),
                 expectedResult: (data) =>
                     revertedPostTx(
                         data,

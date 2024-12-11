@@ -10,7 +10,7 @@ import {
 } from '../../src/utils/padding-utils'
 import { pollReceipt } from '../../src/transactions'
 import { funder, randomFunder } from '../../src/account-faucet'
-import { addressUtils } from '@vechain/sdk-core'
+import { Address } from '@vechain/sdk-core'
 
 const opcodesInterface = Opcodes.createInterface()
 
@@ -24,15 +24,15 @@ const opcodesInterface = Opcodes.createInterface()
  */
 
 /**
- * @group opcodes
  * @group evm
+ * @group opcodes
  */
 describe('Individual OpCodes', () => {
     let wallet
     let opcodes
-    const caller = addressUtils.fromPrivateKey(
+    const caller = Address.ofPrivateKey(
         Buffer.from(randomFunder(), 'hex'),
-    )
+    ).toString()
 
     const paddedCaller = addAddressPadding(caller) //remove 0x
         .slice(2)
@@ -415,7 +415,7 @@ describe('Individual OpCodes', () => {
 
                 expect(
                     debugged.structLogs.some((log) => log.op === name),
-                ).toEqual(true)
+                ).toBeTrue()
                 expect(debugged.returnValue).toBe(expected)
             },
         )
@@ -425,9 +425,9 @@ describe('Individual OpCodes', () => {
         'should give the correct output for opcode: BALANCE',
         'all',
         async () => {
-            const constantFunder = addressUtils.fromPrivateKey(
+            const constantFunder = Address.ofPrivateKey(
                 Buffer.from(funder(1), 'hex'),
-            )
+            ).toString()
 
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('BALANCE', [
@@ -440,7 +440,7 @@ describe('Individual OpCodes', () => {
 
             expect(
                 debugged.structLogs.some((log) => log.op === 'BALANCE'),
-            ).toEqual(true)
+            ).toBeTrue()
             expect(balance).toBeGreaterThan(0)
         },
     )
@@ -603,7 +603,7 @@ describe('Individual OpCodes', () => {
 
             const receipt = await pollReceipt(tx.id ?? '')
 
-            expect(receipt.reverted).toBe(true)
+            expect(receipt.reverted).toBeTrue()
 
             // 0x5f is the PUSH0 opcode
             const simulation = await Client.raw.executeAccountBatch({

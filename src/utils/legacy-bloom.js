@@ -1,15 +1,13 @@
-import { blake2b256 } from '@vechain/sdk-core'
+import { Blake2b256 } from '@vechain/sdk-core'
 import { Buffer } from 'buffer'
 import HexUtils from './hex-utils'
 
 /**
  * 2048 bits Bloom filter
- * impementation from https://github.com/vechain/thor-devkit.js/blob/master/src/bloom.ts
+ * Implementation from https://github.com/vechain/thor-devkit.js/blob/master/src/bloom.ts
  */
 export class LegacyBloom {
-    /** number of hash functions */
-    static MAX_K = 16
-    /** bit length */
+    /** bits length */
     static BITS_LENGTH = 2048
 
     /**
@@ -33,7 +31,7 @@ export class LegacyBloom {
     }
 
     distribute(item, cb) {
-        const hash = blake2b256(item)
+        const hash = Blake2b256.of(item).bytes
         for (let i = 0; i < this.k; i++) {
             const d =
                 (hash[i * 2 + 1] + (hash[i * 2] << 8)) % LegacyBloom.BITS_LENGTH

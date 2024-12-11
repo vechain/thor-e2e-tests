@@ -21,15 +21,13 @@ class TransactionDataDrivenFlow {
 
         const block = await this.getTransactionReceipt(txId)
 
-        //await this.getLogTransfer(block)
-
         await this.getTransactionBlock(block?.blockID, txId)
     }
 
     async postTransaction() {
         const { rawTx, expectedResult } = this.plan.postTxStep
         const sendTxResponse = await Client.raw.sendTransaction({
-            raw: `0x${rawTx}`,
+            raw: rawTx,
         })
 
         expectedResult(sendTxResponse)

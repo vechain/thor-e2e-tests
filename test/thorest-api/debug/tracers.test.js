@@ -16,6 +16,10 @@ const verifyStructLogs = (structLogs) => {
     })
 }
 
+/**
+ * @group api
+ * @group debug
+ */
 describe('POST /debug/tracers', () => {
     let target = ''
     let txIndex = 0
@@ -50,7 +54,7 @@ describe('POST /debug/tracers', () => {
 
         expect(res.httpCode).toBe(200)
         verifyStructLogs(res.body.structLogs)
-        expect(res.body.failed).toBe(false)
+        expect(res.body.failed).toBeFalse()
         expect(res.body.gas).toBeGreaterThan(0)
     })
 
@@ -59,7 +63,7 @@ describe('POST /debug/tracers', () => {
 
         expect(res.httpCode).toBe(200)
         verifyStructLogs(res.body.structLogs)
-        expect(res.body.failed).toBe(false)
+        expect(res.body.failed).toBeFalse()
         expect(res.body.gas).toBeGreaterThan(0)
     })
 

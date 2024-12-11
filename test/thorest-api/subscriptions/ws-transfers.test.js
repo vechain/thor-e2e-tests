@@ -50,11 +50,10 @@ const subscribeAndFundAccount = async (params, account, wallet) => {
 /**
  * @group api
  * @group websockets
- * @group transfer
  */
 describe('WS /subscriptions/transfer', () => {
     it.e2eTest('should work for valid recipient', 'all', async () => {
-        const account = generateAddress()
+        const account = await generateAddress()
 
         const { relevantEvent, sender } = await subscribeAndFundAccount(
             { recipient: account },
@@ -67,7 +66,7 @@ describe('WS /subscriptions/transfer', () => {
     })
 
     it.e2eTest('should work for valid position', 'all', async () => {
-        const account = generateAddress()
+        const account = await generateAddress()
         const bestBlock = await Client.sdk.blocks.getBlockCompressed('best')
         const bestBlockId = bestBlock?.id
 
@@ -82,7 +81,7 @@ describe('WS /subscriptions/transfer', () => {
     })
 
     it.e2eTest('should work for valid sender', 'all', async () => {
-        const account = generateAddress()
+        const account = await generateAddress()
         const wallet = ThorWallet.withFunds()
 
         const { relevantEvent, sender } = await subscribeAndFundAccount(
@@ -97,7 +96,7 @@ describe('WS /subscriptions/transfer', () => {
     })
 
     it.e2eTest('should work for valid txOrigin', 'all', async () => {
-        const account = generateAddress()
+        const account = await generateAddress()
         const wallet = ThorWallet.withFunds()
 
         const { relevantEvent, sender } = await subscribeAndFundAccount(
@@ -121,8 +120,8 @@ describe('WS /subscriptions/transfer', () => {
                 SimpleTransfer.abi,
             )
             const sender = simpleTransfer.address // contract that sends VET
-            const txOrigin = wallet.address // EOA that triggered contract call
-            const account = generateAddress()
+            const txOrigin = wallet.address.toLowerCase() // EOA that triggered contract call
+            const account = await generateAddress()
 
             const functionData =
                 SimpleTransfer.createInterface().encodeFunctionData(
@@ -148,7 +147,7 @@ describe('WS /subscriptions/transfer', () => {
             )
 
             expect(receipt).toBeDefined()
-            expect(receipt.reverted).toBe(false)
+            expect(receipt.reverted).toBeFalse()
 
             // Sleep for 1 sec to ensure the beat is received
             await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -167,7 +166,7 @@ describe('WS /subscriptions/transfer', () => {
         const transferTxs = []
         const txpoolTxs = []
 
-        const account = generateAddress()
+        const account = await generateAddress()
 
         Client.raw.subscribeToTransfers({ recipient: account }, (event) => {
             const txID = event.meta?.txID

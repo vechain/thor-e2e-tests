@@ -1,12 +1,10 @@
 import { Client } from '../../../src/thor-client'
 import { testBloomForAddress } from '../../../src/utils/bloom'
-import assert from 'node:assert'
 import { ThorWallet } from '../../../src/wallet'
 
 /**
  * @group api
  * @group websockets
- * @group beats2
  */
 describe('WS /subscriptions/beat2', () => {
     it.e2eTest('should be able to subscribe', 'all', async () => {
@@ -27,9 +25,9 @@ describe('WS /subscriptions/beat2', () => {
             return beat.id === fundReceipt?.meta?.blockID
         })
 
-        assert(relevantBeat?.bloom, 'Beat not found')
-        assert(relevantBeat?.k, 'Beat not found')
-        assert(wallet.address, 'Sender not found')
+        expect(relevantBeat?.bloom, 'Beat not found').toBeDefined()
+        expect(relevantBeat?.k, 'Beat not found').toBeDefined()
+        expect(wallet.address, 'Sender not found').toBeDefined()
 
         const result = testBloomForAddress(
             relevantBeat.bloom,
@@ -37,7 +35,7 @@ describe('WS /subscriptions/beat2', () => {
             wallet.address,
         )
 
-        expect(result).toEqual(true)
+        expect(result).toBeTrue()
     })
 
     it.e2eTest(
@@ -58,12 +56,12 @@ describe('WS /subscriptions/beat2', () => {
                 attempts++
             }
 
-            assert(beats.length > 0, 'Best block not found')
+            expect(beats.length, 'Best block not found').toBeGreaterThan(0)
 
             const nextBestBlock = beats.find(
                 (beat) => beat.number === (bestBlock.body?.number ?? 0) + 1,
             )
-            assert(nextBestBlock, 'Block not found')
+            expect(nextBestBlock, 'Block not found').toBeDefined()
             ws.unsubscribe()
         },
     )
@@ -124,7 +122,7 @@ describe('WS /subscriptions/beat2', () => {
                 (beat) => beat.number === bestBlock.body?.number,
             )
 
-            assert(firstBeat, 'Block not found')
+            expect(firstBeat, 'Block not found').toBeDefined()
             expect(firstBeat?.id).toEqual(bestBlock.body?.id)
             expect(firstBeat?.number).toEqual(bestBlock.body?.number)
             expect(firstBeat?.timestamp).toEqual(bestBlock.body?.timestamp)

@@ -1,6 +1,6 @@
 import { contractAddresses } from './contracts/addresses'
 import { interfaces } from './contracts/hardhat'
-import { secp256k1, Transaction } from '@vechain/sdk-core'
+import { Secp256k1, Transaction } from '@vechain/sdk-core'
 import { testEnv } from './test-env'
 import { ThorWallet } from './wallet'
 
@@ -104,10 +104,10 @@ export const delegateTx = (txBody, senderAddress) => {
 
     const fundingAccount = randomFunder()
 
-    const encoded = transaction.getSignatureHash(senderAddress)
+    const encoded = transaction.getTransactionHash(senderAddress)
 
-    const signature = secp256k1.sign(
-        encoded,
+    const signature = Secp256k1.sign(
+        encoded.bytes,
         Buffer.from(fundingAccount, 'hex'),
     )
 
