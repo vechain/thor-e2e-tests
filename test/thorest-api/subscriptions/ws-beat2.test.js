@@ -25,9 +25,9 @@ describe('WS /subscriptions/beat2', () => {
             return beat.id === fundReceipt?.meta?.blockID
         })
 
-      expect(relevantBeat?.bloom, 'Beat not found').toBeDefined()
-      expect(relevantBeat?.k, 'Beat not found').toBeDefined()
-      expect(wallet.address, 'Sender not found').toBeDefined()
+        expect(relevantBeat?.bloom, 'Beat not found').toBeDefined()
+        expect(relevantBeat?.k, 'Beat not found').toBeDefined()
+        expect(wallet.address, 'Sender not found').toBeDefined()
 
         const result = testBloomForAddress(
             relevantBeat.bloom,

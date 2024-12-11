@@ -4,7 +4,7 @@ import '@nomicfoundation/hardhat-ethers'
 import '@nomicfoundation/hardhat-chai-matchers'
 import '@nomicfoundation/hardhat-toolbox'
 
-const config: HardhatUserConfig =  {
+const config: HardhatUserConfig = {
     solidity: {
         compilers: [
             {
