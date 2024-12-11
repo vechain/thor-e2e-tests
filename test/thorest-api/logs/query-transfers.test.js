@@ -27,7 +27,7 @@ const buildRequestFromTransfer = (transfer) => {
 
 /**
  * @group api
- * @group transfers
+ * @group logs
  */
 describe('POST /logs/transfers', () => {
     const transferDetails = readTransferDetails()

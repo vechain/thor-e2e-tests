@@ -13,7 +13,6 @@ import { MultipleTransactionDataDrivenFlow } from './setup/multiple-transactions
 /**
  * @group api
  * @group transactions
- * @group dependant
  */
 describe('dependant transaction', function () {
     it.e2eTest(

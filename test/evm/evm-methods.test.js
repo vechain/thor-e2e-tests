@@ -4,6 +4,10 @@ import { HEX_REGEX_40 } from '../../src/utils/hex-utils'
 import { Hex, Keccak256, Txt } from '@vechain/sdk-core'
 import { Client } from '../../src/thor-client'
 
+/**
+ * @group evm
+ * @group methods
+ */
 describe('EVM methods', () => {
     let evmMethods
     const wallet = ThorWallet.withFunds()
@@ -102,7 +106,7 @@ describe('EVM methods', () => {
     it.e2eTest('should be able to get "msg.value"', 'all', async () => {
         const msgValue = await evmMethods.transact.getMsgValue({ value: 100 })
         const receipt = await msgValue.wait(3, 15)
-        expect(receipt.reverted).toEqual(false)
+        expect(receipt.reverted).toBeFalse()
     })
 
     it.e2eTest('should be able to get "tx.gasprice"', 'all', async () => {

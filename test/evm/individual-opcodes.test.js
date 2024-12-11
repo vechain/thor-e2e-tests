@@ -24,8 +24,8 @@ const opcodesInterface = Opcodes.createInterface()
  */
 
 /**
- * @group opcodes
  * @group evm
+ * @group opcodes
  */
 describe('Individual OpCodes', () => {
     let wallet
@@ -415,7 +415,7 @@ describe('Individual OpCodes', () => {
 
                 expect(
                     debugged.structLogs.some((log) => log.op === name),
-                ).toEqual(true)
+                ).toBeTrue()
                 expect(debugged.returnValue).toBe(expected)
             },
         )
@@ -440,7 +440,7 @@ describe('Individual OpCodes', () => {
 
             expect(
                 debugged.structLogs.some((log) => log.op === 'BALANCE'),
-            ).toEqual(true)
+            ).toBeTrue()
             expect(balance).toBeGreaterThan(0)
         },
     )
@@ -603,7 +603,7 @@ describe('Individual OpCodes', () => {
 
             const receipt = await pollReceipt(tx.id ?? '')
 
-            expect(receipt.reverted).toBe(true)
+            expect(receipt.reverted).toBeTrue()
 
             // 0x5f is the PUSH0 opcode
             const simulation = await Client.raw.executeAccountBatch({

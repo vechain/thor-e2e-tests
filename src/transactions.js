@@ -56,9 +56,9 @@ export const pollReceipt = async (txId, timeout = 60_000) => {
             const blocks = blockIds.values()
 
             if (
-                receipts.length == Client.clients.length &&
+                receipts.length === Client.clients.length &&
                 HexUtils.isValid(blocks.next().value) &&
-                blockIds.size == 1
+                blockIds.size === 1
             ) {
                 clearInterval(intervalId) // Clear the interval when the receipt is found
                 resolve(receipts[0].body)

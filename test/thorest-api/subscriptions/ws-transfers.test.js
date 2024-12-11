@@ -50,7 +50,6 @@ const subscribeAndFundAccount = async (params, account, wallet) => {
 /**
  * @group api
  * @group websockets
- * @group transfer
  */
 describe('WS /subscriptions/transfer', () => {
     it.e2eTest('should work for valid recipient', 'all', async () => {
@@ -148,7 +147,7 @@ describe('WS /subscriptions/transfer', () => {
             )
 
             expect(receipt).toBeDefined()
-            expect(receipt.reverted).toBe(false)
+            expect(receipt.reverted).toBeFalse()
 
             // Sleep for 1 sec to ensure the beat is received
             await new Promise((resolve) => setTimeout(resolve, 1000))

@@ -281,47 +281,6 @@ class ThorClient {
         )
     }
 
-    /**
-     * A utility function to debug a particular clause in a reverted transaction
-     */
-    async debugRevertedClause(txId, clauseIndex) {
-        const targetPrefix = await this.getDebugTargetPrefix(txId)
-
-        if (!targetPrefix) {
-            return
-        }
-
-        return this.traceClause({
-            target: `${targetPrefix}/${clauseIndex}`,
-            name: 'call',
-            config: {
-                OnlyTopCall: true,
-            },
-        })
-    }
-
-    /**
-     * A utility function to get the index of a transaction in a block
-     * @param txId
-     */
-    async getDebugTargetPrefix(txId) {
-        const tx = await this.getTransaction(txId)
-
-        if (!tx.success || !tx.body?.meta?.blockID) {
-            return undefined
-        }
-
-        const block = await this.getBlock(tx.body.meta.blockID, false)
-
-        if (!block.success || !block.body) {
-            return undefined
-        }
-
-        const txIndex = block.body.transactions.indexOf(txId)
-
-        return `${block.body.id}/${txIndex}`
-    }
-
     openWebsocket(url, callback, errorCallback) {
         const ws = new WebSocket(url)
         ws.onmessage = (event) => {
@@ -402,13 +361,6 @@ class LoadBalancedClient {
         }
 
         return new Proxy(this.getRandomSDKClient(), handler)
-    }
-
-    index(index) {
-        return {
-            sdk: this.sdkClients[index],
-            raw: this.clients[index],
-        }
     }
 
     getRandomClient() {

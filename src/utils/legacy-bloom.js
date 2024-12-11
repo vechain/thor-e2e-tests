@@ -7,8 +7,6 @@ import HexUtils from './hex-utils'
  * Implementation from https://github.com/vechain/thor-devkit.js/blob/master/src/bloom.ts
  */
 export class LegacyBloom {
-    /** number of hash functions */
-    static MAX_K = 16
     /** bits length */
     static BITS_LENGTH = 2048
 

@@ -40,10 +40,7 @@ const writeTransfers = async () => {
 
                 await pollReceipt(txId)
 
-                const receipt =
-                    await Client.sdk.transactions.waitForTransaction(txId)
-
-                return receipt
+                return await Client.sdk.transactions.waitForTransaction(txId)
             }),
         )
 
