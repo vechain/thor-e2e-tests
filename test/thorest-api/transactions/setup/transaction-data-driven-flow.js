@@ -35,6 +35,14 @@ class TransactionDataDrivenFlow {
         return sendTxResponse.body?.id
     }
 
+    async callTransaction() {
+        const { tx, expectedResult } = this.plan.postTxStep
+        const callTxResponse = await Client.raw.callTransaction(tx)
+
+        expectedResult(callTxResponse)
+        return callTxResponse.body?.id
+    }
+
     async getTransaction(txId) {
         if (!this.plan.getTxStep) {
             return
