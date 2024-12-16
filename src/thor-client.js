@@ -125,6 +125,13 @@ class ThorClient {
         )
     }
 
+    // POST /transactions/call
+    async callTransaction(request, options) {
+        return this.performRequest(() =>
+            this.axios.post(`/transactions/call`, request, options),
+        )
+    }
+
     // GET /blocks
     async getBlock(revision, expanded, raw, options) {
         let url = `/blocks/${revision}`
