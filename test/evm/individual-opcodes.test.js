@@ -1,16 +1,16 @@
+import { Address } from '@vechain/sdk-core'
+import { funder, randomFunder } from '../../src/account-faucet'
+import { Client } from '../../src/thor-client'
+import { pollReceipt } from '../../src/transactions'
+import {
+    addAddressPadding,
+    addUintPadding,
+} from '../../src/utils/padding-utils'
 import { ThorWallet } from '../../src/wallet'
 import {
     IndividualOpCodes__factory as Opcodes,
     SimpleCounterShanghai__factory as ShanghaiCounter,
 } from '../../typechain-types'
-import { Client } from '../../src/thor-client'
-import {
-    addAddressPadding,
-    addUintPadding,
-} from '../../src/utils/padding-utils'
-import { pollReceipt } from '../../src/transactions'
-import { funder, randomFunder } from '../../src/account-faucet'
-import { Address } from '@vechain/sdk-core'
 
 const opcodesInterface = Opcodes.createInterface()
 
@@ -532,12 +532,24 @@ describe('Individual OpCodes', () => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('BASEFEE'),
                 'BASEFEE',
-                true,
             )
 
-            expect(
-                debugged.structLogs[debugged.structLogs.length - 1].error,
-            ).toBe('invalid opcode 0x48')
+            const relevantStructLogs = debugged.structLogs.filter(
+                (log) => log.op === 'BASEFEE',
+            )
+
+            expect(relevantStructLogs).toHaveLength(1)
+
+            expect(relevantStructLogs).toStrictEqual([
+                {
+                    depth: 1,
+                    gas: 999726,
+                    gasCost: 2,
+                    op: 'BASEFEE',
+                    pc: 6224,
+                    stack: ['0x2b428996', '0x866', '0x0', '0x0'],
+                },
+            ])
         },
     )
 
