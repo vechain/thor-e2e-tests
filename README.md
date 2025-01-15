@@ -38,7 +38,10 @@ yarn test
 ### Running a group of tests
 
 ```bash
-yarn test -test <group/test>
+yarn test -t <group/test>
+
+yarn test -t "opcodes" # Example for the opcodes group (@group)
+yarn test -t "should give the correct output for opcode: ADDRESS" # Example for that specific test (first parameter at it.e2eTest)
 ```
 
 ### Custom solo url
@@ -51,8 +54,6 @@ This is added to be able to configure the url of the client for future network h
 We need to keep same genesis for now.
 
 ## Scripts
-
----
 
 ### Generate Open API Specification
 
