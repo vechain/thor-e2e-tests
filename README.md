@@ -55,8 +55,6 @@ We need to keep same genesis for now.
 
 ## Scripts
 
----
-
 ### Generate Open API Specification
 
 - These scripts will output the Open API Spec to `./src/open-api-types.ts`
