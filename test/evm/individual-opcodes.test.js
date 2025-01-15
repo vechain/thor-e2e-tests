@@ -615,7 +615,7 @@ describe('Individual OpCodes', () => {
 
             const receipt = await pollReceipt(tx.id ?? '')
 
-            expect(receipt.reverted).toBeTrue()
+            expect(receipt.reverted).toBeFalse()
 
             // 0x5f is the PUSH0 opcode
             const simulation = await Client.raw.executeAccountBatch({
@@ -623,7 +623,8 @@ describe('Individual OpCodes', () => {
                 caller,
             })
 
-            expect(simulation.body?.[0]?.vmError).toEqual('invalid opcode 0x5f')
+            expect(simulation.httpCode).toBe(200)
+            expect(simulation.body[0].reverted).toBeFalse()
         },
     )
 
