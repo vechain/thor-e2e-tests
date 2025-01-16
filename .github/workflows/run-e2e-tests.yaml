@@ -47,15 +47,26 @@ jobs:
               if: ${{ (inputs.branch_name == 'master-latest' || inputs.branch_name == '')  && inputs.environment != 'mainnet' && inputs.environment != 'testnet' && !startsWith(github.event.pull_request.base.ref, 'release/') && !startsWith(github.head_ref, 'release/') }}
               run: yarn docker:up
 
+            - name: Set custom Thor Branch
+              id: set-thor-branch
+              run: |
+                if [[ "${{ github.event.pull_request.base.ref }}" == release/* ]]; then
+                  echo "thor_branch_name=${{ github.event.pull_request.base.ref }}" >> "$GITHUB_OUTPUT"
+                elif [[ "${{ github.head_ref }}" == release/* ]]; then
+                  echo "thor_branch_name=${{ github.head_ref }}" >> "$GITHUB_OUTPUT"
+                elif [[ ${{ inputs.branch_name != 'master-latest' && inputs.branch_name != '' }} ]]; then
+                  echo "thor_branch_name=${{ inputs.branch_name }}" >> "$GITHUB_OUTPUT"
+                fi
+
             - name: Using Custom Thor Branch
-              if: ${{ inputs.branch_name != 'master-latest' && inputs.branch_name != '' || startsWith(github.event.pull_request.base.ref, 'release/') || startsWith(github.head_ref, 'release/') }}
+              if: ${{ steps.set-thor-branch.outputs.thor_branch_name }}
               run: |
                   # Clone only the specified branch from the vechain/thor repository
-                  git clone --branch ${{ inputs.branch_name }} --single-branch --depth 1 https://github.com/vechain/thor.git thor-tmp
+                  git clone --branch ${{ steps.set-thor-branch.outputs.thor_branch_name }} --single-branch --depth 1 https://github.com/vechain/thor.git thor-tmp
 
                   # Navigate to the directory and build the Docker image, replacing / with _ in the branch name
                   cd thor-tmp
-                  TAG_NAME=$(echo ${{ inputs.branch_name }} | tr / _)
+                  TAG_NAME=$(echo ${{ steps.set-thor-branch.outputs.thor_branch_name }} | tr / _)
                   docker build -t thor:$TAG_NAME .
 
                   # Start the Docker network using the built image
