@@ -629,7 +629,7 @@ describe('Individual OpCodes', () => {
     )
 
     it.e2eTest(
-        'should be possible to deploy contract starting with 0xEF',
+        'should not be possible to deploy a contract starting with 0xEF',
         'all',
         async () => {
             const contractBytecode = '0x60ef60005360016000f3'
