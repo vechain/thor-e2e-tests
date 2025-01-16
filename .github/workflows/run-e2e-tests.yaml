@@ -44,7 +44,7 @@ jobs:
               run: yarn install
 
             - name: Start Docker Network
-              if: ${{ (inputs.branch_name == 'master-latest' || inputs.branch_name == '')  && inputs.environment != 'mainnet' && inputs.environment != 'testnet' }}
+              if: ${{ (inputs.branch_name == 'master-latest' || inputs.branch_name == '')  && inputs.environment != 'mainnet' && inputs.environment != 'testnet' && !startsWith(github.event.pull_request.base.ref, 'release/') && !startsWith(github.head_ref, 'release/') }}
               run: yarn docker:up
 
             - name: Using Custom Thor Branch
