@@ -47,16 +47,16 @@ jobs:
               if: ${{ (inputs.branch_name == 'master-latest' || inputs.branch_name == '')  && inputs.environment != 'mainnet' && inputs.environment != 'testnet' && !startsWith(github.event.pull_request.base.ref, 'release/') && !startsWith(github.head_ref, 'release/') }}
               run: yarn docker:up
 
-            - name: Set custom Thor Branch
+            - name: Set Custom Thor Branch
               id: set-thor-branch
               run: |
-                if [[ "${{ github.event.pull_request.base.ref }}" == release/* ]]; then
-                  echo "thor_branch_name=${{ github.event.pull_request.base.ref }}" >> "$GITHUB_OUTPUT"
-                elif [[ "${{ github.head_ref }}" == release/* ]]; then
-                  echo "thor_branch_name=${{ github.head_ref }}" >> "$GITHUB_OUTPUT"
-                elif [[ ${{ inputs.branch_name != 'master-latest' && inputs.branch_name != '' }} ]]; then
-                  echo "thor_branch_name=${{ inputs.branch_name }}" >> "$GITHUB_OUTPUT"
-                fi
+                  if [[ "${{ github.event.pull_request.base.ref }}" == release/* ]]; then
+                    echo "thor_branch_name=${{ github.event.pull_request.base.ref }}" >> "$GITHUB_OUTPUT"
+                  elif [[ "${{ github.head_ref }}" == release/* ]]; then
+                    echo "thor_branch_name=${{ github.head_ref }}" >> "$GITHUB_OUTPUT"
+                  elif [[ ${{ inputs.branch_name != 'master-latest' && inputs.branch_name != '' }} ]]; then
+                    echo "thor_branch_name=${{ inputs.branch_name }}" >> "$GITHUB_OUTPUT"
+                  fi
 
             - name: Using Custom Thor Branch
               if: ${{ steps.set-thor-branch.outputs.thor_branch_name }}
