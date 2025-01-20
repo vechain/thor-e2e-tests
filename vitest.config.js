@@ -12,12 +12,14 @@ export default defineConfig({
         retry: IS_GH_ACTIONS ? 3 : 0,
         testTimeout: 60_000,
         hookTimeout: 60_000,
-        poolOptions: {
-            forks: {
-                minForks: 1,
-                maxForks: 4,
-            },
-        },
+        poolOptions: IS_GH_ACTIONS
+            ? undefined
+            : {
+                  forks: {
+                      minForks: 1,
+                      maxForks: 4,
+                  },
+              },
         reporters: IS_GH_ACTIONS
             ? [
                   'github-actions',

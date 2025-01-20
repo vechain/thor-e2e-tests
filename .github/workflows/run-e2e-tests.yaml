@@ -97,6 +97,6 @@ jobs:
                   list-suites: 'all'
                   list-tests: 'all'
                   fail-on-error: 'true'
-                  reporter: 'jest-junit'
+                  reporter: 'java-junit'
                   path: |
                       junit.xml
