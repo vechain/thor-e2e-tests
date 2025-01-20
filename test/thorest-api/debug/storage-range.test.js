@@ -57,7 +57,6 @@ describe('GET /debug/storage-range', () => {
                 },
                 options: { address: counter.address, maxResult: 1 },
             })
-            /* eslint-disable jest/prefer-to-have-length */
             expect(Object.keys(storage.storage).length).toBe(1)
             expect(storage.nextKey).toBeNull()
         },

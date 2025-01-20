@@ -118,7 +118,9 @@ describe('GET /blocks/{revision}', function () {
         expect(res.success, 'API response should be a success').toBeTruthy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(res.body, 'Block should not be null').not.toEqual(null)
-        expect(res.body.raw, 'Raw should be not empty').not.toBe
+        expect(res.body.raw.length, 'Raw should be not empty').toBeGreaterThan(
+            2,
+        )
 
         expect(
             block_res.success,

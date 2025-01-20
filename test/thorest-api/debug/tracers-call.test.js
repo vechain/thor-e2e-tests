@@ -186,7 +186,6 @@ describe('POST /debug/tracers/call', () => {
         expect(body.gas).toEqual(0)
         expect(body.failed).toBeFalsy()
         expect(body.returnValue).toMatch(HEX_AT_LEAST_1)
-        /* eslint-disable jest/prefer-to-have-length */
         expect(response.body.structLogs.length).toBe(23)
         verifyStructLogs(response.body.structLogs)
     })

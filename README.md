@@ -20,7 +20,7 @@ yarn test
 # Start a thor solo instance so your tests can run quickly
 yarn docker:solo:up
 # Run a single test / test suite
-yarn test -t 'GET /accounts/{address}/storage'
+yarn test test/thorest-api/accounts/get-account-storage.test.js 
 ```
 
 ### Custom Docker Image
@@ -41,7 +41,7 @@ yarn test
 yarn test -t <group/test>
 
 yarn test -t "opcodes" # Example for the opcodes group (@group)
-yarn test -t "should give the correct output for opcode: ADDRESS" # Example for that specific test (first parameter at it.e2eTest)
+yarn test test/evm/individual-opcodes.test.js -t 'should give the correct output for opcode: ADDRESS' # Example for that specific test (first parameter at it.e2eTest)
 ```
 
 ### Custom solo url
