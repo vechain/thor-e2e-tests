@@ -194,7 +194,6 @@ describe('VET transfer, negative outcome', function () {
             getTxReceiptStep: {
                 expectedResult: (receipt) => {
                     unsuccessfulReceipt(receipt, signedTx)
-                    /* eslint-disable jest/prefer-to-have-length */
                     expect(receipt.outputs.length).toBe(0)
                 },
             },
@@ -251,7 +250,6 @@ describe('VET transfer, negative outcome', function () {
             getTxReceiptStep: {
                 expectedResult: (receipt) => {
                     unsuccessfulReceipt(receipt, signedTx)
-                    /* eslint-disable jest/prefer-to-have-length */
                     expect(receipt.outputs.length).toBe(0)
                 },
             },
@@ -305,7 +303,6 @@ describe('VET transfer, negative outcome', function () {
             getTxReceiptStep: {
                 expectedResult: (receipt) => {
                     unsuccessfulReceipt(receipt, signedTx)
-                    /* eslint-disable jest/prefer-to-have-length */
                     expect(receipt.outputs.length).toBe(0)
                 },
             },

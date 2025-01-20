@@ -54,7 +54,7 @@ describe('POST /logs/event', () => {
             expect(
                 eventLogs.success,
                 'API response should be a success',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
 
             const relevantLog = eventLogs.body?.find((log) => {
@@ -87,14 +87,14 @@ describe('POST /logs/event', () => {
             expect(
                 response.success,
                 'API response should be a success',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 response.body?.some(
                     (log) => log?.meta?.txID === transfer.meta.txID,
                 ),
                 'The response should contain the relevant event log',
-            ).toBeTrue()
+            ).toBeTruthy()
         },
     )
 
@@ -111,7 +111,10 @@ describe('POST /logs/event', () => {
             return log?.meta?.txID === transfer.meta.txID
         })
 
-        expect(response.success, 'API response should be a success').toBeTrue()
+        expect(
+            response.success,
+            'API response should be a success',
+        ).toBeTruthy()
         expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(
             relevantLog,
@@ -237,29 +240,29 @@ describe('POST /logs/event', () => {
             expect(
                 response.success,
                 'API response should be a success',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 response.body?.some(
                     (log) => log?.meta?.blockNumber === firstBlock,
                 ),
                 'The response should contain the first block',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(
                 response.body?.some(
                     (log) => log?.meta?.blockNumber === lastBlock,
                 ),
                 'The response should contain the last block',
-            ).toBeTrue()
+            ).toBeTruthy()
 
             const blockNumbers = response.body?.map(
                 (log) => log?.meta?.blockNumber,
             )
 
             expect(
-                blockNumbers,
+                Array.isArray(blockNumbers),
                 'Should be an array of block numbers',
-            ).toBeArray()
+            ).toBeTruthy()
             expect(
                 blockNumbers,
                 'Should be sorted in the correct order',
@@ -332,7 +335,7 @@ describe('POST /logs/event', () => {
                 expect(
                     eventLogs.success,
                     'API response should be a success',
-                ).toBeTrue()
+                ).toBeTruthy()
                 expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
                 expect(eventLogs.body?.length).toEqual(0)
             },
@@ -354,7 +357,7 @@ describe('POST /logs/event', () => {
                 expect(
                     eventLogs.success,
                     'API response should fail',
-                ).toBeFalse()
+                ).toBeFalsy()
                 expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(403)
             },
         )
@@ -372,7 +375,7 @@ describe('POST /logs/event', () => {
             expect(
                 eventLogs.success,
                 'API response should be a success',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(eventLogs.body?.length).toEqual(0)
         })
@@ -407,7 +410,7 @@ describe('POST /logs/event', () => {
             expect(
                 allElements.success,
                 'API response should be a success',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(allElements.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 allElements.body?.length,
@@ -425,7 +428,7 @@ describe('POST /logs/event', () => {
                 expect(
                     paginatedResponse.success,
                     'API response should be a success',
-                ).toBeTrue()
+                ).toBeTruthy()
                 expect(
                     paginatedResponse.httpCode,
                     'Expected HTTP Code',
@@ -463,7 +466,7 @@ describe('POST /logs/event', () => {
                 expect(
                     res1.success,
                     'API response should be a success',
-                ).toBeTrue()
+                ).toBeTruthy()
                 expect(
                     res1.body?.length,
                     'Expected Response Body',
@@ -485,7 +488,7 @@ describe('POST /logs/event', () => {
                 expect(
                     res2.success,
                     'API response should be a success',
-                ).toBeTrue()
+                ).toBeTruthy()
                 expect(res2.httpCode, 'Expected HTTP Code').toEqual(200)
                 expect(res2.body, 'Expected Response Body').toEqual([])
             },
@@ -536,7 +539,7 @@ describe('POST /logs/event', () => {
             expect(
                 response.success,
                 'API response should be a success',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
 
             expect(relevantLog, 'Should match the expected event log').toEqual({
@@ -664,7 +667,7 @@ describe('POST /logs/event', () => {
                 expect(
                     res.success,
                     'API response should be a success',
-                ).toBeTrue()
+                ).toBeTruthy()
                 expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
                 expect(res.body, 'Expected Response Body').toEqual([])
             },
@@ -690,7 +693,7 @@ describe('POST /logs/event', () => {
                 expect(
                     res.success,
                     'API response should be a success',
-                ).toBeTrue()
+                ).toBeTruthy()
                 expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
                 expect(res.body, 'Expected Response Body').toEqual([])
             },

@@ -415,7 +415,7 @@ describe('Individual OpCodes', () => {
 
                 expect(
                     debugged.structLogs.some((log) => log.op === name),
-                ).toBeTrue()
+                ).toBeTruthy()
                 expect(debugged.returnValue).toBe(expected)
             },
         )
@@ -440,7 +440,7 @@ describe('Individual OpCodes', () => {
 
             expect(
                 debugged.structLogs.some((log) => log.op === 'BALANCE'),
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(balance).toBeGreaterThan(0)
         },
     )
@@ -603,7 +603,7 @@ describe('Individual OpCodes', () => {
 
             const receipt = await pollReceipt(tx.id ?? '')
 
-            expect(receipt.reverted).toBeTrue()
+            expect(receipt.reverted).toBeTruthy()
 
             // 0x5f is the PUSH0 opcode
             const simulation = await Client.raw.executeAccountBatch({
@@ -633,7 +633,7 @@ describe('Individual OpCodes', () => {
                 caller,
             })
 
-            expect(simulation.body?.[0]?.vmError).toBeEmpty()
+            expect(simulation.body?.[0]?.vmError.length).toBe(0)
         },
     )
 })

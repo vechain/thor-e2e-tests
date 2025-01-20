@@ -57,7 +57,6 @@ describe('GET /debug/storage-range', () => {
                 },
                 options: { address: counter.address, maxResult: 1 },
             })
-            /* eslint-disable jest/prefer-to-have-length */
             expect(Object.keys(storage.storage).length).toBe(1)
             expect(storage.nextKey).toBeNull()
         },
@@ -71,7 +70,7 @@ describe('GET /debug/storage-range', () => {
                 target: `${transaction?.meta?.blockID}/${transaction?.meta?.txID}/0`,
                 maxResult: 10000000000,
             })
-            expect(response.success).toBeFalse()
+            expect(response.success).toBeFalsy()
             expect(response.httpCode).toBe(400)
         },
     )

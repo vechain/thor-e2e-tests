@@ -54,6 +54,6 @@ describe('EVM Opcodes', () => {
         await pollReceipt(id)
         const tx = await wait()
 
-        expect(tx?.reverted).toBeTrue()
+        expect(tx?.reverted).toBeTruthy()
     })
 })
