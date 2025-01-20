@@ -19,7 +19,11 @@ export default defineConfig({
             },
         },
         reporters: IS_GH_ACTIONS
-            ? ['github-actions', 'junit']
-            : ['junit', 'html'],
+            ? [
+                  'github-actions',
+                  'default',
+                  ['junit', { outputFile: 'junit.xml' }],
+              ]
+            : ['default'],
     },
 })
