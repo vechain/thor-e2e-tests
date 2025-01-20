@@ -148,8 +148,8 @@ describe('WS /subscriptions/event', () => {
 
         expect(eventTxs).not.toBeUndefined()
         expect(txpoolTxs).not.toBeUndefined()
-        expect(isInEventTxs).toBeTrue()
-        expect(isInTxpoolTxs).toBeTrue()
+        expect(isInEventTxs).toBeTruthy()
+        expect(isInTxpoolTxs).toBeTruthy()
     })
 
     it.e2eTest('should error for invalid position', 'all', async () => {

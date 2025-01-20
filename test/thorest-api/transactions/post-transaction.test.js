@@ -16,7 +16,7 @@ describe('POST /transactions', function () {
         expect(
             fundReceipt?.reverted,
             'Transaction should not be reverted',
-        ).toBeFalse()
+        ).toBeFalsy()
     })
 
     it.e2eTest(

@@ -10,10 +10,7 @@ it.e2eTest = (title, tags, testFunc) => {
     }
 }
 
-jest.retryTimes(3, { logErrorsBeforeRetry: true })
-
 afterAll(async () => {
     Client.raw.closeAllSubscriptions()
-    jest.clearAllTimers()
     Client.sdk.destroy()
 })

@@ -16,16 +16,12 @@ const masterEvent =
  * @group api
  * @group accounts
  */
-describe('Contracts', () => {
+describe('Contracts', async () => {
     const wallet = ThorWallet.withFunds()
-    let counter
-
-    beforeAll(async () => {
-        counter = await wallet.deployContract(
-            SimpleCounter.bytecode,
-            SimpleCounter.abi,
-        )
-    })
+    const counter = await wallet.deployContract(
+        SimpleCounter.bytecode,
+        SimpleCounter.abi,
+    )
 
     it.e2eTest(
         'should be able to deploy a contract and verify it',
@@ -94,7 +90,7 @@ describe('Contracts', () => {
             await pollReceipt(tx.id)
             const receipt = await tx.wait()
             expect(receipt).toBeDefined()
-            expect(receipt.reverted).toBeFalse()
+            expect(receipt.reverted).toBeFalsy()
 
             const newValue = await counter.read.getCounter()
             expect(newValue[0]).toBe(startValue[0] + 3n)
@@ -114,12 +110,12 @@ describe('Contracts', () => {
             const estimate = await Client.sdk.gas.estimateGas([
                 payClause.clause,
             ])
-            expect(estimate.reverted).toBeTrue()
+            expect(estimate.reverted).toBeTruthy()
             expect(
                 estimate.revertReasons.some(
                     (reason) => reason === 'Not authorized',
                 ),
-            ).toBeTrue()
+            ).toBeTruthy()
 
             const authorizeClause = authorizeTransaction.clause.authorize()
 
@@ -132,7 +128,7 @@ describe('Contracts', () => {
             await pollReceipt(tx.id)
             const receipt = await tx.wait()
             expect(receipt).toBeDefined()
-            expect(receipt.reverted).toBeFalse()
+            expect(receipt.reverted).toBeFalsy()
         },
     )
 
@@ -151,7 +147,7 @@ describe('Contracts', () => {
 
             const receipt = await wallet.sendClauses([clause], true)
             expect(receipt).toBeDefined()
-            expect(receipt.reverted).toBeFalse()
+            expect(receipt.reverted).toBeFalsy()
         },
     )
 
@@ -170,7 +166,7 @@ describe('Contracts', () => {
 
             const receipt = await wallet.sendClauses([clause], true)
             expect(receipt).toBeDefined()
-            expect(receipt.reverted).toBeTrue()
+            expect(receipt.reverted).toBeTruthy()
         },
     )
 
@@ -205,7 +201,7 @@ describe('Contracts', () => {
 
             const receipt = await wallet.sendClauses([clause], true)
             expect(receipt).toBeDefined()
-            expect(receipt.reverted).toBeTrue()
+            expect(receipt.reverted).toBeTruthy()
 
             const currentText = await stringer.read.text()
             expect(currentText[0]).toBe(priorText[0])

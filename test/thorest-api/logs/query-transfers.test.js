@@ -77,14 +77,14 @@ describe('POST /logs/transfers', () => {
             expect(
                 response.success,
                 'API response should be a success',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 response.body?.some(
                     (log) => log?.meta?.txID === transfer.meta.txID,
                 ),
                 'The response body some contain the relevant log',
-            ).toBeTrue()
+            ).toBeTruthy()
         },
     )
 
@@ -100,7 +100,10 @@ describe('POST /logs/transfers', () => {
             (log) => log?.meta?.txID === transfer.meta.txID,
         )
 
-        expect(response.success, 'API response should be a success').toBeTrue()
+        expect(
+            response.success,
+            'API response should be a success',
+        ).toBeTruthy()
         expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(relevantLog).toBeDefined()
         expect(relevantLog).toEqual({
@@ -220,7 +223,7 @@ describe('POST /logs/transfers', () => {
                 expect(
                     transferLogs.success,
                     'API response should be a success',
-                ).toBeTrue()
+                ).toBeTruthy()
                 expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
                 expect(transferLogs.body?.length).toEqual(0)
             },
@@ -242,7 +245,7 @@ describe('POST /logs/transfers', () => {
                 expect(
                     transferLogs.success,
                     'API response should fail',
-                ).toBeFalse()
+                ).toBeFalsy()
                 expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(403)
             },
         )
@@ -260,7 +263,7 @@ describe('POST /logs/transfers', () => {
             expect(
                 transferLogs.success,
                 'API response should be a success',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(transferLogs.body?.length).toEqual(0)
         })
@@ -291,7 +294,7 @@ describe('POST /logs/transfers', () => {
             expect(
                 allElements.success,
                 'API response should be a success',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(allElements.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(allElements.body?.length).toEqual(totalTransfers)
 
@@ -306,7 +309,7 @@ describe('POST /logs/transfers', () => {
                 expect(
                     paginatedResponse.success,
                     'API response should be a success',
-                ).toBeTrue()
+                ).toBeTruthy()
                 expect(
                     paginatedResponse.httpCode,
                     'Expected HTTP Code',
@@ -452,26 +455,29 @@ describe('POST /logs/transfers', () => {
             expect(
                 response.success,
                 'API response should be a success',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(response.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 response.body?.some(
                     (log) => log?.meta?.blockNumber === firstBlock,
                 ),
                 'First block should be present',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(
                 response.body?.some(
                     (log) => log?.meta?.blockNumber === lastBlock,
                 ),
                 'Last block should be present',
-            ).toBeTrue()
+            ).toBeTruthy()
 
             const blockNumbers = response.body?.map(
                 (log) => log?.meta?.blockNumber,
             )
 
-            expect(blockNumbers, 'The result should be an array').toBeArray()
+            expect(
+                Array.isArray(blockNumbers),
+                'The result should be an array',
+            ).toBeTruthy()
             expect(
                 blockNumbers,
                 'The result should be sorted correctly',

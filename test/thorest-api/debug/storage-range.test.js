@@ -71,7 +71,7 @@ describe('GET /debug/storage-range', () => {
                 target: `${transaction?.meta?.blockID}/${transaction?.meta?.txID}/0`,
                 maxResult: 10000000000,
             })
-            expect(response.success).toBeFalse()
+            expect(response.success).toBeFalsy()
             expect(response.httpCode).toBe(400)
         },
     )

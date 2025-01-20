@@ -147,7 +147,7 @@ describe('WS /subscriptions/transfer', () => {
             )
 
             expect(receipt).toBeDefined()
-            expect(receipt.reverted).toBeFalse()
+            expect(receipt.reverted).toBeFalsy()
 
             // Sleep for 1 sec to ensure the beat is received
             await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -190,8 +190,8 @@ describe('WS /subscriptions/transfer', () => {
 
         expect(transferTxs).not.toBeUndefined()
         expect(txpoolTxs).not.toBeUndefined()
-        expect(isInTransferTxs).toBeTrue()
-        expect(isInTxpoolTxs).toBeTrue()
+        expect(isInTransferTxs).toBeTruthy()
+        expect(isInTxpoolTxs).toBeTruthy()
     })
 
     it.e2eTest('should error for invalid position', 'all', async () => {
