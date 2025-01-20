@@ -20,7 +20,7 @@ yarn test
 # Start a thor solo instance so your tests can run quickly
 yarn docker:solo:up
 # Run a single test / test suite
-yarn test test/thorest-api/accounts/get-account-storage.test.js 
+yarn test test/thorest-api/accounts/get-account-storage.test.js
 ```
 
 ### Custom Docker Image

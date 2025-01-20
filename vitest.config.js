@@ -18,5 +18,8 @@ export default defineConfig({
                 maxForks: 4,
             },
         },
+        reporters: IS_GH_ACTIONS
+            ? ['github-actions', 'junit']
+            : ['junit', 'html'],
     },
 })
