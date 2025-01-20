@@ -87,7 +87,7 @@ describe('POST /accounts/*', function () {
             caller: wallet.address,
         })
 
-        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.success, 'API response should be a success').toBeTruthy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(res.body, 'Expected Response Body').toEqual([
             {
@@ -159,12 +159,12 @@ describe('POST /accounts/*', function () {
             expect(
                 historicCall.success,
                 'API response should be a success',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(historicCall.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 historicCall.body?.[0]?.reverted,
                 'Transaction should revert',
-            ).toBeTrue()
+            ).toBeTruthy()
 
             // generated wallet was funded, so this should be successful
             const currentCall = await Client.raw.executeAccountBatch(
@@ -175,12 +175,12 @@ describe('POST /accounts/*', function () {
             expect(
                 currentCall.success,
                 'API response should be a success',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(currentCall.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(
                 currentCall.body?.[0]?.reverted,
                 'Transaction should not revert',
-            ).toBeFalse()
+            ).toBeFalsy()
         },
     )
 
@@ -196,10 +196,10 @@ describe('POST /accounts/*', function () {
             expect(
                 historicCall.success,
                 'API response should be a success',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(historicCall.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(historicCall.body?.[0]?.reverted).toBeFalse()
-            expect(historicCall.body?.[1]?.reverted).toBeFalse()
+            expect(historicCall.body?.[0]?.reverted).toBeFalsy()
+            expect(historicCall.body?.[1]?.reverted).toBeFalsy()
             const balanceOf = parseInt(historicCall.body?.[0]?.data ?? '-1', 16)
             const totalSupply = parseInt(
                 historicCall.body?.[1]?.data ?? '-1',
@@ -223,10 +223,10 @@ describe('POST /accounts/*', function () {
                 expect(
                     res.success,
                     'API response should be a success',
-                ).toBeTrue()
+                ).toBeTruthy()
                 expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-                expect(res.body?.[0]?.reverted).toBeFalse()
-                expect(res.body?.[1]?.reverted).toBeFalse()
+                expect(res.body?.[0]?.reverted).toBeFalsy()
+                expect(res.body?.[1]?.reverted).toBeFalsy()
             },
         )
     })
@@ -244,7 +244,7 @@ describe('POST /accounts/*', function () {
                     revision,
                 )
 
-                expect(res.success, 'API Call should fail').toBeFalse()
+                expect(res.success, 'API Call should fail').toBeFalsy()
                 expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
             },
         )
@@ -269,7 +269,7 @@ describe('POST /accounts/*', function () {
             })
 
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.success, 'API response should be a success').toBeTruthy()
             expect(res.body, 'Expected Response Body').toEqual([
                 {
                     data: `${blockRef}000000000000000000000000000000000000000000000000`,
@@ -300,7 +300,7 @@ describe('POST /accounts/*', function () {
             const res = await Client.raw.executeAccountBatch(requestBody)
 
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.success, 'API response should be a success').toBeTruthy()
             expect(res.body, 'Expected Response Body').toEqual([
                 {
                     data: `0x000000000000000000000000${GAS_PAYER.slice(2)}`,
@@ -331,7 +331,7 @@ describe('POST /accounts/*', function () {
             })
 
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.success, 'API response should be a success').toBeTruthy()
             expect(res.body, 'Expected Response Body').toEqual([
                 {
                     data: '0x000000000000000000000000000000000000000000000000000000000002edb3',
@@ -365,7 +365,7 @@ describe('POST /accounts/*', function () {
             })
 
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.success, 'API response should be a success').toBeTruthy()
             expect(res.body, 'Expected Response Body').toEqual([
                 {
                     data: '0x000000000000000000000000000000000000000000000000000000000000353b',
@@ -399,7 +399,7 @@ describe('POST /accounts/*', function () {
             await pollReceipt(setBlock.id)
             const receipt = await setBlock.wait()
 
-            expect(receipt?.reverted).toBeFalse()
+            expect(receipt?.reverted).toBeFalsy()
 
             // Estimate the gas for the same block
             const sameRevisionEstimation = await Client.raw.executeAccountBatch(
@@ -420,7 +420,7 @@ describe('POST /accounts/*', function () {
             expect(
                 sameRevisionEstimation.success,
                 'Same revision should have a good response',
-            ).toBeTrue()
+            ).toBeTruthy()
 
             const nextBlockEstimation = await Client.raw.executeAccountBatch(
                 {
@@ -439,7 +439,7 @@ describe('POST /accounts/*', function () {
             expect(
                 nextBlockEstimation.success,
                 "'next' revision should have a good response",
-            ).toBeTrue()
+            ).toBeTruthy()
 
             expect(
                 sameRevisionEstimation.body?.[0]?.gasUsed,

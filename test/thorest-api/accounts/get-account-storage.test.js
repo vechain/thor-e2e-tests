@@ -60,7 +60,7 @@ describe('GET /accounts/{address}/storage', function () {
             SIMPLE_STORAGE_KEY,
         )
 
-        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.success, 'API response should be a success').toBeTruthy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(res.body, 'Expected Response Body').toEqual({
             value: addPaddingWithPrefix(amount),
@@ -92,7 +92,7 @@ describe('GET /accounts/{address}/storage', function () {
             )
 
             // Check the storage position after the transaction
-            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.success, 'API response should be a success').toBeTruthy()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(res.body, 'Expected Response Body').toEqual({
                 value: addPaddingWithPrefix(newAmount),
@@ -108,7 +108,7 @@ describe('GET /accounts/{address}/storage', function () {
             expect(
                 historic.success,
                 'API response should be a success',
-            ).toBeTrue()
+            ).toBeTruthy()
             expect(historic.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(historic.body, 'Expected Response Body').toEqual({
                 value: addPaddingWithPrefix(startAmount),
@@ -123,7 +123,7 @@ describe('GET /accounts/{address}/storage', function () {
                 SIMPLE_STORAGE_KEY,
                 revision,
             )
-            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.success, 'API response should be a success').toBeTruthy()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(res.body, 'Expected Response Body').toEqual({
                 value: expect.stringMatching(HEX_REGEX_64),
@@ -138,7 +138,7 @@ describe('GET /accounts/{address}/storage', function () {
                 SIMPLE_STORAGE_KEY,
                 revision,
             )
-            expect(res.success, 'API Call should fail').toBeFalse()
+            expect(res.success, 'API Call should fail').toBeFalsy()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
         })
     })

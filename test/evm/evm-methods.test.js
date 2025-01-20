@@ -27,7 +27,7 @@ describe('EVM methods', () => {
     it.e2eTest('should be able to get the "block.basefee"', 'all', async () => {
         const { clause } = await evmMethods.clause.getBaseFee()
         const res = await Client.sdk.gas.estimateGas([clause])
-        expect(res.reverted).toBeFalse()
+        expect(res.reverted).toBeFalsy()
         expect(res.totalGas).toBeGreaterThan(0)
     })
 
@@ -106,7 +106,7 @@ describe('EVM methods', () => {
     it.e2eTest('should be able to get "msg.value"', 'all', async () => {
         const msgValue = await evmMethods.transact.getMsgValue({ value: 100 })
         const receipt = await msgValue.wait(3, 15)
-        expect(receipt.reverted).toBeFalse()
+        expect(receipt.reverted).toBeFalsy()
     })
 
     it.e2eTest('should be able to get "tx.gasprice"', 'all', async () => {
@@ -162,10 +162,10 @@ describe('EVM methods', () => {
 
     it.e2eTest('should require condition to be true', 'all', async () => {
         const res = await evmMethods.read.requireCondition(true, 'Error')
-        expect(res).toEqual([])
+        expect(res).toEqual([undefined])
     })
 
-    it.e2eTest('should require condition to be true', 'all', async () => {
+    it.e2eTest('should require condition to be false', 'all', async () => {
         const { clause } = await evmMethods.clause.requireCondition(
             false,
             'Error',
@@ -180,7 +180,7 @@ describe('EVM methods', () => {
 
     it.e2eTest('should assert condition to be true', 'all', async () => {
         const res = await evmMethods.read.assertCondition(true, 'Error')
-        expect(res).toEqual([])
+        expect(res).toEqual([undefined])
     })
 
     it.e2eTest('should call external function', 'all', async () => {

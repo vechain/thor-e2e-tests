@@ -40,7 +40,7 @@ describe('GET /accounts/{address}', function () {
         expect(
             newTransfer.success,
             'API response should be a success',
-        ).toBeTrue()
+        ).toBeTruthy()
         expect(newTransfer.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(newTransfer.body, 'Expected Response Body').toEqual({
             balance: '0x1',
@@ -53,7 +53,7 @@ describe('GET /accounts/{address}', function () {
         const addr = contractAddresses.energy
         const res = await Client.raw.getAccount(addr)
 
-        expect(res.success, 'API response should be a success').toBeTrue()
+        expect(res.success, 'API response should be a success').toBeTruthy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
         expect(res.body, 'Expected Response Body').toEqual({
             balance: expect.stringMatching(HEX_REGEX),
@@ -68,7 +68,7 @@ describe('GET /accounts/{address}', function () {
                 transfer.vet.recipient,
                 revision,
             )
-            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.success, 'API response should be a success').toBeTruthy()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(res.body, 'Expected Response Body').toEqual({
                 balance: expect.stringMatching(HEX_REGEX),
@@ -82,7 +82,7 @@ describe('GET /accounts/{address}', function () {
         it.e2eTest(`invalid address: ${address}`, 'all', async () => {
             const res = await Client.raw.getAccount(address)
 
-            expect(res.success, 'API Call should fail').toBeFalse()
+            expect(res.success, 'API Call should fail').toBeFalsy()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
         })
     })
@@ -93,7 +93,7 @@ describe('GET /accounts/{address}', function () {
                 transfer.vet.recipient,
                 revision,
             )
-            expect(res.success, 'API Call should fail').toBeFalse()
+            expect(res.success, 'API Call should fail').toBeFalsy()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
         })
     })

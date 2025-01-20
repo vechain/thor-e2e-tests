@@ -35,7 +35,7 @@ describe('WS /subscriptions/beat2', () => {
             wallet.address,
         )
 
-        expect(result).toBeTrue()
+        expect(result).toBeTruthy()
     })
 
     it.e2eTest(

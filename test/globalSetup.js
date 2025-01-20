@@ -1,5 +1,4 @@
 import { Client } from '../src/thor-client'
-import 'jest-expect-message'
 import 'dotenv/config'
 import { testEnv, validateEnv } from '../src/test-env'
 import { transferDetails } from '../src/constants'

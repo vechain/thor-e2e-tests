@@ -29,7 +29,7 @@ describe('GET /accounts/{address}/code', function () {
                 expect(
                     res.success,
                     'API response should be a success',
-                ).toBeTrue()
+                ).toBeTruthy()
                 expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
                 expect(res.body, 'Expected Response Body').toEqual({
                     code: '0x',
@@ -46,7 +46,7 @@ describe('GET /accounts/{address}/code', function () {
         it.e2eTest(`should return the code for ${address}`, 'all', async () => {
             const res = await Client.raw.getAccountCode(address)
 
-            expect(res.success, 'API response should be a success').toBeTrue()
+            expect(res.success, 'API response should be a success').toBeTruthy()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
             expect(res.body, 'Expected Response Body').toEqual({
                 code: expect.stringMatching(HEX_AT_LEAST_1),
@@ -66,7 +66,7 @@ describe('GET /accounts/{address}/code', function () {
             async () => {
                 const res = await Client.raw.getAccountCode(address)
 
-                expect(res.success, 'API Call should fail').toBeFalse()
+                expect(res.success, 'API Call should fail').toBeFalsy()
                 expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
             },
         )
@@ -125,7 +125,7 @@ describe('GET /accounts/{address}/code', function () {
                 expect(
                     vtho.success,
                     'API response should be a success',
-                ).toBeTrue()
+                ).toBeTruthy()
                 expect(vtho.httpCode, 'Expected HTTP Code').toEqual(200)
                 expect(vtho.body, 'Expected Response Body').toEqual({
                     code: expect.stringMatching(HEX_AT_LEAST_1),
@@ -144,7 +144,7 @@ describe('GET /accounts/{address}/code', function () {
                     revision,
                 )
 
-                expect(vtho.success, 'API Call should fail').toBeFalse()
+                expect(vtho.success, 'API Call should fail').toBeFalsy()
                 expect(vtho.httpCode, 'Expected HTTP Code').toEqual(400)
             },
         )

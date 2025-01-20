@@ -1,21 +1,23 @@
-import pluginJest from 'eslint-plugin-jest'
 import eslintConfigPrettier from 'eslint-config-prettier'
-import jestExtended from 'eslint-plugin-jest-extended'
-// import js from "@eslint/js";
+import vitest from '@vitest/eslint-plugin'
+import js from '@eslint/js'
 
 export default [
     // js.configs.recommended,
-    jestExtended.configs['flat/all'],
+    eslintConfigPrettier,
     {
-        plugins: { jest: pluginJest },
+        plugins: { vitest },
         languageOptions: {
-            globals: pluginJest.environments.globals.globals,
+            globals: {
+                ...vitest.environments.env.globals,
+                node: true,
+            },
             parserOptions: {
                 sourceType: 'module',
                 ecmaVersion: 2024,
             },
         },
-        files: ['**/*.spec.js', '**/*.test.js'],
+        files: ['src/**/*.js', 'test/**/*.js'],
         ignores: [
             '.yarn/*',
             '*config.js',
@@ -28,16 +30,8 @@ export default [
             'coverage/',
         ],
         rules: {
-            indent: ['error', 2],
-            'jest/prefer-expect-assertions': 'warn',
-            'jest/no-disabled-tests': 'warn',
-            'jest/no-focused-tests': 'error',
-            'jest/no-identical-title': 'error',
-            'jest/prefer-to-have-length': 'warn',
-            'jest/valid-expect': ['error', { minArgs: 1, maxArgs: 2 }],
-            'jest-extended/prefer-to-be-true': 'warn',
-            'jest-extended/prefer-to-be-false': 'error',
+            ...vitest.configs.recommended.rules, // you can also use vitest.configs.all.rules to enable all rules
+            'vitest/max-nested-describe': ['error', { max: 3 }], // you can also modify rules' behavior using option like this
         },
     },
-    eslintConfigPrettier,
 ]

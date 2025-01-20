@@ -54,7 +54,7 @@ describe('POST /debug/tracers', () => {
 
         expect(res.httpCode).toBe(200)
         verifyStructLogs(res.body.structLogs)
-        expect(res.body.failed).toBeFalse()
+        expect(res.body.failed).toBeFalsy()
         expect(res.body.gas).toBeGreaterThan(0)
     })
 
@@ -63,7 +63,7 @@ describe('POST /debug/tracers', () => {
 
         expect(res.httpCode).toBe(200)
         verifyStructLogs(res.body.structLogs)
-        expect(res.body.failed).toBeFalse()
+        expect(res.body.failed).toBeFalsy()
         expect(res.body.gas).toBeGreaterThan(0)
     })
 
@@ -135,7 +135,7 @@ describe('POST /debug/tracers', () => {
         expect(body.gasUsed).toMatch(HEX_AT_LEAST_1)
         expect(body.to).toBe(contractAddresses.energy)
         // transfer function selector
-        expect(body.input).toStartWith('0xa9059cbb')
+        expect(body.input.startsWith('0xa9059cbb')).toBeTruthy()
         expect(body.output).toBe(
             '0x0000000000000000000000000000000000000000000000000000000000000001',
         )
