@@ -28,4 +28,8 @@ interface Extension {
 
     /// @notice Get the account that pays the TX fee at runtime.
     function txGasPayer() external view returns (address);
+
+    // extension v3 methods
+    function txClauseIndex() external view returns (uint256);
+    function txClauseCount() external view returns (uint256);
 }
