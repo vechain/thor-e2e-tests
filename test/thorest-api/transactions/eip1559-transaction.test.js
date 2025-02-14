@@ -18,7 +18,7 @@ const buildTx = async (clauses, options) => {
         expiration: 1000,
         clauses: clauses,
         maxPriorityFeePerGas: 10,
-        maxFeePerGas: 1000,
+        maxFeePerGas: 10,
         gas: 1_000_000,
         dependsOn: options?.dependsOn ?? null,
         nonce: generateNonce(),
@@ -47,6 +47,11 @@ describe('EIP-1559 Transaction', () => {
             })
 
             expect(res.success).toBeTruthy()
+            const receipt = await Client.sdk.transactions.waitForTransaction(
+                res.body.id,
+            )
+
+            expect(receipt.reverted).toBeFalsy()
         },
     )
 })
