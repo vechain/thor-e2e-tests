@@ -14,6 +14,7 @@ import {
     VeChainPrivateKeySigner,
     VeChainProvider,
 } from '@vechain/sdk-network'
+import { Eip1559Transaction } from './eip-1559-transaction'
 
 export const generateAddress = async () => {
     return (await generateEmptyWallet()).address.toLowerCase()
@@ -160,13 +161,27 @@ class ThorWallet {
 
         let tx
 
-        if (delegationSignature) {
-            tx = new Transaction(
-                transaction.body,
-                Buffer.concat([signature, delegationSignature]),
-            )
+        if (transaction instanceof Eip1559Transaction) {
+            if (delegationSignature) {
+                tx = new Eip1559Transaction(
+                    transaction.body,
+                    Buffer.concat([signature, delegationSignature]),
+                )
+            } else {
+                tx = new Eip1559Transaction(
+                    transaction.body,
+                    Buffer.from(signature),
+                )
+            }
         } else {
-            tx = new Transaction(transaction.body, Buffer.from(signature))
+            if (delegationSignature) {
+                tx = new Transaction(
+                    transaction.body,
+                    Buffer.concat([signature, delegationSignature]),
+                )
+            } else {
+                tx = new Transaction(transaction.body, Buffer.from(signature))
+            }
         }
 
         return tx

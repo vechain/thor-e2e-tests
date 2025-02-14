@@ -21,10 +21,13 @@ import {
     VTHO,
 } from '@vechain/sdk-core'
 import { Blake2b256 } from '@vechain/sdk-core'
+
 /**
- * @typedef {import('./TransactionBody').TransactionBody} TransactionBody
- * @typedef {import('./TransactionClause').TransactionClause} TransactionClause
+ * @typedef {import('./TransactionBody').Eip1559TransactionBody}
+ * @typedef {import('@vechain/sdk-core').TransactionClause}
  */
+
+const DynamicFeeTxType = 0x51
 
 /**
  * Represents an immutable transaction entity.
@@ -65,8 +68,9 @@ class Eip1559Transaction {
                 ],
             },
         },
-        { name: 'gasPriceCoef', kind: new NumericKind(1) },
         { name: 'gas', kind: new NumericKind(8) },
+        { name: 'maxFeePerGas', kind: new NumericKind(32) },
+        { name: 'maxPriorityFeePerGas', kind: new NumericKind(32) },
         { name: 'dependsOn', kind: new OptionalFixedHexBlobKind(32) },
         { name: 'nonce', kind: new NumericKind(8) },
         { name: 'reserved', kind: { item: new BufferKind() } },
@@ -103,6 +107,23 @@ class Eip1559Transaction {
         kind: Eip1559Transaction.RLP_FIELDS,
     }
 
+    /**
+     * Represents the transaction body.
+     * @type {Eip1559TransactionBody}
+     */
+    body
+
+    /**
+     * Represents the transaction signature.
+     * @type {Uint8Array}
+     */
+    signature
+
+    /**
+     * Creates a new instance of the Transaction class.
+     * @param body {Eip1559TransactionBody}
+     * @param [signature] {Uint8Array} - optional
+     */
     constructor(body, signature) {
         this.body = body
         this.signature = signature
@@ -203,7 +224,8 @@ class Eip1559Transaction {
             dependsOn: decodedRLPBody.dependsOn,
             expiration: decodedRLPBody.expiration,
             gas: decodedRLPBody.gas,
-            gasPriceCoef: decodedRLPBody.gasPriceCoef,
+            maxFeePerGas: decodedRLPBody.maxFeePerGas,
+            maxPriorityFeePerGas: decodedRLPBody.maxPriorityFeePerGas,
             nonce: decodedRLPBody.nonce,
         }
         const correctTransactionBody =
@@ -270,7 +292,7 @@ class Eip1559Transaction {
     /**
      * Return `true` if the transaction body is valid, `false` otherwise.
      *
-     * @param {TransactionBody} body - The transaction body to validate.
+     * @param {Eip1559TransactionBody} body - The transaction body to validate.
      * @return {boolean} `true` if the transaction body is valid, `false` otherwise.
      */
     static isValidBody(body) {
@@ -284,12 +306,12 @@ class Eip1559Transaction {
             Hex.isValid0x(body.blockRef) &&
             HexUInt.of(body.blockRef).bytes.length ===
                 Eip1559Transaction.BLOCK_REF_LENGTH &&
+            body.maxFeePerGas !== undefined &&
+            body.maxPriorityFeePerGas !== undefined &&
             // Expiration
             body.expiration !== undefined &&
             // Clauses
             body.clauses !== undefined &&
-            // Gas price coef
-            body.gasPriceCoef !== undefined &&
             // Gas
             body.gas !== undefined &&
             // Depends on
@@ -302,7 +324,7 @@ class Eip1559Transaction {
     /**
      * Creates a new Transaction instance if the provided body is valid.
      *
-     * @param {TransactionBody} body - The transaction body to be validated.
+     * @param {Eip1559TransactionBody} body - The transaction body to be validated.
      * @param {Uint8Array} [signature] - Optional signature.
      * @return {Eip1559Transaction} A new Transaction instance if validation is successful.
      * @throws {InvalidTransactionField} If the provided body is invalid.
@@ -347,7 +369,7 @@ class Eip1559Transaction {
     }
 
     /**
-     * Decodes the {@link TransactionBody.reserved} field from the given buffer array.
+     * Decodes the {@link Eip1559TransactionBody.reserved} field from the given buffer array.
      *
      * @param {Buffer[]} reserved  - An array of Uint8Array objects representing the reserved field data.
      * @return {Object} An object containing the decoded features and any unused buffer data.
@@ -380,7 +402,7 @@ class Eip1559Transaction {
     /**
      * Return `true` if the transaction is delegated, else `false`.
      *
-     * @param {TransactionBody} body - The transaction body.
+     * @param {Eip1559TransactionBody} body - The transaction body.
      * @return {boolean} `true` if the transaction is delegated, else `false`.
      */
     static isDelegated(body) {
@@ -395,7 +417,7 @@ class Eip1559Transaction {
     /**
      * Validates the length of a given signature against the expected length.
      *
-     * @param {TransactionBody} body - The body of the transaction being validated.
+     * @param {Eip1559TransactionBody} body - The body of the transaction being validated.
      * @param {Uint8Array} signature - The signature to verify the length of.
      * @return {boolean} Returns true if the signature length matches the expected length, otherwise false.
      */
@@ -622,21 +644,24 @@ class Eip1559Transaction {
      */
     encode(isSigned) {
         // Encode transaction body with RLP
-        return this.encodeBodyField(
+        const encodedBody = this.encodeBodyField(
             {
                 // Existing body and the optional `reserved` field if present.
                 ...this.body,
-                /*
-                 * The `body.clauses` property is already an array,
-                 * albeit TypeScript realize, hence cast is needed
-                 * otherwise encodeObject will throw an error.
-                 */
                 clauses: this.body.clauses,
-                // New reserved field.
                 reserved: this.encodeReservedField(),
             },
             isSigned,
         )
+
+        // Prepend DynamicFeeTxType if the transaction is signed
+        if (isSigned) {
+            return nc_utils.concatBytes(
+                new Uint8Array([DynamicFeeTxType]),
+                encodedBody,
+            )
+        }
+        return encodedBody
     }
 
     /**
@@ -668,12 +693,12 @@ class Eip1559Transaction {
     }
 
     /**
-     * Encodes the {@link TransactionBody.reserved} field data for a transaction.
+     * Encodes the {@link Eip1559TransactionBody.reserved} field data for a transaction.
      *
      * @return {Uint8Array[]} The encoded list of reserved features.
      * It removes any trailing unused features that have zero length from the list.
      *
-     * @remarks The {@link TransactionBody.reserved} is optional, albeit
+     * @remarks The {@link Eip1559TransactionBody.reserved} is optional, albeit
      * is required to perform RLP encoding.
      *
      * @see encode

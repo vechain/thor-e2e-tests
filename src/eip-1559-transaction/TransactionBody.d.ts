@@ -1,9 +1,9 @@
-import { type TransactionClause } from './TransactionClause'
+import { type TransactionClause } from '@vechain/sdk-core'
 
 /**
  * Type for transaction body.
  */
-interface TransactionBody {
+interface Eip1559TransactionBody {
     /**
      * Last byte of genesis block ID
      */
@@ -25,14 +25,19 @@ interface TransactionBody {
     clauses: TransactionClause[]
 
     /**
-     * Coefficient applied to base gas price [0,255]
-     */
-    gasPriceCoef: number
-
-    /**
      * Max gas provided for execution
      */
     gas: string | number
+
+    /**
+     * Max fee per gas
+     */
+    maxFeePerGas: string | number
+
+    /**
+     * Max priority fee per gas
+     */
+    maxPriorityFeePerGas: string | number
 
     /**
      * ID of another tx that is depended
@@ -88,4 +93,4 @@ interface TransactionBody {
     }
 }
 
-export type { TransactionBody }
+export type { Eip1559TransactionBody }
