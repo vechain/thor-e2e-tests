@@ -161,27 +161,18 @@ class ThorWallet {
 
         let tx
 
-        if (transaction instanceof Eip1559Transaction) {
-            if (delegationSignature) {
-                tx = new Eip1559Transaction(
-                    transaction.body,
-                    Buffer.concat([signature, delegationSignature]),
-                )
-            } else {
-                tx = new Eip1559Transaction(
-                    transaction.body,
-                    Buffer.from(signature),
-                )
-            }
+        const TxClass =
+            transaction instanceof Eip1559Transaction
+                ? Eip1559Transaction
+                : Transaction
+
+        if (delegationSignature) {
+            tx = new TxClass(
+                transaction.body,
+                Buffer.concat([signature, delegationSignature]),
+            )
         } else {
-            if (delegationSignature) {
-                tx = new Transaction(
-                    transaction.body,
-                    Buffer.concat([signature, delegationSignature]),
-                )
-            } else {
-                tx = new Transaction(transaction.body, Buffer.from(signature))
-            }
+            tx = new TxClass(transaction.body, signature)
         }
 
         return tx
