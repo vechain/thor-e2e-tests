@@ -52,7 +52,11 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
 
     it.e2eTest('when blockCount is negative', 'all', async () => {
         const blockCount = -2
-        const res = await Client.raw.getFeesHistory(blockCount, blockNumber, false)
+        const res = await Client.raw.getFeesHistory(
+            blockCount,
+            blockNumber,
+            false,
+        )
 
         expect(res.success, 'API response should be a success').toBeFalsy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
@@ -63,7 +67,11 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
 
     it.e2eTest('when blockCount is 0', 'all', async () => {
         const blockCount = 0
-        const res = await Client.raw.getFeesHistory(blockCount, blockNumber, false)
+        const res = await Client.raw.getFeesHistory(
+            blockCount,
+            blockNumber,
+            false,
+        )
 
         expect(res.success, 'API response should be a success').toBeFalsy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
