@@ -90,22 +90,30 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
         )
     })
 
-    it.e2eTest('when blockCount is higher than the number of blocks', 'all', async () => {
-        const res = await Client.raw.getFeesHistory(blockNumber + 10, blockNumber, false)
+    it.e2eTest(
+        'when blockCount is higher than the number of blocks',
+        'all',
+        async () => {
+            const res = await Client.raw.getFeesHistory(
+                blockNumber + 10,
+                blockNumber,
+                false,
+            )
 
-        expect(res.success, 'API response should be a success').toBeTruthy()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        const expectedRes = {
-            baseFees: expect.arrayContaining([
-                expect.stringMatching(HEX_AT_LEAST_1),
-            ]),
-            gasUsedRatios: expect.arrayContaining([expect.any(Number)]),
-            oldestBlock: expect.stringMatching(HEX_REGEX_64),
-        }
-        expect(res.body, 'Expected Response Body').toEqual(expectedRes)
-        expect(res.body.baseFees.length).toBe(blockNumber + 1)
-        expect(res.body.gasUsedRatios.length).toBe(blockNumber + 1)
-    })
+            expect(res.success, 'API response should be a success').toBeTruthy()
+            expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+            const expectedRes = {
+                baseFees: expect.arrayContaining([
+                    expect.stringMatching(HEX_AT_LEAST_1),
+                ]),
+                gasUsedRatios: expect.arrayContaining([expect.any(Number)]),
+                oldestBlock: expect.stringMatching(HEX_REGEX_64),
+            }
+            expect(res.body, 'Expected Response Body').toEqual(expectedRes)
+            expect(res.body.baseFees.length).toBe(blockNumber + 1)
+            expect(res.body.gasUsedRatios.length).toBe(blockNumber + 1)
+        },
+    )
 
     it.e2eTest('when newestBlock is a blockID', 'all', async () => {
         const res = await Client.raw.getFeesHistory(1, blockID, false)
