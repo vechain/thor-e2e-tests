@@ -161,7 +161,7 @@ class ThorClient {
         )
     }
 
-    // GET /blocks
+    // GET /fees/history
     async getFeesHistory(blockCount, newestBlock, options) {
         return this.performRequest(() =>
             this.axios.get(
