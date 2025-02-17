@@ -162,8 +162,13 @@ class ThorClient {
     }
 
     // GET /blocks
-    async getFeesHistory(blockCount, newestBlock, options) {     
-        return this.performRequest(() => this.axios.get(`/fees/history?blockCount=${blockCount}?newestBlock=${newestBlock}`, options))
+    async getFeesHistory(blockCount, newestBlock, options) {
+        return this.performRequest(() =>
+            this.axios.get(
+                `/fees/history?blockCount=${blockCount}&newestBlock=${newestBlock}`,
+                options,
+            ),
+        )
     }
 
     // WS /subscriptions/block
