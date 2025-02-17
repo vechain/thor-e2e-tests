@@ -51,32 +51,35 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
     })
 
     it.e2eTest('when blockCount is negative', 'all', async () => {
-        const res = await Client.raw.getFeesHistory(-2, blockNumber, false)
+        const blockCount = -2
+        const res = await Client.raw.getFeesHistory(blockCount, blockNumber, false)
 
         expect(res.success, 'API response should be a success').toBeFalsy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
         expect(res.httpMessage, 'Expected Error Message').toEqual(
-            'invalid blockCount, it should represent an integer: strconv.ParseUint: parsing "-2": invalid syntax\n',
+            `invalid blockCount, it should represent an integer: strconv.ParseUint: parsing "${blockCount}": invalid syntax\n`,
         )
     })
 
     it.e2eTest('when blockCount is 0', 'all', async () => {
-        const res = await Client.raw.getFeesHistory(0, blockNumber, false)
+        const blockCount = 0
+        const res = await Client.raw.getFeesHistory(blockCount, blockNumber, false)
 
         expect(res.success, 'API response should be a success').toBeFalsy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
         expect(res.httpMessage, 'Expected Error Message').toEqual(
-            'invalid blockCount, it should not be 0',
+            `invalid blockCount, it should not be ${blockCount}\n`,
         )
     })
 
     it.e2eTest('when newestBlock is negative', 'all', async () => {
-        const res = await Client.raw.getFeesHistory(1, -3, false)
+        const newestBlock = -3
+        const res = await Client.raw.getFeesHistory(1, newestBlock, false)
 
         expect(res.success, 'API response should be a success').toBeFalsy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
         expect(res.httpMessage, 'Expected Error Message').toEqual(
-            'newestBlock: strconv.ParseUint: parsing "-3": invalid syntax\n',
+            `newestBlock: strconv.ParseUint: parsing "${newestBlock}": invalid syntax\n`,
         )
     })
 
