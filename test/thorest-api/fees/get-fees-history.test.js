@@ -58,7 +58,7 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
             false,
         )
 
-        expect(res.success, 'API response should be an error').toBeFalsy()
+        expect(res.success, 'API response should fail').toBeFalsy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
         expect(res.httpMessage, 'Expected Error Message').toEqual(
             `invalid blockCount, it should represent an integer: strconv.ParseUint: parsing "${blockCount}": invalid syntax\n`,
@@ -73,7 +73,7 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
             false,
         )
 
-        expect(res.success, 'API response should be an error').toBeFalsy()
+        expect(res.success, 'API response should fail').toBeFalsy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
         expect(res.httpMessage, 'Expected Error Message').toEqual(
             `invalid blockCount, it should not be ${blockCount}\n`,
@@ -84,7 +84,7 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
         const newestBlock = -3
         const res = await Client.raw.getFeesHistory(1, newestBlock, false)
 
-        expect(res.success, 'API response should be an error').toBeFalsy()
+        expect(res.success, 'API response should fail').toBeFalsy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
         expect(res.httpMessage, 'Expected Error Message').toEqual(
             `newestBlock: strconv.ParseUint: parsing "${newestBlock}": invalid syntax\n`,
@@ -94,7 +94,7 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
     it.e2eTest('when newestBlock is higher than best', 'all', async () => {
         const res = await Client.raw.getFeesHistory(1, blockNumber + 10, false)
 
-        expect(res.success, 'API response should be an error').toBeFalsy()
+        expect(res.success, 'API response should fail').toBeFalsy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
         expect(res.httpMessage, 'Expected Error Message').toEqual(
             'newestBlock: not found\n',
