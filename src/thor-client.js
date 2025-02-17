@@ -1,9 +1,9 @@
+import axios from 'axios'
 import 'dotenv/config'
 import { testEnv } from './test-env'
-import axios from 'axios'
 
-import WebSocket from 'ws'
 import { ThorClient as _ThorClient } from '@vechain/sdk-network'
+import WebSocket from 'ws'
 
 class ThorClient {
     subscriptions = []
@@ -159,6 +159,11 @@ class ThorClient {
         return this.performRequest(() =>
             this.axios.get(`/node/network/peers`, options),
         )
+    }
+
+    // GET /blocks
+    async getFeesHistory(blockCount, newestBlock, options) {     
+        return this.performRequest(() => this.axios.get(`/fees/history?blockCount=${blockCount}?newestBlock=${newestBlock}`, options))
     }
 
     // WS /subscriptions/block
