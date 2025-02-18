@@ -159,7 +159,7 @@ describe('GET /blocks/{revision}', function () {
                     kind: [
                         { name: 'Alpha', kind: new HexBlobKind() },
                         { name: 'COM', kind: new HexBlobKind() },
-                        { name: 'BaseFee', kind: new NumericKind(64) }
+                        { name: 'BaseFee', kind: new NumericKind(64) },
                     ],
                     // TODO: COM is usually false, and if kept there it throws an error (expected 2 got 1)
                     // TODO: not sure how to make it optional
