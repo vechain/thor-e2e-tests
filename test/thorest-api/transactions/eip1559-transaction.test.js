@@ -18,7 +18,7 @@ const buildTx = async (clauses, options) => {
         expiration: 1000,
         clauses: clauses,
         maxPriorityFeePerGas: 10,
-        maxFeePerGas: 10,
+        maxFeePerGas: 10_000_000_000_000,
         gas: 1_000_000,
         dependsOn: options?.dependsOn ?? null,
         nonce: generateNonce(),
@@ -34,7 +34,7 @@ describe('EIP-1559 Transaction', () => {
             const wallet = ThorWallet.withFunds()
 
             const clause = Clause.transferVET(
-                Address.of('0x7567d83b7b8d80addcb281a71d54fc7b3364ffed'),
+                wallet.address,
                 VET.of(1, Units.wei),
             )
 
