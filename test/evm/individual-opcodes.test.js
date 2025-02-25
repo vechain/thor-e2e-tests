@@ -648,7 +648,9 @@ describe('Individual OpCodes', () => {
             })
 
             expect(simulation.body?.[0]?.reverted).toBeTruthy()
-            expect(simulation.body?.[0]?.vmError).toEqual('invalid code: must not begin with 0xef')
+            expect(simulation.body?.[0]?.vmError).toEqual(
+                'invalid code: must not begin with 0xef',
+            )
         },
     )
 })

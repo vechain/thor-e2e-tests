@@ -188,6 +188,7 @@ describe('GET /blocks/{revision}', function () {
         )
         expect(block_res.body.stateRoot).toEqual(decodedObject.StateRoot)
         expect(block_res.body.receiptsRoot).toEqual(decodedObject.ReceiptsRoot)
+        expect(block_res.body.baseFee).toEqual(decodedObject.Extension.BaseFee)
 
         // encode back
         const encodedObject = RLPProfiler.ofObject(

@@ -40,7 +40,15 @@ const compareSentTxWithCreatedTx = (sentTx, createdTx) => {
     expect(body?.dependsOn).toEqual(createdTx.body.dependsOn)
     const hexNonce = createdTx.body.nonce.toString(16)
     expect(body?.nonce).toEqual(hexUtils.addPrefix(hexNonce))
-    expect(body?.gasPriceCoef).toEqual(createdTx.body.gasPriceCoef)
+    expect(body?.gasPrice).toEqual(createdTx.body.gasPrice)
+    if (body?.txType === '0x00') {
+        expect(body?.gasPriceCoef).toEqual(createdTx.body.gasPriceCoef)
+    } else {
+        expect(body?.maxFeePerGas).toEqual(createdTx.body.maxFeePerGas)
+        expect(body?.maxPriorityFeePerGas).toEqual(
+            createdTx.body.maxPriorityFeePerGas,
+        )
+    }
 }
 
 const compareClauses = (sentClauses, createdClauses) => {
