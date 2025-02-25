@@ -76,7 +76,7 @@ describe('GET /blocks/{revision}', function () {
                 txsRoot: expect.stringMatching(HEX_REGEX_64),
             }
             if (res.body.number >= genesis.forkConfig.GALACTICA) {
-                expectedRes.baseFee = expect.any(Number)
+                expectedRes.baseFee = expect.stringMatching(HEX_REGEX)
             }
             expect(res.body, 'Expected Response Body').toEqual(expectedRes)
         })
