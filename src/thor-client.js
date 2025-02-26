@@ -171,6 +171,16 @@ class ThorClient {
         )
     }
 
+    // GET /fees/priority
+    async getFeesPriority(options) {
+        return this.performRequest(() =>
+            this.axios.get(
+                '/fees/priority',
+                options,
+            ),
+        )
+    }
+
     // WS /subscriptions/block
     subscribeToBlocks(callback, pos) {
         let url = `${this.baseWsUrl}/subscriptions/block`
