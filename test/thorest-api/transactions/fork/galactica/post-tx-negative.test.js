@@ -1,4 +1,4 @@
-import { Eip1559Transaction } from '../../../../../src/eip-1559-transaction'
+import { DynFeeTransaction } from '../../../../../src/dyn-fee-transaction'
 import { Clause, Address, VET, Units, Hex } from '@vechain/sdk-core'
 import { ThorWallet } from '../../../../../src/wallet'
 import { getBlockRef } from '../../../../../src/utils/block-utils'
@@ -18,7 +18,7 @@ const buildTx = async (clauses, options) => {
         throw new Error('Could not get best block')
     }
 
-    return new Eip1559Transaction({
+    return new DynFeeTransaction({
         blockRef: bestBlockRef,
         expiration: 1000,
         clauses: clauses,
@@ -58,7 +58,7 @@ describe('POST /transactions', () => {
             })
 
             const expectedErrMsg =
-                'tx rejected: max fee per gas too low to cover for base fee'
+                'tx rejected: max fee per gas is less than block base fee'
             expect(res.success).toBeFalsy()
             expect(res.httpMessage.trimEnd()).toBe(expectedErrMsg)
         },

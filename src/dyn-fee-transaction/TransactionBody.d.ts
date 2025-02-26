@@ -3,7 +3,7 @@ import { type TransactionClause } from '@vechain/sdk-core'
 /**
  * Type for transaction body.
  */
-interface Eip1559TransactionBody {
+interface DynFeeTransactionBody {
     /**
      * Last byte of genesis block ID
      */
@@ -93,4 +93,4 @@ interface Eip1559TransactionBody {
     }
 }
 
-export type { Eip1559TransactionBody }
+export type { DynFeeTransactionBody }

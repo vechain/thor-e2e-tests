@@ -23,7 +23,7 @@ import {
 import { Blake2b256 } from '@vechain/sdk-core'
 
 /**
- * @typedef {import('./TransactionBody').Eip1559TransactionBody}
+ * @typedef {import('./TransactionBody').DynFeeTransactionBody}
  * @typedef {import('@vechain/sdk-core').TransactionClause}
  */
 
@@ -32,7 +32,7 @@ const DynamicFeeTxType = 0x51
 /**
  * Represents an immutable transaction entity.
  */
-class Eip1559Transaction {
+class DynFeeTransaction {
     /**
      * A collection of constants used for gas calculations in transactions.
      */
@@ -95,8 +95,8 @@ class Eip1559Transaction {
      */
     static RLP_SIGNED_TRANSACTION_PROFILE = {
         name: 'tx',
-        kind: Eip1559Transaction.RLP_FIELDS.concat([
-            Eip1559Transaction.RLP_SIGNATURE,
+        kind: DynFeeTransaction.RLP_FIELDS.concat([
+            DynFeeTransaction.RLP_SIGNATURE,
         ]),
     }
     /**
@@ -104,12 +104,12 @@ class Eip1559Transaction {
      */
     static RLP_UNSIGNED_TRANSACTION_PROFILE = {
         name: 'tx',
-        kind: Eip1559Transaction.RLP_FIELDS,
+        kind: DynFeeTransaction.RLP_FIELDS,
     }
 
     /**
      * Represents the transaction body.
-     * @type {Eip1559TransactionBody}
+     * @type {DynFeeTransactionBody}
      */
     body
 
@@ -121,7 +121,7 @@ class Eip1559Transaction {
 
     /**
      * Creates a new instance of the Transaction class.
-     * @param body {Eip1559TransactionBody}
+     * @param body {DynFeeTransactionBody}
      * @param [signature] {Uint8Array} - optional
      */
     constructor(body, signature) {
@@ -176,16 +176,16 @@ class Eip1559Transaction {
     }
 
     get intrinsicGas() {
-        return Eip1559Transaction.intrinsicGas(this.body.clauses)
+        return DynFeeTransaction.intrinsicGas(this.body.clauses)
     }
 
     get isDelegated() {
-        return Eip1559Transaction.isDelegated(this.body)
+        return DynFeeTransaction.isDelegated(this.body)
     }
 
     get isSigned() {
         if (this.signature !== undefined) {
-            return Eip1559Transaction.isSignatureLengthValid(
+            return DynFeeTransaction.isSignatureLengthValid(
                 this.body,
                 this.signature,
             )
@@ -211,8 +211,8 @@ class Eip1559Transaction {
 
     static decode(rawTransaction, isSigned) {
         const profile = isSigned
-            ? Eip1559Transaction.RLP_SIGNED_TRANSACTION_PROFILE
-            : Eip1559Transaction.RLP_UNSIGNED_TRANSACTION_PROFILE
+            ? DynFeeTransaction.RLP_SIGNED_TRANSACTION_PROFILE
+            : DynFeeTransaction.RLP_UNSIGNED_TRANSACTION_PROFILE
         const decodedRLPBody = RLPProfiler.ofObjectEncoded(
             rawTransaction,
             profile,
@@ -232,17 +232,17 @@ class Eip1559Transaction {
             decodedRLPBody.reserved.length > 0
                 ? {
                       ...bodyWithoutReservedField,
-                      reserved: Eip1559Transaction.decodeReservedField(
+                      reserved: DynFeeTransaction.decodeReservedField(
                           decodedRLPBody.reserved,
                       ),
                   }
                 : bodyWithoutReservedField
         return decodedRLPBody.signature !== undefined
-            ? Eip1559Transaction.of(
+            ? DynFeeTransaction.of(
                   correctTransactionBody,
                   decodedRLPBody.signature,
               )
-            : Eip1559Transaction.of(correctTransactionBody)
+            : DynFeeTransaction.of(correctTransactionBody)
     }
 
     /**
@@ -269,22 +269,22 @@ class Eip1559Transaction {
                                 { clause },
                             )
 
-                        sum += Eip1559Transaction.GAS_CONSTANTS.CLAUSE_GAS
+                        sum += DynFeeTransaction.GAS_CONSTANTS.CLAUSE_GAS
                     } else {
                         sum +=
-                            Eip1559Transaction.GAS_CONSTANTS
+                            DynFeeTransaction.GAS_CONSTANTS
                                 .CLAUSE_GAS_CONTRACT_CREATION
                     }
-                    sum += Eip1559Transaction.computeUsedGasFor(clause.data)
+                    sum += DynFeeTransaction.computeUsedGasFor(clause.data)
                     return sum
-                }, Eip1559Transaction.GAS_CONSTANTS.TX_GAS),
+                }, DynFeeTransaction.GAS_CONSTANTS.TX_GAS),
                 Units.wei,
             )
         }
         // No clauses.
         return VTHO.of(
-            Eip1559Transaction.GAS_CONSTANTS.TX_GAS +
-                Eip1559Transaction.GAS_CONSTANTS.CLAUSE_GAS,
+            DynFeeTransaction.GAS_CONSTANTS.TX_GAS +
+                DynFeeTransaction.GAS_CONSTANTS.CLAUSE_GAS,
             Units.wei,
         )
     }
@@ -292,7 +292,7 @@ class Eip1559Transaction {
     /**
      * Return `true` if the transaction body is valid, `false` otherwise.
      *
-     * @param {Eip1559TransactionBody} body - The transaction body to validate.
+     * @param {DynFeeTransactionBody} body - The transaction body to validate.
      * @return {boolean} `true` if the transaction body is valid, `false` otherwise.
      */
     static isValidBody(body) {
@@ -305,7 +305,7 @@ class Eip1559Transaction {
             body.blockRef !== undefined &&
             Hex.isValid0x(body.blockRef) &&
             HexUInt.of(body.blockRef).bytes.length ===
-                Eip1559Transaction.BLOCK_REF_LENGTH &&
+                DynFeeTransaction.BLOCK_REF_LENGTH &&
             body.maxFeePerGas !== undefined &&
             body.maxPriorityFeePerGas !== undefined &&
             // Expiration
@@ -324,14 +324,14 @@ class Eip1559Transaction {
     /**
      * Creates a new Transaction instance if the provided body is valid.
      *
-     * @param {Eip1559TransactionBody} body - The transaction body to be validated.
+     * @param {DynFeeTransactionBody} body - The transaction body to be validated.
      * @param {Uint8Array} [signature] - Optional signature.
-     * @return {Eip1559Transaction} A new Transaction instance if validation is successful.
+     * @return {DynFeeTransaction} A new Transaction instance if validation is successful.
      * @throws {InvalidTransactionField} If the provided body is invalid.
      */
     static of(body, signature) {
-        if (Eip1559Transaction.isValidBody(body)) {
-            return new Eip1559Transaction(body, signature)
+        if (DynFeeTransaction.isValidBody(body)) {
+            return new DynFeeTransaction(body, signature)
         }
         throw new InvalidTransactionField('Transaction.of', 'invalid body', {
             fieldName: 'body',
@@ -360,16 +360,16 @@ class Eip1559Transaction {
         let sum = 0n
         for (let i = 2; i < data.length; i += 2) {
             if (data.substring(i, i + 2) === '00') {
-                sum += Eip1559Transaction.GAS_CONSTANTS.ZERO_GAS_DATA
+                sum += DynFeeTransaction.GAS_CONSTANTS.ZERO_GAS_DATA
             } else {
-                sum += Eip1559Transaction.GAS_CONSTANTS.NON_ZERO_GAS_DATA
+                sum += DynFeeTransaction.GAS_CONSTANTS.NON_ZERO_GAS_DATA
             }
         }
         return sum
     }
 
     /**
-     * Decodes the {@link Eip1559TransactionBody.reserved} field from the given buffer array.
+     * Decodes the {@link DynFeeTransactionBody.reserved} field from the given buffer array.
      *
      * @param {Buffer[]} reserved  - An array of Uint8Array objects representing the reserved field data.
      * @return {Object} An object containing the decoded features and any unused buffer data.
@@ -381,8 +381,8 @@ class Eip1559Transaction {
         // Not trimmed reserved field
         if (reserved[reserved.length - 1].length > 0) {
             // Get features field.
-            const featuresField = Eip1559Transaction.RLP_FEATURES.kind
-                .buffer(reserved[0], Eip1559Transaction.RLP_FEATURES.name)
+            const featuresField = DynFeeTransaction.RLP_FEATURES.kind
+                .buffer(reserved[0], DynFeeTransaction.RLP_FEATURES.name)
                 .decode()
             // Return encoded reserved field
             return reserved.length > 1
@@ -402,7 +402,7 @@ class Eip1559Transaction {
     /**
      * Return `true` if the transaction is delegated, else `false`.
      *
-     * @param {Eip1559TransactionBody} body - The transaction body.
+     * @param {DynFeeTransactionBody} body - The transaction body.
      * @return {boolean} `true` if the transaction is delegated, else `false`.
      */
     static isDelegated(body) {
@@ -417,7 +417,7 @@ class Eip1559Transaction {
     /**
      * Validates the length of a given signature against the expected length.
      *
-     * @param {Eip1559TransactionBody} body - The body of the transaction being validated.
+     * @param {DynFeeTransactionBody} body - The body of the transaction being validated.
      * @param {Uint8Array} signature - The signature to verify the length of.
      * @return {boolean} Returns true if the signature length matches the expected length, otherwise false.
      */
@@ -458,7 +458,7 @@ class Eip1559Transaction {
      * Signs the transaction using the provided private key of the transaction sender.
      *
      * @param {Uint8Array} senderPrivateKey - The private key used to sign the transaction.
-     * @return {Eip1559Transaction} The signed transaction.
+     * @return {DynFeeTransaction} The signed transaction.
      * @throws {InvalidTransactionField} If attempting to sign a delegated transaction.
      * @throws {InvalidSecp256k1PrivateKey} If the provided private key is not valid.
      *
@@ -476,7 +476,7 @@ class Eip1559Transaction {
                     senderPrivateKey,
                 )
                 // Return new signed transaction.
-                return Eip1559Transaction.of(this.body, signature)
+                return DynFeeTransaction.of(this.body, signature)
             }
             throw new InvalidTransactionField(
                 `Transaction.sign`,
@@ -499,7 +499,7 @@ class Eip1559Transaction {
      * @param {Address} sender - The address of the sender for whom the transaction hash is generated.
      * @param {Uint8Array} gasPayerPrivateKey - The private key of the gas payer. Must be a valid secp256k1 key.
      *
-     * @return {Eip1559Transaction} - A new transaction object with the gas payer's signature appended.
+     * @return {DynFeeTransaction} - A new transaction object with the gas payer's signature appended.
      *
      * @throws {InvalidSecp256k1PrivateKey} If the provided gas payer private key is not valid.
      * @throws {InvalidTransactionField} If the transaction is unsigned or lacks a valid signature.
@@ -514,7 +514,7 @@ class Eip1559Transaction {
             if (this.isDelegated) {
                 if (this.signature !== undefined) {
                     const senderHash = this.getTransactionHash(sender).bytes
-                    return new Eip1559Transaction(
+                    return new DynFeeTransaction(
                         this.body,
                         nc_utils.concatBytes(
                             // Drop any previous gas payer signature.
@@ -561,7 +561,7 @@ class Eip1559Transaction {
         if (Secp256k1.isValidPrivateKey(senderPrivateKey)) {
             if (this.isDelegated) {
                 const transactionHash = this.getTransactionHash().bytes
-                return new Eip1559Transaction(
+                return new DynFeeTransaction(
                     this.body,
                     Secp256k1.sign(transactionHash, senderPrivateKey),
                 )
@@ -584,7 +584,7 @@ class Eip1559Transaction {
      *
      * @param {Uint8Array} senderPrivateKey - The private key of the transaction sender.
      * @param {Uint8Array} gasPayerPrivateKey - The private key of the gas payer.
-     * @return {Eip1559Transaction} A new transaction with the concatenated signatures
+     * @return {DynFeeTransaction} A new transaction with the concatenated signatures
      * of the transaction sender and the gas payer.
      * @throws {InvalidSecp256k1PrivateKey} - If either the private key of the transaction sender or gas payer is invalid.
      * @throws {NotDelegatedTransaction} - If the transaction is not delegated.
@@ -607,7 +607,7 @@ class Eip1559Transaction {
                         ),
                     ).bytes
                     // Return new signed transaction
-                    return Eip1559Transaction.of(
+                    return DynFeeTransaction.of(
                         this.body,
                         nc_utils.concatBytes(
                             Secp256k1.sign(senderHash, senderPrivateKey),
@@ -682,23 +682,23 @@ class Eip1559Transaction {
                     ...body,
                     signature: Uint8Array.from(this.signature),
                 },
-                Eip1559Transaction.RLP_SIGNED_TRANSACTION_PROFILE,
+                DynFeeTransaction.RLP_SIGNED_TRANSACTION_PROFILE,
             ).encoded
         }
         // Encode transaction object - UNSIGNED
         return RLPProfiler.ofObject(
             body,
-            Eip1559Transaction.RLP_UNSIGNED_TRANSACTION_PROFILE,
+            DynFeeTransaction.RLP_UNSIGNED_TRANSACTION_PROFILE,
         ).encoded
     }
 
     /**
-     * Encodes the {@link Eip1559TransactionBody.reserved} field data for a transaction.
+     * Encodes the {@link DynFeeTransactionBody.reserved} field data for a transaction.
      *
      * @return {Uint8Array[]} The encoded list of reserved features.
      * It removes any trailing unused features that have zero length from the list.
      *
-     * @remarks The {@link Eip1559TransactionBody.reserved} is optional, albeit
+     * @remarks The {@link DynFeeTransactionBody.reserved} is optional, albeit
      * is required to perform RLP encoding.
      *
      * @see encode
@@ -707,13 +707,13 @@ class Eip1559Transaction {
         // Check if is reserved or not
         const reserved = this.body.reserved ?? {}
         // Init kind for features
-        const featuresKind = Eip1559Transaction.RLP_FEATURES.kind
+        const featuresKind = DynFeeTransaction.RLP_FEATURES.kind
         // Features list
         const featuresList = [
             featuresKind
                 .data(
                     reserved.features ?? 0,
-                    Eip1559Transaction.RLP_FEATURES.name,
+                    DynFeeTransaction.RLP_FEATURES.name,
                 )
                 .encode(),
             ...(reserved.unused ?? []),
@@ -730,4 +730,4 @@ class Eip1559Transaction {
     }
 }
 
-export { Eip1559Transaction }
+export { DynFeeTransaction }

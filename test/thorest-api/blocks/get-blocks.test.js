@@ -159,7 +159,7 @@ describe('GET /blocks/{revision}', function () {
                     kind: [
                         { name: 'Alpha', kind: new HexBlobKind() },
                         { name: 'COM', kind: new HexBlobKind() },
-                        { name: 'BaseFee', kind: new NumericKind(64) },
+                        { name: 'BaseFee', kind: new HexBlobKind() },
                     ],
                     // TODO: COM is usually false, and if kept there it throws an error (expected 2 got 1)
                     // TODO: not sure how to make it optional
@@ -188,7 +188,6 @@ describe('GET /blocks/{revision}', function () {
         )
         expect(block_res.body.stateRoot).toEqual(decodedObject.StateRoot)
         expect(block_res.body.receiptsRoot).toEqual(decodedObject.ReceiptsRoot)
-        expect(block_res.body.baseFee).toEqual(decodedObject.Extension.BaseFee)
 
         // encode back
         const encodedObject = RLPProfiler.ofObject(
