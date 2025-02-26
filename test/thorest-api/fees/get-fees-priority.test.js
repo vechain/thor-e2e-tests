@@ -7,7 +7,6 @@ import { HEX_AT_LEAST_1 } from '../../../src/utils/hex-utils'
  * @group fees
  */
 describe('GET /fees/priority', function () {
-
     it.e2eTest('get suggested priority fee', 'all', async () => {
         const res = await Client.raw.getFeesPriority()
 

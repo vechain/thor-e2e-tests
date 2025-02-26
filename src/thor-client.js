@@ -174,10 +174,7 @@ class ThorClient {
     // GET /fees/priority
     async getFeesPriority(options) {
         return this.performRequest(() =>
-            this.axios.get(
-                '/fees/priority',
-                options,
-            ),
+            this.axios.get('/fees/priority', options),
         )
     }
 
