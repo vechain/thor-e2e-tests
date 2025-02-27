@@ -1,14 +1,18 @@
 import * as nc_utils from '@noble/curves/abstract/utils'
 import {
-    Address, Blake2b256, BufferKind,
+    Address,
+    Blake2b256,
+    BufferKind,
     CompactFixedHexBlobKind,
     Hex,
     HexBlobKind,
     HexUInt,
     NumericKind,
     OptionalFixedHexBlobKind,
-    RLPProfiler, Secp256k1, Units,
-    VTHO
+    RLPProfiler,
+    Secp256k1,
+    Units,
+    VTHO,
 } from '@vechain/sdk-core'
 import {
     InvalidDataType,
@@ -27,7 +31,6 @@ import {
  * Represents an immutable transaction entity.
  */
 class DynFeeTransaction {
-
     static DYNAMIC_FEE_TYPE = 0x51
     /**
      * A collection of constants used for gas calculations in transactions.
