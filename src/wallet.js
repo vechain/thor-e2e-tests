@@ -135,7 +135,7 @@ class ThorWallet {
         return contract
     }
 
-    buildTransaction = async (clauses, options) => {
+    buildTransaction = async (clauses, options = {}) => {
         const bestBlockRef = await getBlockRef('best')
         const genesisBlock = await Client.raw.getBlock('0')
 
