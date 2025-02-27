@@ -14,6 +14,7 @@ import {
     VeChainPrivateKeySigner,
     VeChainProvider,
 } from '@vechain/sdk-network'
+import { DynFeeTransaction } from './dyn-fee-transaction'
 
 export const generateAddress = async () => {
     return (await generateEmptyWallet()).address.toLowerCase()
@@ -160,13 +161,18 @@ class ThorWallet {
 
         let tx
 
+        const TxClass =
+            transaction instanceof DynFeeTransaction
+                ? DynFeeTransaction
+                : Transaction
+
         if (delegationSignature) {
-            tx = new Transaction(
+            tx = new TxClass(
                 transaction.body,
                 Buffer.concat([signature, delegationSignature]),
             )
         } else {
-            tx = new Transaction(transaction.body, Buffer.from(signature))
+            tx = new TxClass(transaction.body, signature)
         }
 
         return tx
