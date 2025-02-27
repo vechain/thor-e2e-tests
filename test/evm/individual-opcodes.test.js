@@ -624,7 +624,8 @@ describe('Individual OpCodes', () => {
             })
 
             expect(simulation.httpCode).toBe(200)
-            expect(simulation.body[0].reverted).toBeFalsy()
+            expect(simulation.body?.[0]?.reverted).toBeFalsy()
+            expect(simulation.body?.[0]?.vmError.length).toBe(0)
         },
     )
 
@@ -646,6 +647,7 @@ describe('Individual OpCodes', () => {
                 caller,
             })
 
+            expect(simulation.body?.[0]?.reverted).toBeTruthy()
             expect(simulation.body?.[0]?.vmError).toEqual(
                 'invalid code: must not begin with 0xef',
             )
