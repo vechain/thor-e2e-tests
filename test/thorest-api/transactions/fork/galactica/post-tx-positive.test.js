@@ -1,8 +1,5 @@
 import { Clause, Hex, Units, VET } from '@vechain/sdk-core'
-import { DynFeeTransaction } from '../../../../../src/dyn-fee-transaction'
 import { Client } from '../../../../../src/thor-client'
-import { generateNonce } from '../../../../../src/transactions'
-import { getBlockRef } from '../../../../../src/utils/block-utils'
 import { ThorWallet } from '../../../../../src/wallet'
 import {
     checkTransactionLogSuccess,
@@ -35,7 +32,10 @@ describe('POST /transactions', () => {
             expect(bestBlk.success).toBeTruthy()
 
             const baseFee = bestBlk.body?.baseFee
-            const txBody = await wallet.buildTransaction([clause], { isDynFeeTx: true, maxFeePerGas: baseFee })
+            const txBody = await wallet.buildTransaction([clause], {
+                isDynFeeTx: true,
+                maxFeePerGas: baseFee,
+            })
             const signedTx = await wallet.signTransaction(txBody)
 
             const testPlan = {

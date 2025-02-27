@@ -24,7 +24,10 @@ describe('POST /transactions', () => {
             expect(bestBlk.success).toBeTruthy()
 
             const baseFee = bestBlk.body?.baseFee
-            const txBody = await wallet.buildTransaction([clause], { isDynFeeTx: true, maxFeePerGas: baseFee - 1 })
+            const txBody = await wallet.buildTransaction([clause], {
+                isDynFeeTx: true,
+                maxFeePerGas: baseFee - 1,
+            })
             const tx = await wallet.signTransaction(txBody)
 
             const hex = Hex.of(tx.encoded)

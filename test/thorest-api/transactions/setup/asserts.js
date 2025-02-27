@@ -1,6 +1,5 @@
-import { ethers, hexlify } from 'ethers'
-import hexUtils from '../../../../src/utils/hex-utils'
 import { Hex } from '@vechain/sdk-core'
+import hexUtils from '../../../../src/utils/hex-utils'
 
 /**
  * Functions to be used in the test plan
@@ -136,13 +135,5 @@ const checkTransactionLogSuccess = (input, block, tx, transferClauses) => {
 }
 
 export {
-    successfulPostTx,
-    revertedPostTx,
-    compareSentTxWithCreatedTx,
-    checkDelegatedTransaction,
-    successfulReceipt,
-    checkDelegatedTransactionReceipt,
-    checkTxInclusionInBlock,
-    checkTransactionLogSuccess,
-    unsuccessfulReceipt,
+    checkDelegatedTransaction, checkDelegatedTransactionReceipt, checkTransactionLogSuccess, checkTxInclusionInBlock, compareSentTxWithCreatedTx, revertedPostTx, successfulPostTx, successfulReceipt, unsuccessfulReceipt
 }
