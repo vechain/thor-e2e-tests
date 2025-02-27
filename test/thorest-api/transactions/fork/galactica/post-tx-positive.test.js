@@ -1,10 +1,9 @@
+import { Clause, Hex, Units, VET } from '@vechain/sdk-core'
 import { DynFeeTransaction } from '../../../../../src/dyn-fee-transaction'
-import { Clause, Address, VET, Units, Hex } from '@vechain/sdk-core'
-import { ThorWallet } from '../../../../../src/wallet'
-import { getBlockRef } from '../../../../../src/utils/block-utils'
 import { Client } from '../../../../../src/thor-client'
 import { generateNonce } from '../../../../../src/transactions'
-import { TransactionDataDrivenFlow } from '../../setup/transaction-data-driven-flow'
+import { getBlockRef } from '../../../../../src/utils/block-utils'
+import { ThorWallet } from '../../../../../src/wallet'
 import {
     checkTransactionLogSuccess,
     checkTxInclusionInBlock,
@@ -12,6 +11,7 @@ import {
     successfulPostTx,
     successfulReceipt,
 } from '../../setup/asserts'
+import { TransactionDataDrivenFlow } from '../../setup/transaction-data-driven-flow'
 
 /**
  * @group api
