@@ -18,26 +18,6 @@ import { TransactionDataDrivenFlow } from '../../setup/transaction-data-driven-f
  * @group transactions
  * @group fork
  */
-const buildTx = async (clauses, options) => {
-    const bestBlockRef = await getBlockRef('best')
-    const genesisBlock = await Client.raw.getBlock('0')
-
-    if (!genesisBlock.success || !genesisBlock.body?.id) {
-        throw new Error('Could not get best block')
-    }
-
-    return new DynFeeTransaction({
-        blockRef: bestBlockRef,
-        expiration: 1000,
-        clauses: clauses,
-        maxPriorityFeePerGas: options.maxPriorityFeePerGas ?? 10,
-        maxFeePerGas: options.maxFeePerGas ?? 10_000_000_000_000,
-        gas: 1_000_000,
-        dependsOn: options?.dependsOn ?? null,
-        nonce: generateNonce(),
-        chainTag: parseInt(genesisBlock.body.id.slice(-2), 16),
-    })
-}
 
 describe('POST /transactions', () => {
     it.e2eTest(
@@ -55,9 +35,8 @@ describe('POST /transactions', () => {
             expect(bestBlk.success).toBeTruthy()
 
             const baseFee = bestBlk.body?.baseFee
-            const signedTx = await wallet.signTransaction(
-                await buildTx([clause], { maxFeePerGas: baseFee }),
-            )
+            const txBody = await wallet.buildTransaction([clause], { isDynFeeTx: true, maxFeePerGas: baseFee })
+            const signedTx = await wallet.signTransaction(txBody)
 
             const testPlan = {
                 postTxStep: {

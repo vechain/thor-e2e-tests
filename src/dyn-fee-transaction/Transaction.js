@@ -31,7 +31,6 @@ import {
  * Represents an immutable transaction entity.
  */
 class DynFeeTransaction {
-    static DYNAMIC_FEE_TYPE = 0x51
     /**
      * A collection of constants used for gas calculations in transactions.
      */
@@ -653,10 +652,11 @@ class DynFeeTransaction {
             isSigned,
         )
 
-        // Prepend DynamicFeeTxType if the transaction is signed
+        // Prepend dynamicFeeTxType if the transaction is signed
+        const dynamicFeeTxType = 0x51
         if (isSigned) {
             return nc_utils.concatBytes(
-                new Uint8Array([DYNAMIC_FEE_TYPE]),
+                new Uint8Array([dynamicFeeTxType]),
                 encodedBody,
             )
         }
