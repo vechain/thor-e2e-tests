@@ -12,7 +12,6 @@ import {
 } from '../transactions/setup/asserts'
 import { TransactionDataDrivenFlow } from '../transactions/setup/transaction-data-driven-flow'
 
-
 const timeout = 100000
 
 const sendTransactionsWithTip = async (wallet, tip, vetAmountInWei) => {
@@ -38,12 +37,10 @@ const sendTransactionsWithTip = async (wallet, tip, vetAmountInWei) => {
             expectedResult: successfulPostTx,
         },
         getTxStep: {
-            expectedResult: (tx) =>
-                compareSentTxWithCreatedTx(tx, signedTx),
+            expectedResult: (tx) => compareSentTxWithCreatedTx(tx, signedTx),
         },
         getTxReceiptStep: {
-            expectedResult: (receipt) =>
-                successfulReceipt(receipt, signedTx),
+            expectedResult: (receipt) => successfulReceipt(receipt, signedTx),
         },
         getLogTransferStep: {
             expectedResult: (input, block) =>
@@ -68,37 +65,50 @@ const sendTransactionsWithTip = async (wallet, tip, vetAmountInWei) => {
  * @group api
  * @group fees
  */
-describe('GET /fees/priority', function () {
-    it.e2eTest('get suggested priority fee', 'all', async () => {
-        const res = await Client.raw.getFeesPriority()
-
-        expect(res.success, 'API response should be a success').toBeTruthy()
-        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-        const expectedRes = {
-            maxPriorityFeePerGas: expect.stringMatching(HEX_AT_LEAST_1),
-        }
-        expect(res.body, 'Expected Response Body').toEqual(expectedRes)
-    })
-
-    it.e2eTest(
-        'should suggest a priority fee that is not the minimum',
-        ['solo', 'default-private'],
-        async () => {
-            const wallet = ThorWallet.withFunds()
-
-            const expectedMaxPriorityFee = 80
-            for (let i = 0; i < 8; i++) {
-                await sendTransactionsWithTip(wallet, expectedMaxPriorityFee, i)
-            }
-
+describe(
+    'GET /fees/priority',
+    function () {
+        it.e2eTest('get suggested priority fee', 'all', async () => {
             const res = await Client.raw.getFeesPriority()
 
             expect(res.success, 'API response should be a success').toBeTruthy()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
             const expectedRes = {
-                maxPriorityFeePerGas: HexUInt.of(expectedMaxPriorityFee).toString(),
+                maxPriorityFeePerGas: expect.stringMatching(HEX_AT_LEAST_1),
             }
             expect(res.body, 'Expected Response Body').toEqual(expectedRes)
-        },
-    )
-}, timeout)
+        })
+
+        it.e2eTest(
+            'should suggest a priority fee that is not the minimum',
+            ['solo', 'default-private'],
+            async () => {
+                const wallet = ThorWallet.withFunds()
+
+                const expectedMaxPriorityFee = 80
+                for (let i = 0; i < 8; i++) {
+                    await sendTransactionsWithTip(
+                        wallet,
+                        expectedMaxPriorityFee,
+                        i,
+                    )
+                }
+
+                const res = await Client.raw.getFeesPriority()
+
+                expect(
+                    res.success,
+                    'API response should be a success',
+                ).toBeTruthy()
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+                const expectedRes = {
+                    maxPriorityFeePerGas: HexUInt.of(
+                        expectedMaxPriorityFee,
+                    ).toString(),
+                }
+                expect(res.body, 'Expected Response Body').toEqual(expectedRes)
+            },
+        )
+    },
+    timeout,
+)

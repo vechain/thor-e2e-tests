@@ -135,5 +135,13 @@ const checkTransactionLogSuccess = (input, block, tx, transferClauses) => {
 }
 
 export {
-    checkDelegatedTransaction, checkDelegatedTransactionReceipt, checkTransactionLogSuccess, checkTxInclusionInBlock, compareSentTxWithCreatedTx, revertedPostTx, successfulPostTx, successfulReceipt, unsuccessfulReceipt
+    checkDelegatedTransaction,
+    checkDelegatedTransactionReceipt,
+    checkTransactionLogSuccess,
+    checkTxInclusionInBlock,
+    compareSentTxWithCreatedTx,
+    revertedPostTx,
+    successfulPostTx,
+    successfulReceipt,
+    unsuccessfulReceipt,
 }
