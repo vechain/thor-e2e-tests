@@ -1,14 +1,7 @@
 import * as nc_utils from '@noble/curves/abstract/utils'
 import {
-    InvalidDataType,
-    InvalidSecp256k1PrivateKey,
-    InvalidTransactionField,
-    NotDelegatedTransaction,
-    UnavailableTransactionField,
-} from '@vechain/sdk-errors'
-import { Secp256k1 } from '@vechain/sdk-core'
-import {
     Address,
+    Blake2b256,
     BufferKind,
     CompactFixedHexBlobKind,
     Hex,
@@ -17,17 +10,22 @@ import {
     NumericKind,
     OptionalFixedHexBlobKind,
     RLPProfiler,
+    Secp256k1,
     Units,
     VTHO,
 } from '@vechain/sdk-core'
-import { Blake2b256 } from '@vechain/sdk-core'
+import {
+    InvalidDataType,
+    InvalidSecp256k1PrivateKey,
+    InvalidTransactionField,
+    NotDelegatedTransaction,
+    UnavailableTransactionField,
+} from '@vechain/sdk-errors'
 
 /**
  * @typedef {import('./TransactionBody').DynFeeTransactionBody}
  * @typedef {import('@vechain/sdk-core').TransactionClause}
  */
-
-const DynamicFeeTxType = 0x51
 
 /**
  * Represents an immutable transaction entity.
@@ -654,10 +652,11 @@ class DynFeeTransaction {
             isSigned,
         )
 
-        // Prepend DynamicFeeTxType if the transaction is signed
+        // Prepend dynamicFeeTxType if the transaction is signed
+        const dynamicFeeTxType = 0x51
         if (isSigned) {
             return nc_utils.concatBytes(
-                new Uint8Array([DynamicFeeTxType]),
+                new Uint8Array([dynamicFeeTxType]),
                 encodedBody,
             )
         }
