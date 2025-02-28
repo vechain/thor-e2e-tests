@@ -80,7 +80,7 @@ describe(
         })
 
         it.e2eTest(
-            'should suggest a priority fee that is not the minimum',
+            'should suggest a priority fee that is above the current one',
             ['solo', 'default-private'],
             async () => {
                 const wallet = ThorWallet.withFunds()
