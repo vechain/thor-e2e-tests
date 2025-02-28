@@ -92,9 +92,8 @@ describe(
                 // This loop will create 8 transactions, 1 included in each block
 
                 // Since we sort the fees and get the position related to the 60th percentile
-
-                // We need to create at least 8 blocks to have a priority fee that is not the expected
-                // assuming that in other tests there are no higher fees than this one
+                // we need to have at least 8 blocks to ensure a priority fee that is the expected
+                // assuming that in other tests there are no higher priority fees than this one
                 for (let i = 0; i < 8; i++) {
                     await sendTransactionsWithTip(
                         wallet,
