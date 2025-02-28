@@ -151,7 +151,7 @@ class ThorWallet {
                 maxPriorityFeePerGas: options.maxPriorityFeePerGas ?? 10,
                 maxFeePerGas: options.maxFeePerGas ?? 10_000_000_000_000,
                 gas: 1_000_000,
-                dependsOn: options?.dependsOn ?? null,
+                dependsOn: options.dependsOn ?? null,
                 nonce: generateNonce(),
                 chainTag: parseInt(genesisBlock.body.id.slice(-2), 16),
             })
@@ -163,7 +163,7 @@ class ThorWallet {
             clauses: clauses,
             gasPriceCoef: 0,
             gas: 1_000_000,
-            dependsOn: options?.dependsOn ?? null,
+            dependsOn: options.dependsOn ?? null,
             nonce: generateNonce(),
             chainTag: parseInt(genesisBlock.body.id.slice(-2), 16),
         }
