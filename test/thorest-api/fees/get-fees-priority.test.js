@@ -92,10 +92,10 @@ describe(
                     wallet.address,
                     VET.of(1, Units.wei),
                 )
-            
+
                 const bestBlk = await Client.raw.getBlock('best')
                 expect(bestBlk.success).toBeTruthy()
-            
+
                 const baseFee = bestBlk.body?.baseFee
                 const txBody = await wallet.buildTransaction([clause], {
                     isDynFeeTx: true,
@@ -103,17 +103,19 @@ describe(
                     maxPriorityFeePerGas: expectedMaxPriorityFee,
                 })
                 const signedTx = await wallet.signTransaction(txBody)
-            
+
                 const testPlan = {
                     postTxStep: {
                         rawTx: Hex.of(signedTx.encoded).toString(),
                         expectedResult: successfulPostTx,
                     },
                     getTxStep: {
-                        expectedResult: (tx) => compareSentTxWithCreatedTx(tx, signedTx),
+                        expectedResult: (tx) =>
+                            compareSentTxWithCreatedTx(tx, signedTx),
                     },
                     getTxReceiptStep: {
-                        expectedResult: (receipt) => successfulReceipt(receipt, signedTx),
+                        expectedResult: (receipt) =>
+                            successfulReceipt(receipt, signedTx),
                     },
                     getLogTransferStep: {
                         expectedResult: (input, block) =>
@@ -128,9 +130,9 @@ describe(
                         expectedResult: checkTxInclusionInBlock,
                     },
                 }
-            
+
                 const ddt = new TransactionDataDrivenFlow(testPlan)
-            
+
                 await ddt.runTestFlow()
 
                 const res = await Client.raw.getFeesPriority()
