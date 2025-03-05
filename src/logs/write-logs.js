@@ -5,10 +5,21 @@
  * Writing to mainnet and testnet is not recommended as we only need to do that once.
  */
 import { Client } from '../thor-client'
-import { staticEventsTransactions } from './transactions'
+import { createTransactions } from './createTransactions'
 import { pollReceipt } from '../transactions'
+import { testEnv } from '../test-env'
+
+const buildTxs = async () => {
+    const genesis = await Client.raw.getBlock(0)
+    return createTransactions(
+        parseInt(genesis.body.id.slice(-2), 16),
+        testEnv.keys,
+    )
+}
 
 const checkAlreadyWritten = async () => {
+    const staticEventsTransactions = await buildTxs()
+
     for (let i = 0; i < staticEventsTransactions.length; i++) {
         const blockTxs = staticEventsTransactions[i]
 
@@ -17,22 +28,26 @@ const checkAlreadyWritten = async () => {
             const receipt = await Client.sdk.transactions.getTransactionReceipt(
                 tx.txId,
             )
-            if (receipt != null && !receipt.reverted) {
-                return true
+            if (receipt == null || receipt.reverted) {
+                return false
             }
         }
     }
 
-    return false
+    return true
 }
 
 const writeTransfers = async () => {
-    const txs = []
+    const transactions = []
+
+    const staticEventsTransactions = await buildTxs()
 
     for (let i = 0; i < staticEventsTransactions.length; i++) {
         const blockTxs = staticEventsTransactions[i]
 
-        console.log(`Sending transactions @ batch ${i}`)
+        console.log(
+            `Sending transactions @ batch ${i} (txs=${blockTxs.length})`,
+        )
 
         const transactions = await Promise.all(
             blockTxs.map(async ({ raw, txId }) => {
@@ -44,14 +59,15 @@ const writeTransfers = async () => {
             }),
         )
 
-        txs.push(...transactions)
+        transactions.push(...transactions)
     }
 
-    return txs
+    return transactions
 }
 
 const readTransfers = async () => {
-    const txs = []
+    const staticEventsTransactions = await buildTxs()
+    const transactions = []
 
     for (let i = 0; i < staticEventsTransactions.length; i++) {
         const blockTxs = staticEventsTransactions[i]
@@ -61,11 +77,11 @@ const readTransfers = async () => {
             const receipt = await Client.sdk.transactions.getTransactionReceipt(
                 tx.txId,
             )
-            txs.push(receipt)
+            transactions.push(receipt)
         }
     }
 
-    return txs
+    return transactions
 }
 
 export const writeTransferTransactions = async () => {
