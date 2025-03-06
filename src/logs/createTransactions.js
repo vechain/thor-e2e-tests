@@ -2115,11 +2115,11 @@ export const createTransactions = (chainTag, privateKeys) => {
     })
 
     const res = []
-    res[0] = all.slice(0, 20) // indexes 0-19
-    res[1] = all.slice(20, 40) // indexes 20-39
-    res[2] = all.slice(40, 60) // indexes 40-59
-    res[3] = all.slice(60, 80) // indexes 60-79
-    res[4] = all.slice(80, 100) // indexes 80-99
+    res[0] = all.slice(0, 20)
+    res[1] = all.slice(20, 40)
+    res[2] = all.slice(40, 60)
+    res[3] = all.slice(60, 80)
+    res[4] = all.slice(80, 100)
 
     return res
 }
