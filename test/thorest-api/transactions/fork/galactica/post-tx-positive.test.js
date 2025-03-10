@@ -1,6 +1,8 @@
 import { Clause, Hex, Units, VET } from '@vechain/sdk-core'
 import { Client } from '../../../../../src/thor-client'
 import { ThorWallet } from '../../../../../src/wallet'
+import { pollTransaction } from '../../../../../src/transactions'
+import { TransactionDataDrivenFlow } from '../../setup/transaction-data-driven-flow'
 import {
     checkTransactionLogSuccess,
     checkTxInclusionInBlock,
@@ -17,12 +19,15 @@ import { TransactionDataDrivenFlow } from '../../setup/transaction-data-driven-f
  */
 
 describe('POST /transactions', () => {
+    let wallet
+
+    beforeAll(async () => {
+        wallet = ThorWallet.withFunds()
+    })
     it.e2eTest(
-        'should accept and include in a block a transaction with enough maxFeePerGas',
+        'should accept and include in a block a dynamic fee transaction with enough maxFeePerGas',
         ['solo', 'default-private'],
         async () => {
-            const wallet = ThorWallet.withFunds()
-
             const clause = Clause.transferVET(
                 wallet.address,
                 VET.of(1, Units.wei),
@@ -67,6 +72,42 @@ describe('POST /transactions', () => {
 
             const ddt = new TransactionDataDrivenFlow(testPlan)
             await ddt.runTestFlow()
+        },
+    )
+
+    it.e2eTest(
+        'a dynamic fee transaction should be shared among the nodes',
+        ['solo', 'default-private'],
+        async () => {
+            const bestBlk = await Client.raw.getBlock('best')
+            expect(bestBlk.success).toBeTruthy()
+
+            const baseFee = bestBlk.body?.baseFee
+            const txBody = await wallet.buildTransaction([], {
+                isDynFeeTx: true,
+                maxPriorityFeePerGas: baseFee,
+                maxFeePerGas: baseFee * 10,
+            })
+            const signedTx = await wallet.signTransaction(txBody)
+            const testPlan = {
+                postTxStep: {
+                    rawTx: Hex.of(signedTx.encoded).toString(),
+                    expectedResult: successfulPostTx,
+                },
+            }
+            const ddt = new TransactionDataDrivenFlow(testPlan)
+            await ddt.runTestFlow()
+
+            // Wait some time for the tx to be shared among the nodes
+            const result = await Promise.all(
+                Client.all.map((c) =>
+                    pollTransaction(signedTx.id, { pending: true }, 10_000, c),
+                ),
+            )
+            result.forEach((r) => {
+                expect(r.success).toBeTruthy()
+                expect(r.body?.meta).toBeNull()
+            })
         },
     )
 })

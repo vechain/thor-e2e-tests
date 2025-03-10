@@ -9,12 +9,15 @@ import { ThorWallet } from '../../../../../src/wallet'
  */
 
 describe('POST /transactions', () => {
+    let wallet
+
+    beforeAll(async () => {
+        wallet = ThorWallet.withFunds()
+    })
     it.e2eTest(
         'should reject a transaction with not enough maxFeePerGas to cover for the baseFee',
         ['solo', 'default-private'],
         async () => {
-            const wallet = ThorWallet.withFunds()
-
             const clause = Clause.transferVET(
                 wallet.address,
                 VET.of(1, Units.wei),
@@ -47,8 +50,6 @@ describe('POST /transactions', () => {
         'should reject a transaction with maxPriorityFeePerGas lower then maxFeePerGas',
         ['solo', 'default-private'],
         async () => {
-            const wallet = ThorWallet.withFunds()
-
             const clause = Clause.transferVET(
                 wallet.address,
                 VET.of(1, Units.wei),
