@@ -380,6 +380,24 @@ class LoadBalancedClient {
         return new Proxy(this.getRandomSDKClient(), handler)
     }
 
+    /**
+     * @return {[ThorClient]}
+     */
+    get all() {
+        return this.clients.map((client) => {
+            const handler = {
+                get: (target, prop) => {
+                    const value = client[prop]
+                    return typeof value === 'function'
+                        ? value.bind(client)
+                        : value
+                },
+            }
+
+            return new Proxy(client, handler)
+        })
+    }
+
     getRandomClient() {
         return this.clients[Math.floor(Math.random() * this.clients.length)]
     }
