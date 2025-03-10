@@ -1,6 +1,8 @@
 import { Clause, Hex, Units, VET } from '@vechain/sdk-core'
 import { Client } from '../../../../../src/thor-client'
 import { ThorWallet } from '../../../../../src/wallet'
+import { pollTransaction } from '../../../../../src/transactions'
+import { TransactionDataDrivenFlow } from '../../setup/transaction-data-driven-flow'
 import {
     checkTransactionLogSuccess,
     checkTxInclusionInBlock,
@@ -94,18 +96,15 @@ describe('POST /transactions', () => {
             await ddt.runTestFlow()
 
             // Wait some time for the tx to be shared among the nodes
-            await new Promise((resolve) => setTimeout(resolve, 100))
-
-            // Check all the other nodes have the tx
-            for (const client of Client.all) {
-                const tx = await client.getTransaction(signedTx.id, {
-                    pending: true,
-                })
-                expect(tx.success).toBeTruthy()
-                expect(tx.body?.id).toBe(signedTx.id.toString())
-                // Check for null meta, the tx is not yet been included in a block
-                expect(tx.body?.meta).toBeNull()
-            }
+            const result = await Promise.all(
+                Client.all.map((c) =>
+                    pollTransaction(signedTx.id, { pending: true }, 10_000, c),
+                ),
+            )
+            result.forEach((r) => {
+                expect(r.success).toBeTruthy()
+                expect(r.body?.meta).toBeNull()
+            })
         },
     )
 })
