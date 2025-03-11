@@ -370,7 +370,7 @@ describe('POST /accounts/*', function () {
                 {
                     data: '0x000000000000000000000000000000000000000000000000000000000000353b',
                     events: [],
-                    gasUsed: 388,
+                    gasUsed: 410,
                     reverted: false,
                     transfers: [],
                     vmError: '',
