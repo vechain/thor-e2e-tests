@@ -19,7 +19,7 @@ export const pollTransaction = async (
 ) => {
     return new Promise((resolve, reject) => {
         const intervalId = setInterval(async () => {
-            const tx = await Client.raw.getTransaction(txId, queryParams)
+            const tx = await client.getTransaction(txId, queryParams)
 
             if (tx.success && tx.body) {
                 clearInterval(intervalId) // Clear the interval when the receipt is found

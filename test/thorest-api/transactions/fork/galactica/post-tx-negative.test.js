@@ -61,8 +61,8 @@ describe('POST /transactions', () => {
             const baseFee = bestBlk.body?.baseFee
             const txBody = await wallet.buildTransaction([clause], {
                 isDynFeeTx: true,
-                maxPriorityFeePerGas: baseFee * 10,
                 maxFeePerGas: baseFee,
+                maxPriorityFeePerGas: baseFee * 10,
             })
             const tx = await wallet.signTransaction(txBody)
 
@@ -74,6 +74,33 @@ describe('POST /transactions', () => {
 
             const expectedErrMsg =
                 'tx rejected: max fee per gas (10000000000000) must be greater than max priority fee per gas (100000000000000)'
+            expect(res.success).toBeFalsy()
+            expect(res.httpMessage.trimEnd()).toBe(expectedErrMsg)
+        },
+    )
+
+    it.e2eTest(
+        'should reject a transaction if maxFeePerGas is less than the baseFee',
+        ['solo', 'default-private'],
+        async () => {
+            const bestBlk = await Client.raw.getBlock('best')
+            expect(bestBlk.success).toBeTruthy()
+
+            const baseFee = bestBlk.body?.baseFee - 1
+            const txBody = await wallet.buildTransaction([], {
+                isDynFeeTx: true,
+                maxFeePerGas: baseFee,
+            })
+            const tx = await wallet.signTransaction(txBody)
+
+            const hex = Hex.of(tx.encoded)
+
+            const res = await Client.raw.sendTransaction({
+                raw: hex.toString(),
+            })
+
+            const expectedErrMsg =
+                'tx rejected: max fee per gas is less than block base fee'
             expect(res.success).toBeFalsy()
             expect(res.httpMessage.trimEnd()).toBe(expectedErrMsg)
         },
