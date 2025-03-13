@@ -1,7 +1,7 @@
-import { Clause, Hex, Units, VET } from '@vechain/sdk-core'
+import { Clause, Hex, Transaction, Units, VET } from '@vechain/sdk-core'
 import { Client } from '../../../../../src/thor-client'
 import { ThorWallet } from '../../../../../src/wallet'
-import { pollTransaction } from '../../../../../src/transactions'
+import { pollTransaction, pollReceipt } from '../../../../../src/transactions'
 import { TransactionDataDrivenFlow } from '../../setup/transaction-data-driven-flow'
 import {
     checkTransactionLogSuccess,
@@ -11,6 +11,7 @@ import {
     successfulReceipt,
 } from '../../setup/asserts'
 import { TransactionDataDrivenFlow } from '../../setup/transaction-data-driven-flow'
+import { utils } from 'web3'
 
 /**
  * @group api
@@ -108,6 +109,89 @@ describe('POST /transactions', () => {
                 expect(r.success).toBeTruthy()
                 expect(r.body?.meta).toBeNull()
             })
+        },
+    )
+
+    it.e2eTest(
+        'check payment logic after a legacy tx is included in a block',
+        ['solo', 'default-private'],
+        async () => {
+            const clause = Clause.transferVET(
+                wallet.address,
+                VET.of(1, Units.wei),
+            )
+
+            const bestBlk = await Client.raw.getBlock('best')
+            expect(bestBlk.success).toBeTruthy()
+
+            const baseFee = bestBlk.body?.baseFee
+            const txBody = await wallet.buildTransaction([clause])
+            const transaction = new Transaction(txBody)
+            const signedTx = await wallet.signTransaction(transaction)
+
+            const sentRes = await Client.raw.sendTransaction({
+                raw: Hex.of(signedTx.encoded).toString(),
+            })
+            expect(sentRes.success).toBeTruthy()
+
+            const txId = sentRes.body?.id
+            const tx = await pollTransaction(txId)
+            expect(tx.success).toBeTruthy()
+
+            const receipt = await pollReceipt(txId)
+
+            const baseGasPrice = 1e15
+            const expectedReward = receipt.gasUsed * (baseGasPrice - baseFee)
+            expect(receipt.reward).toBe(
+                utils.numberToHex(expectedReward.toString()),
+            )
+            const expectedPayment = receipt.gasUsed * baseGasPrice
+            expect(receipt.paid).toBe(
+                utils.numberToHex(expectedPayment.toString()),
+            )
+        },
+    )
+
+    it.e2eTest(
+        'check payment logic after a dynamic fee tx is included in a block',
+        ['solo', 'default-private'],
+        async () => {
+            const clause = Clause.transferVET(
+                wallet.address,
+                VET.of(1, Units.wei),
+            )
+
+            const bestBlk = await Client.raw.getBlock('best')
+            expect(bestBlk.success).toBeTruthy()
+
+            const baseFee = bestBlk.body?.baseFee
+            const maxPriorityFeePerGas = 1_000
+            const txBody = await wallet.buildTransaction([clause], {
+                isDynFeeTx: true,
+                maxFeePerGas: baseFee * 10,
+                maxPriorityFeePerGas: maxPriorityFeePerGas,
+            })
+            const signedTx = await wallet.signTransaction(txBody)
+
+            const sentRes = await Client.raw.sendTransaction({
+                raw: Hex.of(signedTx.encoded).toString(),
+            })
+            expect(sentRes.success).toBeTruthy()
+
+            const txId = sentRes.body?.id
+            const tx = await pollTransaction(txId)
+            expect(tx.success).toBeTruthy()
+
+            const receipt = await pollReceipt(txId)
+
+            const expectedReward = maxPriorityFeePerGas * receipt.gasUsed
+            expect(receipt.reward).toBe(
+                utils.numberToHex(expectedReward.toString()),
+            )
+            const expectedPayment = receipt.gasUsed * baseFee + expectedReward
+            expect(receipt.paid).toBe(
+                utils.numberToHex(expectedPayment.toString()),
+            )
         },
     )
 })
