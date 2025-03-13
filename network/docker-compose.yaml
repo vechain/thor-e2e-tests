@@ -13,6 +13,7 @@ services:
             MASTER_KEY: 'f4a1a17039216f535d42ec23732c79943ffb45a089fbb78a14daad0dae93e991'
         ports:
             - '8689:8669'
+            - '2112:2112'
 
     public-node-1:
         extends:
@@ -23,6 +24,7 @@ services:
             MASTER_KEY: 'cd79462d49ade00fa5ecb617761ae137df5d5b4edd0a1fe0960ef0abc5d52c7d'
         ports:
             - '8669:8669'
+            - '2122:2112'
 
     public-node-2:
         extends:
@@ -33,3 +35,4 @@ services:
             MASTER_KEY: 'e6e7229ce46cd60cb0bd4c1e0aa0c85b6ae9eb97885cf63ce51a2cd71d1cbefa'
         ports:
             - '8679:8669'
+            - '2132:2112'
