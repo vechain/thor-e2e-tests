@@ -326,23 +326,25 @@ describe('POST /logs/transfers', () => {
             )
         })
 
-        it.e2eTest('should throw error when offset is exceeded', 'all', async () => {
-            const request = {
-                options: {
-                    offset: 18446744073709552000,
-                    limit: 0,
-                },
-            }
+        it.e2eTest(
+            'should throw error when offset is exceeded',
+            'all',
+            async () => {
+                const request = {
+                    options: {
+                        offset: 18446744073709552000,
+                        limit: 0,
+                    },
+                }
 
-            const transferLogs = await Client.raw.queryTransferLogs(request)
+                const transferLogs = await Client.raw.queryTransferLogs(request)
 
-            expect(
-                transferLogs.httpCode,
-            ).toEqual(400)
-            expect(
-                transferLogs.httpMessage
-            ).contain('body: json: cannot unmarshal number 18446744073709552000 into Go struct field Options.Options.Offset of type uint64')
-        })
+                expect(transferLogs.httpCode).toEqual(400)
+                expect(transferLogs.httpMessage).contain(
+                    'body: json: cannot unmarshal number 18446744073709552000 into Go struct field Options.Options.Offset of type uint64',
+                )
+            },
+        )
     })
 
     describe('query by "criteriaSet"', () => {
