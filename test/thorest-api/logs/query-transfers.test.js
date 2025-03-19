@@ -345,6 +345,26 @@ describe('POST /logs/transfers', () => {
                 )
             },
         )
+        it.e2eTest(
+            'should throw error when from is greater than to',
+            'all',
+            async () => {
+                const request = {
+                    range: {
+                        from: 100,
+                        to: 99,
+                        unit: 'block',
+                    },
+                }
+
+                const transferLogs = await Client.raw.queryTransferLogs(request)
+
+                expect(transferLogs.httpCode).toEqual(400)
+                expect(transferLogs.httpMessage).contain(
+                    'filter.Range.To must be greater than or equal to filter.Range.From',
+                )
+            },
+        )
     })
 
     describe('query by "criteriaSet"', () => {
