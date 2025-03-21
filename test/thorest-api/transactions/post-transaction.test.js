@@ -21,7 +21,9 @@ describe('POST /transactions', function () {
     })
 
     it.e2eTest('should hit account limit', 'all', async () => {
-        const testWallet = await ThorWallet.newFunded(fundingAmounts.bihVetBigVtho)
+        const testWallet = await ThorWallet.newFunded(
+            fundingAmounts.bigVetBigVtho,
+        )
 
         for (let i = 0; i < 128; i++) {
             const receivingAddr = await generateAddress()
@@ -40,8 +42,7 @@ describe('POST /transactions', function () {
             const testPlan = {
                 postTxStep: {
                     rawTx: Hex.of(signedTx.encoded).toString(),
-                    expectedResult: (data) =>
-                        successfulPostTx(data),
+                    expectedResult: (data) => successfulPostTx(data),
                 },
             }
 
@@ -65,8 +66,15 @@ describe('POST /transactions', function () {
             postTxStep: {
                 rawTx: Hex.of(signedTx.encoded).toString(),
                 expectedResult: (data) =>
-                    revertedPostTx({ success: data.success, body: data.body, httpCode: 400, httpMessage: data.httpMessage},
-                        "tx rejected: account quota exceeded"),
+                    revertedPostTx(
+                        {
+                            success: data.success,
+                            body: data.body,
+                            httpCode: 400,
+                            httpMessage: data.httpMessage,
+                        },
+                        'tx rejected: account quota exceeded',
+                    ),
             },
         }
 
