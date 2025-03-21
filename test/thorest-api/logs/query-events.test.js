@@ -493,6 +493,45 @@ describe('POST /logs/event', () => {
                 expect(res2.body, 'Expected Response Body').toEqual([])
             },
         )
+
+        it.e2eTest(
+            'should throw error when offset is exceeded',
+            'all',
+            async () => {
+                const res = await Client.raw.queryEventLogs({
+                    options: {
+                        offset: 18446744073709552000,
+                        limit: 10,
+                    },
+                })
+
+                expect(res.httpCode).toEqual(400)
+                expect(res.httpMessage).contain(
+                    'body: json: cannot unmarshal number 18446744073709552000 into Go struct field Options.Options.Offset of type uint64',
+                )
+            },
+        )
+
+        it.e2eTest(
+            'should throw error when from is greater than to',
+            'all',
+            async () => {
+                const request = {
+                    range: {
+                        from: 100,
+                        to: 99,
+                        unit: 'block',
+                    },
+                }
+
+                const eventLogs = await Client.raw.queryEventLogs(request)
+
+                expect(eventLogs.httpCode).toEqual(400)
+                expect(eventLogs.httpMessage).contain(
+                    'filter.Range.To must be greater than or equal to filter.Range.From',
+                )
+            },
+        )
     })
 
     describe('query by "criteriaSet"', () => {
