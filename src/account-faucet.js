@@ -12,6 +12,7 @@ export const fundingAmounts = {
     noVetMassiveVtho: { vet: '0x0', vtho: 10000e18 },
     noVetSmallVtho: { vet: '0x0', vtho: 5e18 },
     noVetTinyVtho: { vet: '0x0', vtho: '0x1' },
+    bihVetBigVtho: { vet: '0x9', vtho: 1000e18 },
 }
 
 export const randomFunder = () => {
