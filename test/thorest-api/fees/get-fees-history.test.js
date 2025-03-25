@@ -22,14 +22,14 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
         expect(res.success, 'API response should be a success').toBeTruthy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
         const expectedRes = {
-            baseFees: expect.arrayContaining([
+            baseFeePerGas: expect.arrayContaining([
                 expect.stringMatching(HEX_AT_LEAST_1),
             ]),
             gasUsedRatios: expect.arrayContaining([expect.any(Number)]),
             oldestBlock: expect.stringMatching(HEX_REGEX_64),
         }
         expect(res.body, 'Expected Response Body').toEqual(expectedRes)
-        expect(res.body.baseFees.length).toBe(1)
+        expect(res.body.baseFeePerGas.length).toBe(1)
         expect(res.body.gasUsedRatios.length).toBe(1)
     })
 
@@ -39,14 +39,14 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
         expect(res.success, 'API response should be a success').toBeTruthy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
         const expectedRes = {
-            baseFees: expect.arrayContaining([
+            baseFeePerGas: expect.arrayContaining([
                 expect.stringMatching(HEX_AT_LEAST_1),
             ]),
             gasUsedRatios: expect.arrayContaining([expect.any(Number)]),
             oldestBlock: expect.stringMatching(HEX_REGEX_64),
         }
         expect(res.body, 'Expected Response Body').toEqual(expectedRes)
-        expect(res.body.baseFees.length).toBe(1)
+        expect(res.body.baseFeePerGas.length).toBe(1)
         expect(res.body.gasUsedRatios.length).toBe(1)
     })
 
@@ -114,14 +114,14 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
             expect(res.success, 'API response should be a success').toBeTruthy()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
             const expectedRes = {
-                baseFees: expect.arrayContaining([
+                baseFeePerGas: expect.arrayContaining([
                     expect.stringMatching(HEX_AT_LEAST_1),
                 ]),
                 gasUsedRatios: expect.arrayContaining([expect.any(Number)]),
                 oldestBlock: expect.stringMatching(HEX_REGEX_64),
             }
             expect(res.body, 'Expected Response Body').toEqual(expectedRes)
-            expect(res.body.baseFees.length).toBe(blockNumber + 1)
+            expect(res.body.baseFeePerGas.length).toBe(blockNumber + 1)
             expect(res.body.gasUsedRatios.length).toBe(blockNumber + 1)
         },
     )
@@ -138,7 +138,7 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
                 ).toBeTruthy()
                 expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
                 const expectedRes = {
-                    baseFees: expect.arrayContaining([
+                    baseFeePerGas: expect.arrayContaining([
                         expect.stringMatching(HEX_AT_LEAST_1),
                     ]),
                     gasUsedRatios: expect.arrayContaining([expect.any(Number)]),
