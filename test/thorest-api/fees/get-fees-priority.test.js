@@ -23,7 +23,7 @@ const sendTransactionsWithTip = async (wallet, tip, vetAmountInWei) => {
     const bestBlk = await Client.raw.getBlock('best')
     expect(bestBlk.success).toBeTruthy()
 
-    const baseFee = bestBlk.body?.baseFee
+    const baseFee = bestBlk.body?.baseFeePerGas
     const txBody = await wallet.buildTransaction([clause], {
         isDynFeeTx: true,
         maxFeePerGas: baseFee,
@@ -96,7 +96,7 @@ describe(
                 const bestBlk = await Client.raw.getBlock('best')
                 expect(bestBlk.success).toBeTruthy()
 
-                const baseFee = bestBlk.body?.baseFee
+                const baseFee = bestBlk.body?.baseFeePerGas
                 const txBody = await wallet.buildTransaction([clause], {
                     isDynFeeTx: true,
                     maxFeePerGas: baseFee + expectedMaxPriorityFee,

@@ -26,7 +26,7 @@ describe('POST /transactions', () => {
             const bestBlk = await Client.raw.getBlock('best')
             expect(bestBlk.success).toBeTruthy()
 
-            const baseFee = bestBlk.body?.baseFee
+            const baseFee = bestBlk.body?.baseFeePerGas
             const txBody = await wallet.buildTransaction([clause], {
                 isDynFeeTx: true,
                 maxFeePerGas: baseFee - 1,
@@ -58,7 +58,7 @@ describe('POST /transactions', () => {
             const bestBlk = await Client.raw.getBlock('best')
             expect(bestBlk.success).toBeTruthy()
 
-            const baseFee = bestBlk.body?.baseFee
+            const baseFee = bestBlk.body?.baseFeePerGas
             const txBody = await wallet.buildTransaction([clause], {
                 isDynFeeTx: true,
                 maxFeePerGas: baseFee,
@@ -86,7 +86,7 @@ describe('POST /transactions', () => {
             const bestBlk = await Client.raw.getBlock('best')
             expect(bestBlk.success).toBeTruthy()
 
-            const baseFee = bestBlk.body?.baseFee - 1
+            const baseFee = bestBlk.body?.baseFeePerGas - 1
             const txBody = await wallet.buildTransaction([], {
                 isDynFeeTx: true,
                 maxFeePerGas: baseFee,

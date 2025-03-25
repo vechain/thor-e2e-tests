@@ -76,7 +76,7 @@ describe('GET /blocks/{revision}', function () {
                 txsRoot: expect.stringMatching(HEX_REGEX_64),
             }
             if (res.body.number >= genesis.forkConfig.GALACTICA) {
-                expectedRes.baseFee = expect.stringMatching(HEX_REGEX)
+                expectedRes.baseFeePerGas = expect.stringMatching(HEX_REGEX)
             }
             expect(res.body, 'Expected Response Body').toEqual(expectedRes)
         })
@@ -159,7 +159,7 @@ describe('GET /blocks/{revision}', function () {
                     kind: [
                         { name: 'Alpha', kind: new HexBlobKind() },
                         { name: 'COM', kind: new HexBlobKind() },
-                        { name: 'BaseFee', kind: new HexBlobKind() },
+                        { name: 'BaseFeePerGas', kind: new HexBlobKind() },
                     ],
                     // TODO: COM is usually false, and if kept there it throws an error (expected 2 got 1)
                     // TODO: not sure how to make it optional
