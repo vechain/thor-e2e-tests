@@ -66,9 +66,9 @@ class DynFeeTransaction {
                 ],
             },
         },
-        { name: 'gas', kind: new NumericKind(8) },
-        { name: 'maxFeePerGas', kind: new NumericKind(32) },
         { name: 'maxPriorityFeePerGas', kind: new NumericKind(32) },
+        { name: 'maxFeePerGas', kind: new NumericKind(32) },
+        { name: 'gas', kind: new NumericKind(8) },
         { name: 'dependsOn', kind: new OptionalFixedHexBlobKind(32) },
         { name: 'nonce', kind: new NumericKind(8) },
         { name: 'reserved', kind: { item: new BufferKind() } },
@@ -221,9 +221,9 @@ class DynFeeTransaction {
             clauses: decodedRLPBody.clauses,
             dependsOn: decodedRLPBody.dependsOn,
             expiration: decodedRLPBody.expiration,
-            gas: decodedRLPBody.gas,
-            maxFeePerGas: decodedRLPBody.maxFeePerGas,
             maxPriorityFeePerGas: decodedRLPBody.maxPriorityFeePerGas,
+            maxFeePerGas: decodedRLPBody.maxFeePerGas,
+            gas: decodedRLPBody.gas,
             nonce: decodedRLPBody.nonce,
         }
         const correctTransactionBody =
@@ -654,13 +654,10 @@ class DynFeeTransaction {
 
         // Prepend dynamicFeeTxType if the transaction is signed
         const dynamicFeeTxType = 0x51
-        if (isSigned) {
-            return nc_utils.concatBytes(
-                new Uint8Array([dynamicFeeTxType]),
-                encodedBody,
-            )
-        }
-        return encodedBody
+        return nc_utils.concatBytes(
+            new Uint8Array([dynamicFeeTxType]),
+            encodedBody,
+        )
     }
 
     /**
