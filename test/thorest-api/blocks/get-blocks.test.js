@@ -287,7 +287,7 @@ describe('GET /blocks/{revision}', function () {
             reverted: false,
             reward: expect.stringMatching(HEX_REGEX),
             size: expect.any(Number),
-            type: expect.stringMatching(HEX_REGEX),
+            type: expect.any(Number),
         })
     })
 })
