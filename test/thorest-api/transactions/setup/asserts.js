@@ -10,6 +10,8 @@ const successfulPostTx = ({ success, body, httpCode }) => {
     expect(body?.id).toBeDefined()
 }
 
+const toDecimal = (hex) => BigInt(hex).toString(10)
+
 const revertedPostTx = (
     { success, body, httpCode, httpMessage },
     expectedErrorMsg,
@@ -41,12 +43,12 @@ const compareSentTxWithCreatedTx = (sentTx, createdTx) => {
     const hexNonce = createdTx.body.nonce.toString(16)
     expect(body?.nonce).toEqual(hexUtils.addPrefix(hexNonce))
     expect(body?.gasPrice).toEqual(createdTx.body.gasPrice)
-    if (body?.txType === '0x0') {
+    if (body?.type === 0) {
         expect(body?.gasPriceCoef).toEqual(createdTx.body.gasPriceCoef)
     } else {
-        // TODO: fix the conversion from hex to decimal
-        // expect(body?.maxFeePerGas).toEqual(createdTx.body.maxFeePerGas)
-        // expect(body?.maxPriorityFeePerGas).toEqual(createdTx.body.maxPriorityFeePerGas)
+        expect(body?.gasPriceCoef).toBeUndefined()
+        expect(toDecimal(body?.maxFeePerGas)).toEqual(toDecimal(createdTx.body.maxFeePerGas))
+        expect(toDecimal(body?.maxPriorityFeePerGas)).toEqual(toDecimal(createdTx.body.maxPriorityFeePerGas))
     }
 }
 
