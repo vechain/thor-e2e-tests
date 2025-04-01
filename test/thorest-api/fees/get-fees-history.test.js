@@ -7,7 +7,7 @@ import { HEX_AT_LEAST_1, HEX_REGEX_64 } from '../../../src/utils/hex-utils'
  * @group api
  * @group fees
  */
-describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', function () {
+describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}?rewardPercentiles={p1,p2,p3}', function () {
     let blockID, blockNumber
 
     beforeEach(async () => {
