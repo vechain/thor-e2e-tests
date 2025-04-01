@@ -47,8 +47,12 @@ const compareSentTxWithCreatedTx = (sentTx, createdTx) => {
         expect(body?.gasPriceCoef).toEqual(createdTx.body.gasPriceCoef)
     } else {
         expect(body?.gasPriceCoef).toBeUndefined()
-        expect(toDecimal(body?.maxFeePerGas)).toEqual(toDecimal(createdTx.body.maxFeePerGas))
-        expect(toDecimal(body?.maxPriorityFeePerGas)).toEqual(toDecimal(createdTx.body.maxPriorityFeePerGas))
+        expect(toDecimal(body?.maxFeePerGas)).toEqual(
+            toDecimal(createdTx.body.maxFeePerGas),
+        )
+        expect(toDecimal(body?.maxPriorityFeePerGas)).toEqual(
+            toDecimal(createdTx.body.maxPriorityFeePerGas),
+        )
     }
 }
 

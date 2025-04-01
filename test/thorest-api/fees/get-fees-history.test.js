@@ -7,7 +7,7 @@ import { HEX_AT_LEAST_1, HEX_REGEX_64 } from '../../../src/utils/hex-utils'
  * @group api
  * @group fees
  */
-describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', function () {
+describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}?rewardPercentiles={p1,p2,p3}', function () {
     let blockID, blockNumber
 
     beforeEach(async () => {
@@ -17,7 +17,7 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
     })
 
     it.e2eTest('when newestBlock is a block ID', 'all', async () => {
-        const res = await Client.raw.getFeesHistory(1, blockID, false)
+        const res = await Client.raw.getFeesHistory(1, blockID)
 
         expect(res.success, 'API response should be a success').toBeTruthy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -34,7 +34,7 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
     })
 
     it.e2eTest('when newestBlock is a block number', 'all', async () => {
-        const res = await Client.raw.getFeesHistory(1, blockNumber, false)
+        const res = await Client.raw.getFeesHistory(1, blockNumber)
 
         expect(res.success, 'API response should be a success').toBeTruthy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
@@ -52,11 +52,7 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
 
     it.e2eTest('when blockCount is negative', 'all', async () => {
         const blockCount = -2
-        const res = await Client.raw.getFeesHistory(
-            blockCount,
-            blockNumber,
-            false,
-        )
+        const res = await Client.raw.getFeesHistory(blockCount, blockNumber)
 
         expect(res.success, 'API response should fail').toBeFalsy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
@@ -67,11 +63,7 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
 
     it.e2eTest('when blockCount is 0', 'all', async () => {
         const blockCount = 0
-        const res = await Client.raw.getFeesHistory(
-            blockCount,
-            blockNumber,
-            false,
-        )
+        const res = await Client.raw.getFeesHistory(blockCount, blockNumber)
 
         expect(res.success, 'API response should fail').toBeFalsy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
@@ -82,7 +74,7 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
 
     it.e2eTest('when newestBlock is negative', 'all', async () => {
         const newestBlock = -3
-        const res = await Client.raw.getFeesHistory(1, newestBlock, false)
+        const res = await Client.raw.getFeesHistory(1, newestBlock)
 
         expect(res.success, 'API response should fail').toBeFalsy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
@@ -92,7 +84,7 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
     })
 
     it.e2eTest('when newestBlock is higher than best', 'all', async () => {
-        const res = await Client.raw.getFeesHistory(1, blockNumber + 10, false)
+        const res = await Client.raw.getFeesHistory(1, blockNumber + 10)
 
         expect(res.success, 'API response should fail').toBeFalsy()
         expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
@@ -108,7 +100,6 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
             const res = await Client.raw.getFeesHistory(
                 blockNumber + 10,
                 blockNumber,
-                false,
             )
 
             expect(res.success, 'API response should be a success').toBeTruthy()
@@ -131,7 +122,7 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
             `Fees history: valid revision ${revision}`,
             'all',
             async () => {
-                const res = await Client.raw.getFeesHistory(10, revision, false)
+                const res = await Client.raw.getFeesHistory(10, revision)
                 expect(
                     res.success,
                     'API response should be a success',
@@ -145,6 +136,168 @@ describe('GET /fees/history?blockCount={blockCount}?newestBlock={revision}', fun
                     oldestBlock: expect.stringMatching(HEX_REGEX_64),
                 }
                 expect(res.body, 'Expected Response Body').toEqual(expectedRes)
+            },
+        )
+    })
+
+    describe('with rewardPercentiles parameter', function () {
+        it.e2eTest(
+            'should return rewards when using block ID',
+            'all',
+            async () => {
+                const res = await Client.raw.getFeesHistory(
+                    1,
+                    blockID,
+                    [25, 50, 75],
+                )
+
+                expect(
+                    res.success,
+                    'API response should be a success',
+                ).toBeTruthy()
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+                const expectedRes = {
+                    baseFeePerGas: expect.arrayContaining([
+                        expect.stringMatching(HEX_AT_LEAST_1),
+                    ]),
+                    gasUsedRatio: expect.arrayContaining([expect.any(Number)]),
+                    oldestBlock: expect.stringMatching(HEX_REGEX_64),
+                    reward: expect.arrayContaining([
+                        expect.arrayContaining([
+                            expect.stringMatching(HEX_AT_LEAST_1),
+                        ]),
+                    ]),
+                }
+                expect(res.body, 'Expected Response Body').toEqual(expectedRes)
+                expect(res.body.reward.length).toBe(1)
+                expect(res.body.reward[0].length).toBe(3)
+            },
+        )
+
+        it.e2eTest(
+            'should return rewards when using block number',
+            'all',
+            async () => {
+                const res = await Client.raw.getFeesHistory(
+                    1,
+                    blockNumber,
+                    [25, 50, 75],
+                )
+
+                expect(
+                    res.success,
+                    'API response should be a success',
+                ).toBeTruthy()
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+                const expectedRes = {
+                    baseFeePerGas: expect.arrayContaining([
+                        expect.stringMatching(HEX_AT_LEAST_1),
+                    ]),
+                    gasUsedRatio: expect.arrayContaining([expect.any(Number)]),
+                    oldestBlock: expect.stringMatching(HEX_REGEX_64),
+                    reward: expect.arrayContaining([
+                        expect.arrayContaining([
+                            expect.stringMatching(HEX_AT_LEAST_1),
+                        ]),
+                    ]),
+                }
+                expect(res.body, 'Expected Response Body').toEqual(expectedRes)
+                expect(res.body.reward.length).toBe(1)
+                expect(res.body.reward[0].length).toBe(3)
+            },
+        )
+
+        it.e2eTest(
+            'should return rewards for multiple blocks',
+            'all',
+            async () => {
+                const blockCount = 3
+                const res = await Client.raw.getFeesHistory(
+                    blockCount,
+                    blockNumber,
+                    [25, 50, 75],
+                )
+
+                expect(
+                    res.success,
+                    'API response should be a success',
+                ).toBeTruthy()
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+                const expectedRes = {
+                    baseFeePerGas: expect.arrayContaining([
+                        expect.stringMatching(HEX_AT_LEAST_1),
+                    ]),
+                    gasUsedRatio: expect.arrayContaining([expect.any(Number)]),
+                    oldestBlock: expect.stringMatching(HEX_REGEX_64),
+                    reward: expect.arrayContaining([
+                        expect.arrayContaining([
+                            expect.stringMatching(HEX_AT_LEAST_1),
+                        ]),
+                    ]),
+                }
+                expect(res.body, 'Expected Response Body').toEqual(expectedRes)
+                expect(res.body.reward.length).toBe(blockCount)
+                res.body.reward.forEach((blockRewards) => {
+                    expect(blockRewards.length).toBe(3)
+                })
+            },
+        )
+
+        it.e2eTest(
+            'should handle empty rewardPercentiles array',
+            'all',
+            async () => {
+                const res = await Client.raw.getFeesHistory(1, blockNumber, [])
+
+                expect(
+                    res.success,
+                    'API response should be a success',
+                ).toBeTruthy()
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+                const expectedRes = {
+                    baseFeePerGas: expect.arrayContaining([
+                        expect.stringMatching(HEX_AT_LEAST_1),
+                    ]),
+                    gasUsedRatio: expect.arrayContaining([expect.any(Number)]),
+                    oldestBlock: expect.stringMatching(HEX_REGEX_64),
+                }
+                expect(res.body, 'Expected Response Body').toEqual(expectedRes)
+            },
+        )
+
+        it.e2eTest(
+            'should handle invalid rewardPercentiles values',
+            'all',
+            async () => {
+                const res = await Client.raw.getFeesHistory(
+                    1,
+                    blockNumber,
+                    [-1, 101],
+                )
+
+                expect(res.success, 'API response should fail').toBeFalsy()
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
+                expect(res.httpMessage).toContain(
+                    'rewardPercentiles values must be between 0 and 100',
+                )
+            },
+        )
+
+        it.e2eTest(
+            'should handle non-ascending rewardPercentiles',
+            'all',
+            async () => {
+                const res = await Client.raw.getFeesHistory(
+                    1,
+                    blockNumber,
+                    [75, 25, 50],
+                )
+
+                expect(res.success, 'API response should fail').toBeFalsy()
+                expect(res.httpCode, 'Expected HTTP Code').toEqual(400)
+                expect(res.httpMessage).toContain(
+                    'reward percentiles must be in ascending order, but 25.000000 is less than 75.000000',
+                )
             },
         )
     })

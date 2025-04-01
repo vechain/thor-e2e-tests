@@ -1,8 +1,8 @@
 import { Clause, Hex, Transaction, Units, VET } from '@vechain/sdk-core'
+import { utils } from 'web3'
 import { Client } from '../../../../../src/thor-client'
+import { pollReceipt, pollTransaction } from '../../../../../src/transactions'
 import { ThorWallet } from '../../../../../src/wallet'
-import { pollTransaction, pollReceipt } from '../../../../../src/transactions'
-import { TransactionDataDrivenFlow } from '../../setup/transaction-data-driven-flow'
 import {
     checkTransactionLogSuccess,
     checkTxInclusionInBlock,
@@ -11,7 +11,6 @@ import {
     successfulReceipt,
 } from '../../setup/asserts'
 import { TransactionDataDrivenFlow } from '../../setup/transaction-data-driven-flow'
-import { utils } from 'web3'
 
 /**
  * @group api
