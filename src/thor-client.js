@@ -162,12 +162,15 @@ class ThorClient {
     }
 
     // GET /fees/history
-    async getFeesHistory(blockCount, newestBlock, options) {
+    async getFeesHistory(blockCount, newestBlock, rewardPercentiles, options) {
+        let url = `/fees/history?blockCount=${blockCount}&newestBlock=${newestBlock}`
+
+        if (rewardPercentiles) {
+            url = `${url}&rewardPercentiles=${rewardPercentiles}`
+        }
+
         return this.performRequest(() =>
-            this.axios.get(
-                `/fees/history?blockCount=${blockCount}&newestBlock=${newestBlock}`,
-                options,
-            ),
+            this.axios.get(url, options),
         )
     }
 

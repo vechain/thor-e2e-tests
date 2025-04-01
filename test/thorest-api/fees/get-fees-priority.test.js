@@ -12,55 +12,6 @@ import {
 } from '../transactions/setup/asserts'
 import { TransactionDataDrivenFlow } from '../transactions/setup/transaction-data-driven-flow'
 
-const timeout = 100000
-
-const sendTransactionsWithTip = async (wallet, tip, vetAmountInWei) => {
-    const clause = Clause.transferVET(
-        wallet.address,
-        VET.of(vetAmountInWei, Units.wei),
-    )
-
-    const bestBlk = await Client.raw.getBlock('best')
-    expect(bestBlk.success).toBeTruthy()
-
-    const baseFee = bestBlk.body?.baseFeePerGas
-    const txBody = await wallet.buildTransaction([clause], {
-        isDynFeeTx: true,
-        maxFeePerGas: baseFee,
-        maxPriorityFeePerGas: tip,
-    })
-    const signedTx = await wallet.signTransaction(txBody)
-
-    const testPlan = {
-        postTxStep: {
-            rawTx: Hex.of(signedTx.encoded).toString(),
-            expectedResult: successfulPostTx,
-        },
-        getTxStep: {
-            expectedResult: (tx) => compareSentTxWithCreatedTx(tx, signedTx),
-        },
-        getTxReceiptStep: {
-            expectedResult: (receipt) => successfulReceipt(receipt, signedTx),
-        },
-        getLogTransferStep: {
-            expectedResult: (input, block) =>
-                checkTransactionLogSuccess(
-                    input,
-                    block,
-                    signedTx,
-                    signedTx.body.clauses,
-                ),
-        },
-        getTxBlockStep: {
-            expectedResult: checkTxInclusionInBlock,
-        },
-    }
-
-    const ddt = new TransactionDataDrivenFlow(testPlan)
-
-    await ddt.runTestFlow()
-}
-
 /**
  * @group api
  * @group fees
@@ -151,5 +102,4 @@ describe(
             },
         )
     },
-    timeout,
 )
