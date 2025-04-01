@@ -169,9 +169,7 @@ class ThorClient {
             url = `${url}&rewardPercentiles=${rewardPercentiles}`
         }
 
-        return this.performRequest(() =>
-            this.axios.get(url, options),
-        )
+        return this.performRequest(() => this.axios.get(url, options))
     }
 
     // GET /fees/priority

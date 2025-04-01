@@ -16,90 +16,84 @@ import { TransactionDataDrivenFlow } from '../transactions/setup/transaction-dat
  * @group api
  * @group fees
  */
-describe(
-    'GET /fees/priority',
-    function () {
-        it.e2eTest('get suggested priority fee', 'all', async () => {
+describe('GET /fees/priority', function () {
+    it.e2eTest('get suggested priority fee', 'all', async () => {
+        const res = await Client.raw.getFeesPriority()
+
+        expect(res.success, 'API response should be a success').toBeTruthy()
+        expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
+        const expectedRes = {
+            maxPriorityFeePerGas: expect.stringMatching(HEX_AT_LEAST_1),
+        }
+        expect(res.body, 'Expected Response Body').toEqual(expectedRes)
+    })
+
+    it.e2eTest(
+        'should suggest a priority fee that is above the current one',
+        ['solo', 'default-private'],
+        async () => {
+            const wallet = ThorWallet.withFunds()
+
+            // 5% of the initial base fee
+            const expectedMaxPriorityFee = 500_000_000_000
+
+            const clause = Clause.transferVET(
+                wallet.address,
+                VET.of(1, Units.wei),
+            )
+
+            const bestBlk = await Client.raw.getBlock('best')
+            expect(bestBlk.success).toBeTruthy()
+
+            const baseFee = bestBlk.body?.baseFeePerGas
+            const txBody = await wallet.buildTransaction([clause], {
+                isDynFeeTx: true,
+                maxFeePerGas: baseFee + expectedMaxPriorityFee,
+                maxPriorityFeePerGas: expectedMaxPriorityFee,
+            })
+            const signedTx = await wallet.signTransaction(txBody)
+
+            const testPlan = {
+                postTxStep: {
+                    rawTx: Hex.of(signedTx.encoded).toString(),
+                    expectedResult: successfulPostTx,
+                },
+                getTxStep: {
+                    expectedResult: (tx) =>
+                        compareSentTxWithCreatedTx(tx, signedTx),
+                },
+                getTxReceiptStep: {
+                    expectedResult: (receipt) =>
+                        successfulReceipt(receipt, signedTx),
+                },
+                getLogTransferStep: {
+                    expectedResult: (input, block) =>
+                        checkTransactionLogSuccess(
+                            input,
+                            block,
+                            signedTx,
+                            signedTx.body.clauses,
+                        ),
+                },
+                getTxBlockStep: {
+                    expectedResult: checkTxInclusionInBlock,
+                },
+            }
+
+            const ddt = new TransactionDataDrivenFlow(testPlan)
+
+            await ddt.runTestFlow()
+
             const res = await Client.raw.getFeesPriority()
 
             expect(res.success, 'API response should be a success').toBeTruthy()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
             const expectedRes = {
-                maxPriorityFeePerGas: expect.stringMatching(HEX_AT_LEAST_1),
+                maxPriorityFeePerGas: HexUInt.of(
+                    expectedMaxPriorityFee,
+                ).toString(),
             }
             expect(res.body, 'Expected Response Body').toEqual(expectedRes)
-        })
-
-        it.e2eTest(
-            'should suggest a priority fee that is above the current one',
-            ['solo', 'default-private'],
-            async () => {
-                const wallet = ThorWallet.withFunds()
-
-                // 5% of the initial base fee
-                const expectedMaxPriorityFee = 500_000_000_000
-
-                const clause = Clause.transferVET(
-                    wallet.address,
-                    VET.of(1, Units.wei),
-                )
-
-                const bestBlk = await Client.raw.getBlock('best')
-                expect(bestBlk.success).toBeTruthy()
-
-                const baseFee = bestBlk.body?.baseFeePerGas
-                const txBody = await wallet.buildTransaction([clause], {
-                    isDynFeeTx: true,
-                    maxFeePerGas: baseFee + expectedMaxPriorityFee,
-                    maxPriorityFeePerGas: expectedMaxPriorityFee,
-                })
-                const signedTx = await wallet.signTransaction(txBody)
-
-                const testPlan = {
-                    postTxStep: {
-                        rawTx: Hex.of(signedTx.encoded).toString(),
-                        expectedResult: successfulPostTx,
-                    },
-                    getTxStep: {
-                        expectedResult: (tx) =>
-                            compareSentTxWithCreatedTx(tx, signedTx),
-                    },
-                    getTxReceiptStep: {
-                        expectedResult: (receipt) =>
-                            successfulReceipt(receipt, signedTx),
-                    },
-                    getLogTransferStep: {
-                        expectedResult: (input, block) =>
-                            checkTransactionLogSuccess(
-                                input,
-                                block,
-                                signedTx,
-                                signedTx.body.clauses,
-                            ),
-                    },
-                    getTxBlockStep: {
-                        expectedResult: checkTxInclusionInBlock,
-                    },
-                }
-
-                const ddt = new TransactionDataDrivenFlow(testPlan)
-
-                await ddt.runTestFlow()
-
-                const res = await Client.raw.getFeesPriority()
-
-                expect(
-                    res.success,
-                    'API response should be a success',
-                ).toBeTruthy()
-                expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-                const expectedRes = {
-                    maxPriorityFeePerGas: HexUInt.of(
-                        expectedMaxPriorityFee,
-                    ).toString(),
-                }
-                expect(res.body, 'Expected Response Body').toEqual(expectedRes)
-            },
-        )
-    },
-)
+        },
+    )
+})
