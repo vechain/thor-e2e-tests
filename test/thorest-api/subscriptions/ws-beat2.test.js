@@ -129,6 +129,9 @@ describe('WS /subscriptions/beat2', () => {
             expect(firstBeat?.txsFeatures).toEqual(bestBlock.body?.txsFeatures)
             expect(firstBeat?.parentID).toEqual(bestBlock.body?.parentID)
             expect(firstBeat?.gasLimit).toEqual(bestBlock.body?.gasLimit)
+            expect(firstBeat?.baseFeePerGas).toEqual(
+                bestBlock.body?.baseFeePerGas,
+            )
             ws.unsubscribe()
         },
     )
