@@ -40,7 +40,7 @@ describe('POST /transactions', () => {
             })
 
             const expectedErrMsg =
-                'tx rejected: max fee per gas is less than block base fee'
+                'tx rejected: gas price is less than block base fee: expected 10000000000000 got 9999999999999'
             expect(res.success).toBeFalsy()
             expect(res.httpMessage.trimEnd()).toBe(expectedErrMsg)
         },
@@ -100,7 +100,7 @@ describe('POST /transactions', () => {
             })
 
             const expectedErrMsg =
-                'tx rejected: max fee per gas is less than block base fee'
+                'tx rejected: gas price is less than block base fee: expected 10000000000000 got 9999999999999'
             expect(res.success).toBeFalsy()
             expect(res.httpMessage.trimEnd()).toBe(expectedErrMsg)
         },
