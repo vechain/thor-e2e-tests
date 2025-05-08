@@ -73,7 +73,7 @@ describe('POST /transactions', () => {
             })
 
             const expectedErrMsg =
-                'tx rejected: max fee per gas (10000000000000) must be greater than max priority fee per gas (100000000000000)'
+                'bad tx: maxFeePerGas is less than maxPriorityFeePerGas'
             expect(res.success).toBeFalsy()
             expect(res.httpMessage.trimEnd()).toBe(expectedErrMsg)
         },
