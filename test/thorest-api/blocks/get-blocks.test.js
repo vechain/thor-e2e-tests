@@ -14,6 +14,7 @@ import {
     NumericKind,
     RLPProfiler,
 } from '@vechain/sdk-core'
+import genesis from '../../../network/config/genesis.json'
 
 /**
  * @group api
@@ -54,7 +55,7 @@ describe('GET /blocks/{revision}', function () {
             const res = await Client.raw.getBlock(revision, false)
             expect(res.success, 'API response should be a success').toBeTruthy()
             expect(res.httpCode, 'Expected HTTP Code').toEqual(200)
-            expect(res.body, 'Expected Response Body').toEqual({
+            const expectedRes = {
                 beneficiary: expect.stringMatching(HEX_REGEX_40),
                 com: expect.any(Boolean),
                 gasLimit: expect.any(Number),
@@ -73,7 +74,11 @@ describe('GET /blocks/{revision}', function () {
                 transactions: expect.any(Array),
                 txsFeatures: expect.any(Number),
                 txsRoot: expect.stringMatching(HEX_REGEX_64),
-            })
+            }
+            if (res.body.number >= genesis.forkConfig.GALACTICA) {
+                expectedRes.baseFeePerGas = expect.stringMatching(HEX_REGEX)
+            }
+            expect(res.body, 'Expected Response Body').toEqual(expectedRes)
         })
     })
 
@@ -151,7 +156,11 @@ describe('GET /blocks/{revision}', function () {
                 { name: 'Signature', kind: new HexBlobKind() },
                 {
                     name: 'Extension',
-                    kind: [{ name: 'Alpha', kind: new HexBlobKind() }],
+                    kind: [
+                        { name: 'Alpha', kind: new HexBlobKind() },
+                        { name: 'COM', kind: new HexBlobKind() },
+                        { name: 'BaseFeePerGas', kind: new HexBlobKind() },
+                    ],
                     // TODO: COM is usually false, and if kept there it throws an error (expected 2 got 1)
                     // TODO: not sure how to make it optional
                 },
@@ -278,6 +287,7 @@ describe('GET /blocks/{revision}', function () {
             reverted: false,
             reward: expect.stringMatching(HEX_REGEX),
             size: expect.any(Number),
+            type: expect.any(Number),
         })
     })
 })

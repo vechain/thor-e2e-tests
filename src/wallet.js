@@ -14,6 +14,7 @@ import {
     VeChainPrivateKeySigner,
     VeChainProvider,
 } from '@vechain/sdk-network'
+import { DynFeeTransaction } from './dyn-fee-transaction'
 
 export const generateAddress = async () => {
     return (await generateEmptyWallet()).address.toLowerCase()
@@ -134,12 +135,26 @@ class ThorWallet {
         return contract
     }
 
-    buildTransaction = async (clauses, options) => {
+    buildTransaction = async (clauses, options = {}) => {
         const bestBlockRef = await getBlockRef('best')
         const genesisBlock = await Client.raw.getBlock('0')
 
         if (!genesisBlock.success || !genesisBlock.body?.id) {
             throw new Error('Could not get best block')
+        }
+
+        if (options.isDynFeeTx) {
+            return new DynFeeTransaction({
+                blockRef: bestBlockRef,
+                expiration: 1000,
+                clauses: clauses,
+                maxPriorityFeePerGas: options.maxPriorityFeePerGas ?? 10,
+                maxFeePerGas: options.maxFeePerGas ?? 10_000_000_000_000,
+                gas: 1_000_000,
+                dependsOn: options.dependsOn ?? null,
+                nonce: generateNonce(),
+                chainTag: parseInt(genesisBlock.body.id.slice(-2), 16),
+            })
         }
 
         return {
@@ -148,7 +163,7 @@ class ThorWallet {
             clauses: clauses,
             gasPriceCoef: 0,
             gas: 1_000_000,
-            dependsOn: options?.dependsOn ?? null,
+            dependsOn: options.dependsOn ?? null,
             nonce: generateNonce(),
             chainTag: parseInt(genesisBlock.body.id.slice(-2), 16),
         }
@@ -160,13 +175,18 @@ class ThorWallet {
 
         let tx
 
+        const TxClass =
+            transaction instanceof DynFeeTransaction
+                ? DynFeeTransaction
+                : Transaction
+
         if (delegationSignature) {
-            tx = new Transaction(
+            tx = new TxClass(
                 transaction.body,
                 Buffer.concat([signature, delegationSignature]),
             )
         } else {
-            tx = new Transaction(transaction.body, Buffer.from(signature))
+            tx = new TxClass(transaction.body, signature)
         }
 
         return tx

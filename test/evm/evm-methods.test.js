@@ -26,9 +26,9 @@ describe('EVM methods', () => {
 
     it.e2eTest('should be able to get the "block.basefee"', 'all', async () => {
         const { clause } = await evmMethods.clause.getBaseFee()
-        // TODO: this is a negative test, vechain EVM does not have 'block.basefee'
         const res = await Client.sdk.gas.estimateGas([clause])
-        expect(res.vmErrors[0]).toEqual('invalid opcode 0x48')
+        expect(res.reverted).toBeFalsy()
+        expect(res.totalGas).toBeGreaterThan(0)
     })
 
     it.e2eTest('should be able to get the "block.chainid"', 'all', async () => {

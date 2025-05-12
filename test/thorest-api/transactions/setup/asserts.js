@@ -1,5 +1,5 @@
-import hexUtils from '../../../../src/utils/hex-utils'
 import { Hex } from '@vechain/sdk-core'
+import hexUtils from '../../../../src/utils/hex-utils'
 
 /**
  * Functions to be used in the test plan
@@ -9,6 +9,8 @@ const successfulPostTx = ({ success, body, httpCode }) => {
     expect(httpCode).toBe(200)
     expect(body?.id).toBeDefined()
 }
+
+const toDecimal = (hex) => BigInt(hex).toString(10)
 
 const revertedPostTx = (
     { success, body, httpCode, httpMessage },
@@ -40,7 +42,18 @@ const compareSentTxWithCreatedTx = (sentTx, createdTx) => {
     expect(body?.dependsOn).toEqual(createdTx.body.dependsOn)
     const hexNonce = createdTx.body.nonce.toString(16)
     expect(body?.nonce).toEqual(hexUtils.addPrefix(hexNonce))
-    expect(body?.gasPriceCoef).toEqual(createdTx.body.gasPriceCoef)
+    expect(body?.gasPrice).toEqual(createdTx.body.gasPrice)
+    if (body?.type === 0) {
+        expect(body?.gasPriceCoef).toEqual(createdTx.body.gasPriceCoef)
+    } else {
+        expect(body?.gasPriceCoef).toBeUndefined()
+        expect(toDecimal(body?.maxFeePerGas)).toEqual(
+            toDecimal(createdTx.body.maxFeePerGas),
+        )
+        expect(toDecimal(body?.maxPriorityFeePerGas)).toEqual(
+            toDecimal(createdTx.body.maxPriorityFeePerGas),
+        )
+    }
 }
 
 const compareClauses = (sentClauses, createdClauses) => {
@@ -128,13 +141,13 @@ const checkTransactionLogSuccess = (input, block, tx, transferClauses) => {
 }
 
 export {
-    successfulPostTx,
-    revertedPostTx,
-    compareSentTxWithCreatedTx,
     checkDelegatedTransaction,
-    successfulReceipt,
     checkDelegatedTransactionReceipt,
-    checkTxInclusionInBlock,
     checkTransactionLogSuccess,
+    checkTxInclusionInBlock,
+    compareSentTxWithCreatedTx,
+    revertedPostTx,
+    successfulPostTx,
+    successfulReceipt,
     unsuccessfulReceipt,
 }

@@ -1,9 +1,9 @@
+import axios from 'axios'
 import 'dotenv/config'
 import { testEnv } from './test-env'
-import axios from 'axios'
 
-import WebSocket from 'ws'
 import { ThorClient as _ThorClient } from '@vechain/sdk-network'
+import WebSocket from 'ws'
 
 class ThorClient {
     subscriptions = []
@@ -158,6 +158,24 @@ class ThorClient {
     async getPeers(options) {
         return this.performRequest(() =>
             this.axios.get(`/node/network/peers`, options),
+        )
+    }
+
+    // GET /fees/history
+    async getFeesHistory(blockCount, newestBlock, rewardPercentiles, options) {
+        let url = `/fees/history?blockCount=${blockCount}&newestBlock=${newestBlock}`
+
+        if (rewardPercentiles) {
+            url = `${url}&rewardPercentiles=${rewardPercentiles}`
+        }
+
+        return this.performRequest(() => this.axios.get(url, options))
+    }
+
+    // GET /fees/priority
+    async getFeesPriority(options) {
+        return this.performRequest(() =>
+            this.axios.get('/fees/priority', options),
         )
     }
 
@@ -361,6 +379,13 @@ class LoadBalancedClient {
         }
 
         return new Proxy(this.getRandomSDKClient(), handler)
+    }
+
+    /**
+     * @return {[ThorClient]}
+     */
+    get all() {
+        return this.clients
     }
 
     getRandomClient() {

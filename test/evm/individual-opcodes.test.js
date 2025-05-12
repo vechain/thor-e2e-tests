@@ -1,16 +1,16 @@
+import { Address } from '@vechain/sdk-core'
+import { funder, randomFunder } from '../../src/account-faucet'
+import { Client } from '../../src/thor-client'
+import { pollReceipt } from '../../src/transactions'
+import {
+    addAddressPadding,
+    addUintPadding,
+} from '../../src/utils/padding-utils'
 import { ThorWallet } from '../../src/wallet'
 import {
     IndividualOpCodes__factory as Opcodes,
     SimpleCounterShanghai__factory as ShanghaiCounter,
 } from '../../typechain-types'
-import { Client } from '../../src/thor-client'
-import {
-    addAddressPadding,
-    addUintPadding,
-} from '../../src/utils/padding-utils'
-import { pollReceipt } from '../../src/transactions'
-import { funder, randomFunder } from '../../src/account-faucet'
-import { Address } from '@vechain/sdk-core'
 
 const opcodesInterface = Opcodes.createInterface()
 
@@ -532,12 +532,24 @@ describe('Individual OpCodes', () => {
             const debugged = await traceContractCall(
                 opcodesInterface.encodeFunctionData('BASEFEE'),
                 'BASEFEE',
-                true,
             )
 
-            expect(
-                debugged.structLogs[debugged.structLogs.length - 1].error,
-            ).toBe('invalid opcode 0x48')
+            const relevantStructLogs = debugged.structLogs.filter(
+                (log) => log.op === 'BASEFEE',
+            )
+
+            expect(relevantStructLogs).toHaveLength(1)
+
+            expect(relevantStructLogs).toStrictEqual([
+                {
+                    depth: 1,
+                    gas: 999726,
+                    gasCost: 2,
+                    op: 'BASEFEE',
+                    pc: 6224,
+                    stack: ['0x2b428996', '0x866', '0x0', '0x0'],
+                },
+            ])
         },
     )
 
@@ -603,7 +615,7 @@ describe('Individual OpCodes', () => {
 
             const receipt = await pollReceipt(tx.id ?? '')
 
-            expect(receipt.reverted).toBeTruthy()
+            expect(receipt.reverted).toBeFalsy()
 
             // 0x5f is the PUSH0 opcode
             const simulation = await Client.raw.executeAccountBatch({
@@ -611,12 +623,14 @@ describe('Individual OpCodes', () => {
                 caller,
             })
 
-            expect(simulation.body?.[0]?.vmError).toEqual('invalid opcode 0x5f')
+            expect(simulation.httpCode).toBe(200)
+            expect(simulation.body?.[0]?.reverted).toBeFalsy()
+            expect(simulation.body?.[0]?.vmError.length).toBe(0)
         },
     )
 
     it.e2eTest(
-        'should be possible to deploy contract starting with 0xEF',
+        'should not be possible to deploy a contract starting with 0xEF',
         'all',
         async () => {
             const contractBytecode = '0x60ef60005360016000f3'
@@ -633,7 +647,10 @@ describe('Individual OpCodes', () => {
                 caller,
             })
 
-            expect(simulation.body?.[0]?.vmError.length).toBe(0)
+            expect(simulation.body?.[0]?.reverted).toBeTruthy()
+            expect(simulation.body?.[0]?.vmError).toEqual(
+                'invalid code: must not begin with 0xef',
+            )
         },
     )
 })

@@ -11,10 +11,15 @@ export const generateNonce = () => {
  * @param queryParams params to pass to query
  * @param timeout The maximum time to wait for the transaction
  */
-export const pollTransaction = async (txId, queryParams, timeout = 60_000) => {
+export const pollTransaction = async (
+    txId,
+    queryParams,
+    timeout = 60_000,
+    client = Client.raw,
+) => {
     return new Promise((resolve, reject) => {
         const intervalId = setInterval(async () => {
-            const tx = await Client.raw.getTransaction(txId, queryParams)
+            const tx = await client.getTransaction(txId, queryParams)
 
             if (tx.success && tx.body) {
                 clearInterval(intervalId) // Clear the interval when the receipt is found
