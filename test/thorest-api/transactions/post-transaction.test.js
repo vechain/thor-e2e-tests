@@ -1,7 +1,8 @@
 import { Hex, Transaction } from '@vechain/sdk-core'
 import { ThorWallet, generateAddress } from '../../../src/wallet'
-import { revertedPostTx } from './setup/asserts'
+import { revertedPostTx, successfulPostTx } from './setup/asserts'
 import { TransactionDataDrivenFlow } from './setup/transaction-data-driven-flow'
+import { fundingAmounts } from '../../../src/account-faucet'
 
 /**
  * @group api
@@ -17,6 +18,68 @@ describe('POST /transactions', function () {
             fundReceipt?.reverted,
             'Transaction should not be reverted',
         ).toBeFalsy()
+    })
+
+    it.e2eTest('should hit account limit', 'all', async () => {
+        const testWallet = await ThorWallet.newFunded(
+            fundingAmounts.bigVetBigVtho,
+        )
+
+        for (let i = 0; i < 128; i++) {
+            const receivingAddr = await generateAddress()
+            const clauses = [
+                {
+                    value: 1,
+                    data: '0x',
+                    to: receivingAddr,
+                },
+            ]
+
+            const txBody = await testWallet.buildTransaction(clauses)
+            const tx = new Transaction(txBody)
+            const signedTx = await testWallet.signTransaction(tx)
+
+            const testPlan = {
+                postTxStep: {
+                    rawTx: Hex.of(signedTx.encoded).toString(),
+                    expectedResult: (data) => successfulPostTx(data),
+                },
+            }
+
+            const ddt = new TransactionDataDrivenFlow(testPlan)
+            await ddt.runTestFlow()
+        }
+        const receivingAddr = await generateAddress()
+        const clauses = [
+            {
+                value: 1,
+                data: '0x',
+                to: receivingAddr,
+            },
+        ]
+
+        const txBody = await testWallet.buildTransaction(clauses)
+        const tx = new Transaction(txBody)
+        const signedTx = await testWallet.signTransaction(tx)
+
+        const testPlan = {
+            postTxStep: {
+                rawTx: Hex.of(signedTx.encoded).toString(),
+                expectedResult: (data) =>
+                    revertedPostTx(
+                        {
+                            success: data.success,
+                            body: data.body,
+                            httpCode: 400,
+                            httpMessage: data.httpMessage,
+                        },
+                        'tx rejected: account quota exceeded',
+                    ),
+            },
+        }
+
+        const ddt = new TransactionDataDrivenFlow(testPlan)
+        await ddt.runTestFlow()
     })
 
     it.e2eTest(
