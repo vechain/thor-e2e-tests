@@ -67,6 +67,7 @@ describe('GET /blocks/{revision}', function () {
                 parentID: expect.stringMatching(HEX_REGEX_64),
                 receiptsRoot: expect.stringMatching(HEX_REGEX_64),
                 signer: expect.stringMatching(HEX_REGEX_40),
+                evidence: null,
                 size: expect.any(Number),
                 stateRoot: expect.stringMatching(HEX_REGEX_64),
                 timestamp: expect.any(Number),
@@ -160,6 +161,7 @@ describe('GET /blocks/{revision}', function () {
                         { name: 'Alpha', kind: new HexBlobKind() },
                         { name: 'COM', kind: new HexBlobKind() },
                         { name: 'BaseFeePerGas', kind: new HexBlobKind() },
+                        { name: 'Evidence', kind: [] },
                     ],
                     // TODO: COM is usually false, and if kept there it throws an error (expected 2 got 1)
                     // TODO: not sure how to make it optional
