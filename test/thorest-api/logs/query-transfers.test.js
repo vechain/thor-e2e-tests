@@ -341,7 +341,7 @@ describe('POST /logs/transfers', () => {
 
                 expect(transferLogs.httpCode).toEqual(400)
                 expect(transferLogs.httpMessage).contain(
-                    'body: json: cannot unmarshal number 18446744073709552000',
+                    'body: json: cannot unmarshal number 18446744073709552000 into Go struct field Options.Options.Offset of type uint64',
                 )
             },
         )
