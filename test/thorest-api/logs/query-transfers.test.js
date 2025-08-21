@@ -219,7 +219,7 @@ describe('POST /logs/transfers', () => {
                     range: {
                         from: transferDetails.firstBlock,
                         to: transferDetails.lastBlock,
-                    }
+                    },
                 }
 
                 const transferLogs = await Client.raw.queryTransferLogs(request)
@@ -229,7 +229,9 @@ describe('POST /logs/transfers', () => {
                     'API response should be a success',
                 ).toBeTruthy()
                 expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-                expect(transferLogs.body?.length).toEqual(transferDetails.transferCount)
+                expect(transferLogs.body?.length).toEqual(
+                    transferDetails.transferCount,
+                )
             },
         )
 

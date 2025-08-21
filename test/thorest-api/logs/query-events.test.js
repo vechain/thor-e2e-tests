@@ -331,7 +331,7 @@ describe('POST /logs/event', () => {
                     range: {
                         from: transferDetails.firstBlock,
                         to: transferDetails.lastBlock,
-                    }
+                    },
                 }
 
                 const eventLogs = await Client.raw.queryEventLogs(request)
@@ -341,7 +341,9 @@ describe('POST /logs/event', () => {
                     'API response should be a success',
                 ).toBeTruthy()
                 expect(eventLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-                expect(eventLogs.body?.length).toEqual(transferDetails.transferCount)
+                expect(eventLogs.body?.length).toEqual(
+                    transferDetails.transferCount,
+                )
             },
         )
 
