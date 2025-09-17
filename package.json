@@ -52,7 +52,7 @@
         "@vechain/sdk-logging": "1.0.0-rc.5",
         "@vechain/sdk-network": "1.0.0-rc.5",
         "async-mutex": "^0.5.0",
-        "axios": "^1.7.9",
+        "axios": "1.12.2",
         "bignumber.js": "^9.1.2",
         "dotenv": "^16.4.7",
         "hardhat-ethers": "^1.0.1",
