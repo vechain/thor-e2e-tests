@@ -49,13 +49,17 @@ jobs:
 
             - name: Set Custom Thor Branch
               id: set-thor-branch
+              env:
+                  PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+                  HEAD_REF: ${{ github.head_ref }}
+                  BRANCH_NAME: ${{ inputs.branch_name }}
               run: |
-                  if [[ "${{ github.event.pull_request.base.ref }}" == release/* ]]; then
-                    echo "thor_branch_name=${{ github.event.pull_request.base.ref }}" >> "$GITHUB_OUTPUT"
-                  elif [[ "${{ github.head_ref }}" == release/* ]]; then
-                    echo "thor_branch_name=${{ github.head_ref }}" >> "$GITHUB_OUTPUT"
-                  elif [[ ${{ inputs.branch_name != 'master-latest' && inputs.branch_name != '' }} ]]; then
-                    echo "thor_branch_name=${{ inputs.branch_name }}" >> "$GITHUB_OUTPUT"
+                  if [[ "$PR_BASE_REF" == release/* ]]; then
+                    echo "thor_branch_name=$PR_BASE_REF" >> "$GITHUB_OUTPUT"
+                  elif [[ "$HEAD_REF" == release/* ]]; then
+                    echo "thor_branch_name=$HEAD_REF" >> "$GITHUB_OUTPUT"
+                  elif [[ "$BRANCH_NAME" != 'master-latest' && "$BRANCH_NAME" != '' ]]; then
+                    echo "thor_branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
                   fi
 
             - name: Using Custom Thor Branch
