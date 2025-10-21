@@ -50,13 +50,16 @@ jobs:
             - name: Set Custom Thor Branch
               id: set-thor-branch
               run: |
-                  if [[ "${{ github.event.pull_request.base.ref }}" == release/* ]]; then
-                    echo "thor_branch_name=${{ github.event.pull_request.base.ref }}" >> "$GITHUB_OUTPUT"
-                  elif [[ "${{ github.head_ref }}" == release/* ]]; then
-                    echo "thor_branch_name=${{ github.head_ref }}" >> "$GITHUB_OUTPUT"
+                  if [[ "${GITHUB_EVENT_PULL_REQUEST_BASE_REF}" == release/* ]]; then
+                    echo "thor_branch_name=${GITHUB_EVENT_PULL_REQUEST_BASE_REF}" >> "$GITHUB_OUTPUT"
+                  elif [[ "${GITHUB_HEAD_REF}" == release/* ]]; then
+                    echo "thor_branch_name=${GITHUB_HEAD_REF}" >> "$GITHUB_OUTPUT"
                   elif [[ ${{ inputs.branch_name != 'master-latest' && inputs.branch_name != '' }} ]]; then
-                    echo "thor_branch_name=${{ inputs.branch_name }}" >> "$GITHUB_OUTPUT"
+                    echo "thor_branch_name=${INPUTS_BRANCH_NAME}" >> "$GITHUB_OUTPUT"
                   fi
+              env:
+                GITHUB_EVENT_PULL_REQUEST_BASE_REF: ${{ github.event.pull_request.base.ref }}
+                INPUTS_BRANCH_NAME: ${{ inputs.branch_name }}
 
             - name: Using Custom Thor Branch
               if: ${{ steps.set-thor-branch.outputs.thor_branch_name }}
@@ -88,7 +91,7 @@ jobs:
               run: yarn docker:logs
 
             - name: Publish Results
-              uses: dorny/test-reporter@v1
+              uses: dorny/test-reporter@d61b558e8df85cb60d09ca3e5b09653b4477cea7 # v1
               id: test-reporter
               if: ${{ github.repository == 'vechain/thor-e2e-tests' && (success() || failure()) }}
               with:
