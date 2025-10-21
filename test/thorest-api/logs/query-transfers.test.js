@@ -219,7 +219,7 @@ describe('POST /logs/transfers', () => {
                     range: {
                         from: transferDetails.firstBlock,
                         to: transferDetails.lastBlock,
-                    },
+                    }
                 }
 
                 const transferLogs = await Client.raw.queryTransferLogs(request)
