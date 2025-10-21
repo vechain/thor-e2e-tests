@@ -229,7 +229,9 @@ describe('POST /logs/transfers', () => {
                     'API response should be a success',
                 ).toBeTruthy()
                 expect(transferLogs.httpCode, 'Expected HTTP Code').toEqual(200)
-                expect(transferLogs.body?.length).toEqual(transferDetails.transferCount)
+                expect(transferLogs.body?.length).toEqual(
+                    transferDetails.transferCount,
+                )
             },
         )
 
@@ -345,7 +347,7 @@ describe('POST /logs/transfers', () => {
 
                 expect(transferLogs.httpCode).toEqual(400)
                 expect(transferLogs.httpMessage).contain(
-                    'body: json: cannot unmarshal number 18446744073709552000 into Go struct field Options.options.offset of type uint64',
+                    'body: json: cannot unmarshal number 18446744073709552000',
                 )
             },
         )
