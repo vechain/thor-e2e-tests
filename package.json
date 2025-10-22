@@ -56,6 +56,7 @@
         "bignumber.js": "^9.1.2",
         "dotenv": "^16.4.7",
         "hardhat-ethers": "^1.0.1",
+        "dockerode": "^4.0.4",
         "prettier-plugin-solidity": "^1.4.1",
         "proper-lockfile": "^4.1.2",
         "vitest": "^3.0.1",
