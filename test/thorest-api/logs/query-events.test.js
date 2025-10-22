@@ -331,7 +331,7 @@ describe('POST /logs/event', () => {
                     range: {
                         from: transferDetails.firstBlock,
                         to: transferDetails.lastBlock,
-                    },
+                    }
                 }
 
                 const eventLogs = await Client.raw.queryEventLogs(request)
