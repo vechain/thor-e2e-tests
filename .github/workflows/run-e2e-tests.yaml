@@ -24,12 +24,14 @@ on:
 
 permissions:
     checks: write
-    pull-requests: write
 
 jobs:
     e2e_tests:
         name: Run E2E Tests
         runs-on: ubuntu-latest
+        permissions:
+            checks: write
+            pull-requests: write
         environment: ${{ inputs.environment || 'default-private' }}
         steps:
             - name: Checkout code
