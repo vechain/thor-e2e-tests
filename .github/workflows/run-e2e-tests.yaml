@@ -49,17 +49,18 @@ jobs:
 
             - name: Set Custom Thor Branch
               id: set-thor-branch
-              run: |
-                  if [[ "${GITHUB_EVENT_PULL_REQUEST_BASE_REF}" == release/* ]]; then
-                    echo "thor_branch_name=${GITHUB_EVENT_PULL_REQUEST_BASE_REF}" >> "$GITHUB_OUTPUT"
-                  elif [[ "${GITHUB_HEAD_REF}" == release/* ]]; then
-                    echo "thor_branch_name=${GITHUB_HEAD_REF}" >> "$GITHUB_OUTPUT"
-                  elif [[ ${{ inputs.branch_name != 'master-latest' && inputs.branch_name != '' }} ]]; then
-                    echo "thor_branch_name=${INPUTS_BRANCH_NAME}" >> "$GITHUB_OUTPUT"
-                  fi
               env:
-                GITHUB_EVENT_PULL_REQUEST_BASE_REF: ${{ github.event.pull_request.base.ref }}
-                INPUTS_BRANCH_NAME: ${{ inputs.branch_name }}
+                PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+                HEAD_REF: ${{ github.head_ref }}
+                BRANCH_NAME: ${{ inputs.branch_name }}
+              run: |
+                  if [[ "$PR_BASE_REF" == release/* ]]; then
+                    echo "thor_branch_name=$PR_BASE_REF" >> "$GITHUB_OUTPUT"
+                  elif [[ "$HEAD_REF" == release/* ]]; then
+                    echo "thor_branch_name=$HEAD_REF" >> "$GITHUB_OUTPUT"
+                  elif [[ $BRANCH_NAME != 'master-latest' && $BRANCH_NAME != '' ]]; then
+                    echo "thor_branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+                  fi
 
             - name: Using Custom Thor Branch
               if: ${{ steps.set-thor-branch.outputs.thor_branch_name }}
