@@ -55,7 +55,10 @@ const writeTransfers = async () => {
 
                 await pollReceipt(txId)
 
-                return await Client.sdk.transactions.waitForTransaction(txId)
+                return await Client.sdk.transactions.waitForTransaction(txId, {
+                    timeoutMs: 120_000,
+                    intervalMs: 1000,
+                })
             }),
         )
 
