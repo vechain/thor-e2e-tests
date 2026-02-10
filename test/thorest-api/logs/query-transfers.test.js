@@ -367,7 +367,7 @@ describe('POST /logs/transfers', () => {
 
                 expect(transferLogs.httpCode).toEqual(400)
                 expect(transferLogs.httpMessage).contain(
-                    'filter.Range.To must be greater than or equal to filter.Range.From',
+                    'range.from (100) cannot be greater than range.to (99)',
                 )
             },
         )

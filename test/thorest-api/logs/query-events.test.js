@@ -534,7 +534,7 @@ describe('POST /logs/event', () => {
 
                 expect(eventLogs.httpCode).toEqual(400)
                 expect(eventLogs.httpMessage).contain(
-                    'filter.Range.To must be greater than or equal to filter.Range.From',
+                    'range.from (100) cannot be greater than range.to (99)',
                 )
             },
         )
