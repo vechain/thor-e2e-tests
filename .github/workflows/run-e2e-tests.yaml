@@ -50,9 +50,9 @@ jobs:
             - name: Set Custom Thor Branch
               id: set-thor-branch
               env:
-                PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
-                HEAD_REF: ${{ github.head_ref }}
-                BRANCH_NAME: ${{ inputs.branch_name }}
+                  PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+                  HEAD_REF: ${{ github.head_ref }}
+                  BRANCH_NAME: ${{ inputs.branch_name }}
               run: |
                   if [[ "$PR_BASE_REF" == release/* ]]; then
                     echo "thor_branch_name=$PR_BASE_REF" >> "$GITHUB_OUTPUT"
