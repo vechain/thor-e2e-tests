@@ -20,8 +20,7 @@ start_command="--config-dir=/tmp \
   --bootnode enode://e32e5960781ce0b43d8c2952eeea4b95e286b1bb5f8c1f0c9f09983ba7141d2fdd7dfbec798aefb30dcd8c3b9b7cda8e9a94396a0192bfa54ab285c2cec515ab@$BOOTNODE_IP:55555 \
   --api-enable-deprecated \
   --enable-metrics \
-  --metrics-addr=0.0.0.0:2112" \
-  --api-logs-max-offset=1000000 \
+  --metrics-addr=0.0.0.0:2112"
 
 echo "Starting thor with command: thor $start_command"
 
