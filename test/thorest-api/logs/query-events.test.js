@@ -486,7 +486,7 @@ describe('POST /logs/event', () => {
                         from: block.body?.number,
                     },
                     options: {
-                        offset: 1_000_000,
+                        offset: 100_000,
                         limit: 1_000,
                     },
                 })
