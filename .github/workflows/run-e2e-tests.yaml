@@ -33,12 +33,12 @@ jobs:
         environment: ${{ inputs.environment || 'default-private' }}
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@v7
 
             - name: Setup Node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v7
               with:
-                  node-version: 20
+                  node-version-file: '.nvmrc'
 
             - name: Install Node Modules
               run: yarn install
@@ -92,7 +92,7 @@ jobs:
               run: yarn docker:logs
 
             - name: Publish Results
-              uses: dorny/test-reporter@v1
+              uses: dorny/test-reporter@v3
               id: test-reporter
               if: ${{ github.repository == 'vechain/thor-e2e-tests' && (success() || failure()) }}
               with:
